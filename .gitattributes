@@ -1,0 +1,5 @@
+# batだけは、動かなくなるからCRLF固定。
+*.bat text eol=crlf
+
+# CSVはCRLFとLFが混在するのでバイナリ扱いにする
+*.csv    -text
