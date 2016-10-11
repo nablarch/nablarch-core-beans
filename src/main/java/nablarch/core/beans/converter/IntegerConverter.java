@@ -35,8 +35,12 @@ public class IntegerConverter implements Converter<Integer> {
         if (value instanceof Number) {
             return Number.class.cast(value).intValue();
         } else if (value instanceof String) {
+            final String stringValue = String.class.cast(value);
+            if (stringValue.isEmpty()) {
+                return null;
+            }
             try {
-                return Integer.parseInt(String.class.cast(value));
+                return Integer.parseInt(stringValue);
             } catch (NumberFormatException e) {
                 throw new ConversionException(Integer.class, value);
             }
