@@ -44,7 +44,11 @@ public class SqlDateConverter implements Converter<java.sql.Date> {
             truncateTime(cal);
             return new java.sql.Date(cal.getTimeInMillis());
         } else if (value instanceof String) {
-            Date d = DateUtil.getDate(String.class.cast(value));
+            final String stringValue = String.class.cast(value);
+            if (stringValue.isEmpty()) {
+                return null;
+            }
+            Date d = DateUtil.getDate(stringValue);
             Calendar cal = Calendar.getInstance();
             cal.setTime(d);
             truncateTime(cal);
