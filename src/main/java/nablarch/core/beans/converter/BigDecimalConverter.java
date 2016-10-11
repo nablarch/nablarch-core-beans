@@ -45,8 +45,12 @@ public class BigDecimalConverter implements Converter<BigDecimal> {
                 return BigDecimal.valueOf(((Number) value).longValue());
             }
         } else if (value instanceof String) {
+            final String stringValue = value.toString();
+            if (stringValue.isEmpty()) {
+                return null;
+            }
             try {
-                return new BigDecimal(value.toString());
+                return new BigDecimal(stringValue);
             } catch (NumberFormatException e) {
                 throw new ConversionException(BigDecimal.class, value);
             }
