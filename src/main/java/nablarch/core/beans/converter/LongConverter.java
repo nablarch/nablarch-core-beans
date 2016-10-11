@@ -34,8 +34,12 @@ public class LongConverter implements Converter<Long> {
         if (value instanceof Number) {
             return Number.class.cast(value).longValue();
         } else if (value instanceof String) {
+            final String stringValue = String.class.cast(value);
+            if (stringValue.isEmpty()) {
+                return null;
+            }
             try {
-                return Long.parseLong(String.class.cast(value));
+                return Long.parseLong(stringValue);
             } catch (NumberFormatException e) {
                 throw new ConversionException(Long.class, value);
             }
