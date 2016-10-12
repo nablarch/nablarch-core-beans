@@ -38,6 +38,9 @@ public class BooleanConverter implements Converter<Boolean> {
             return intVal != 0;
         } else if (value instanceof String) {
             final String strVal = String.class.cast(value);
+            if (strVal.isEmpty()) {
+                return null;
+            }
             return strVal.equalsIgnoreCase("true")
                     || strVal.equals("1")
                     || strVal.equalsIgnoreCase("on");

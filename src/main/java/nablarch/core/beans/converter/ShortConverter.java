@@ -34,8 +34,12 @@ public class ShortConverter implements Converter<Short> {
         if (value instanceof Number) {
             return Number.class.cast(value).shortValue();
         } else if (value instanceof String) {
+            final String stringValue = String.class.cast(value);
             try {
-                return Short.parseShort(String.class.cast(value));
+                if (stringValue.isEmpty()) {
+                    return null;
+                }
+                return Short.parseShort(stringValue);
             } catch (NumberFormatException e) {
                 throw new ConversionException(Short.class, value);
             }

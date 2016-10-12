@@ -1,6 +1,7 @@
 package nablarch.core.beans.converter;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
@@ -49,5 +50,10 @@ public class StringConverterTest {
     @Test
     public void bigDecimal() throws Exception {
         assertThat(sut.convert(new BigDecimal("0.0000000001")), is("0.0000000001"));
+    }
+
+    @Test
+    public void emptyString() throws Exception {
+        assertThat(sut.convert(""), is(nullValue()));
     }
 }

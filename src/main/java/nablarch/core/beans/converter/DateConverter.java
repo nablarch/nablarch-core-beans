@@ -38,7 +38,11 @@ public class DateConverter implements Converter<Date> {
         } else if (value instanceof Calendar) {
             return Calendar.class.cast(value).getTime();
         } else if (value instanceof String) {
-            return DateUtil.getDate(String.class.cast(value));
+            final String stringValue = String.class.cast(value);
+            if (stringValue.isEmpty()) {
+                return null;
+            }
+            return DateUtil.getDate(stringValue);
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Date.class);
         } else {

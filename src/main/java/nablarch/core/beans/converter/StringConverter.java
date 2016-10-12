@@ -30,7 +30,8 @@ public class StringConverter implements Converter<String> {
     @Override
     public String convert(Object value) {
         if (value instanceof String) {
-            return String.class.cast(value);
+            final String stringValue = String.class.cast(value);
+            return stringValue.isEmpty() ? null : stringValue;
         } else if (value instanceof Boolean) {
             return Boolean.class.cast(value) ? "1" : "0";
         } else if (value instanceof String[]) {
