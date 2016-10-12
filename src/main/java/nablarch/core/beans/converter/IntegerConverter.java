@@ -52,4 +52,19 @@ public class IntegerConverter implements Converter<Integer> {
             throw new ConversionException(Integer.class, value);
         }
     }
+
+    /**
+     * {@code int}に変換するための{@link Converter}。
+     * <p>
+     * プリミティブへの変換を行うので、{@link IntegerConverter}で変換後の値が{@code null}の場合には、
+     * {@code 0}に変換し返却する。
+     */
+    public static class Primitive extends IntegerConverter {
+
+        @Override
+        public Integer convert(final Object value) {
+            final Integer result = super.convert(value);
+            return result == null ? 0 : result;
+        }
+    }
 }

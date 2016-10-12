@@ -1,8 +1,6 @@
 package nablarch.core.beans;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -406,7 +404,9 @@ public class NestedListPropertyTest {
         } catch (Exception e) {
             fail();
         }
-        assertThat(bean.getChildren().get(0).getName(), is(""));
+        assertThat(bean.getChildren()
+                       .get(0)
+                       .getName(), is(nullValue()));
     }
 
     /**
@@ -529,7 +529,7 @@ public class NestedListPropertyTest {
         } catch (Exception e) {
             fail();
         }
-        assertThat(bean.getArray()[0].getName(), is(""));
+        assertThat(bean.getArray()[0].getName(), is(nullValue()));
     }
 
 }
