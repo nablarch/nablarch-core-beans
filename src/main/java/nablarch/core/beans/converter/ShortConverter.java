@@ -51,4 +51,19 @@ public class ShortConverter implements Converter<Short> {
             throw new ConversionException(Short.class, value);
         }
     }
+
+    /**
+     * {@code short}に変換するための{@link Converter}。
+     * <p>
+     * プリミティブへの変換を行うので、{@link ShortConverter}で変換後の値が{@code null}の場合には、
+     * {@code 0}に変換し返却する。
+     */
+    public static class Primitive extends ShortConverter {
+
+        @Override
+        public Short convert(final Object value) {
+            final Short result = super.convert(value);
+            return result == null ? 0 : result;
+        }
+    }
 }

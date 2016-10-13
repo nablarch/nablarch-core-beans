@@ -38,13 +38,13 @@ public class BasicConversionManager implements ConversionManager {
     public BasicConversionManager() {
         Map<Class<?>, Converter<?>> convertMap = new HashMap<Class<?>, Converter<?>>();
         convertMap.put(Boolean.class, new BooleanConverter());
-        convertMap.put(boolean.class, new BooleanConverter());
+        convertMap.put(boolean.class, new BooleanConverter.Primitive());
         convertMap.put(Integer.class, new IntegerConverter());
-        convertMap.put(int.class, new IntegerConverter());
+        convertMap.put(int.class, new IntegerConverter.Primitive());
         convertMap.put(Short.class, new ShortConverter());
-        convertMap.put(short.class, new ShortConverter());
+        convertMap.put(short.class, new ShortConverter.Primitive());
         convertMap.put(Long.class, new LongConverter());
-        convertMap.put(long.class, new LongConverter());
+        convertMap.put(long.class, new LongConverter.Primitive());
         convertMap.put(BigDecimal.class, new BigDecimalConverter());
         convertMap.put(String.class, new StringConverter());
         convertMap.put(String[].class, new StringArrayConverter());

@@ -50,4 +50,19 @@ public class BooleanConverter implements Converter<Boolean> {
             throw new ConversionException(Boolean.class, value);
         }
     }
+
+    /**
+     * {@code boolean}に変換するための{@link Converter}。
+     * <p>
+     * プリミティブへの変換を行うので、{@link BooleanConverter}で変換後の値が{@code null}の場合には、
+     * {@code false}に変換し返却する。
+     */
+    public static class Primitive extends BooleanConverter {
+
+        @Override
+        public Boolean convert(final Object value) {
+            final Boolean result = super.convert(value);
+            return result == null ? Boolean.FALSE : result;
+        }
+    }
 }

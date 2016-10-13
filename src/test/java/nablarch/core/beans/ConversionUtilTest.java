@@ -1,5 +1,11 @@
 package nablarch.core.beans;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
@@ -7,18 +13,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.junit.Test;
-
 import nablarch.core.repository.SystemRepository;
 import nablarch.core.repository.di.DiContainer;
 import nablarch.core.repository.di.config.xml.XmlComponentDefinitionLoader;
 
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.Test;
 
 /**
  * @author kawasima
@@ -139,7 +138,7 @@ public class ConversionUtilTest {
         assertEquals(Boolean.FALSE, ConversionUtil.convert(Boolean.class, "false"));
         assertEquals(Boolean.FALSE, ConversionUtil.convert(Boolean.class, "off"));
         assertEquals(Boolean.FALSE, ConversionUtil.convert(Boolean.class, "0"));
-        assertEquals(Boolean.FALSE, ConversionUtil.convert(Boolean.class, ""));
+        assertEquals(null, ConversionUtil.convert(Boolean.class, ""));
 
         assertEquals(Boolean.FALSE, ConversionUtil.convert(Boolean.class, "one"));
         assertEquals(Boolean.FALSE, ConversionUtil.convert(Boolean.class, "true "));
