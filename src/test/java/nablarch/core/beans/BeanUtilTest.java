@@ -1,10 +1,6 @@
 package nablarch.core.beans;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasProperty;
@@ -36,10 +32,10 @@ import nablarch.core.util.StringUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import mockit.Expectations;
 import mockit.Mocked;
-import org.junit.rules.ExpectedException;
 
 /**
  * @author Iwauo Tajima
@@ -1710,6 +1706,20 @@ public class BeanUtilTest {
         assertThat(dest.getSample(), is(123));
     }
 
+    @Test
+    public void testCopyNullOnlyStringArray() throws Exception {
+        final HashMap<String, Object> input = new HashMap<String, Object>();
+        input.put("firstName", new String[] {null});
+        input.put("lastName", new String[] {"なまえ"});
+
+        final UserDto actual = BeanUtil.createAndCopy(UserDto.class, input);
+        assertThat(actual, allOf(
+                hasProperty("firstName", is(nullValue())),
+                hasProperty("lastName", is("なまえ"))
+        ));
+        
+    }
+    
     private static Matcher<Map<? extends String, ?>> hasEntry(String key, Object value) {
         return IsMapContaining.<String, Object>hasEntry(key, value);
     }
