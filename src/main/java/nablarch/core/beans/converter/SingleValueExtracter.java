@@ -36,7 +36,12 @@ public class SingleValueExtracter {
      */
     public static <T> T toSingleValue(String[] array, Converter<T> original, Class<T> clazz) {
         if (array.length == 1) {
-            return original.convert(array[0]);
+            final String firstElement = array[0];
+            if (firstElement == null) {
+                return null;
+            } else {
+                return original.convert(firstElement);
+            }
         }
         throw new ConversionException(clazz, array);
     }

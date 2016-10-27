@@ -1,8 +1,9 @@
 package nablarch.core.beans;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.collection.IsArrayContainingInOrder.arrayContaining;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -361,13 +362,10 @@ public class NestedListPropertyTest {
 
         // パラメータの値がnull(配列要素)だけの場合
         request.put("children[0].name", new String[]{null});
-        bean = null;
-        try {
-            bean = BeanUtil.createAndCopy(NestedBean.class, request);
-        } catch (Exception e) {
-            fail();
-        }
-        assertThat(bean.getChildren(), is(nullValue()));
+        bean = BeanUtil.createAndCopy(NestedBean.class, request);
+        assertThat(bean.getChildren(), contains(
+                hasProperty("name", is(nullValue()))
+        ));
     }
 
     /**
@@ -484,13 +482,10 @@ public class NestedListPropertyTest {
 
         // パラメータの値がnull(配列要素)だけの場合
         request.put("array[0].name", new String[]{null});
-        bean = null;
-        try {
-            bean = BeanUtil.createAndCopy(NestedBean.class, request);
-        } catch (Exception e) {
-            fail();
-        }
-        assertThat(bean.getArray(), is(nullValue()));
+        bean = BeanUtil.createAndCopy(NestedBean.class, request);
+        assertThat(bean.getArray(), arrayContaining(
+                hasProperty("name", is(nullValue()))
+        ));
     }
 
     /**

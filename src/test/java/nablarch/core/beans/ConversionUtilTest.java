@@ -1,5 +1,11 @@
 package nablarch.core.beans;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
@@ -7,18 +13,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.junit.Test;
-
 import nablarch.core.repository.SystemRepository;
 import nablarch.core.repository.di.DiContainer;
 import nablarch.core.repository.di.config.xml.XmlComponentDefinitionLoader;
 
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.Test;
 
 /**
  * @author kawasima
@@ -68,6 +67,10 @@ public class ConversionUtilTest {
             BigDecimal.valueOf(777)
           , ConversionUtil.convert(BigDecimal.class, new String[] {"777"})
         );
+        
+        // convert from String[] {null}
+        assertNull(ConversionUtil.convert(BigDecimal.class, new String[] {null}));
+        
         assertEquals(
             new BigDecimal("0.54321")
           , ConversionUtil.convert(BigDecimal.class, "0.54321")
@@ -76,7 +79,7 @@ public class ConversionUtilTest {
             new BigDecimal("-0.1")
           , ConversionUtil.convert(BigDecimal.class, "-0.1")
         );
-
+        
         try {
             ConversionUtil.convert(BigDecimal.class, "hogehoge");
             fail();
@@ -151,6 +154,7 @@ public class ConversionUtilTest {
         //String[]
         assertEquals(Boolean.TRUE, ConversionUtil.convert(boolean.class, new String[] {"1"}));
         assertEquals(Boolean.FALSE, ConversionUtil.convert(Boolean.class, new String[] {"0"}));
+        assertNull(ConversionUtil.convert(Boolean.class, new String[] {null}));
 
         // unsupported types
         try {
@@ -181,7 +185,10 @@ public class ConversionUtilTest {
 
         // String[]
         assertEquals(1, (int)ConversionUtil.convert(Integer.class, new String[] {"1"}));
-
+        
+        // String[] {null}
+        assertNull(ConversionUtil.convert(Integer.class, new String[] {null}));
+        
         try {
             ConversionUtil.convert(Integer.class, "hogehogehoge");
             fail();
@@ -222,6 +229,8 @@ public class ConversionUtilTest {
         // String[]
         assertEquals(cal.getTime(), ConversionUtil.convert(Date.class, new String[] {"11920213"}));
 
+        assertNull(ConversionUtil.convert(Date.class, new String[] {null}));
+
         // Date
         assertEquals(cal.getTime(), ConversionUtil.convert(Date.class, cal.getTime()));
 
@@ -259,6 +268,9 @@ public class ConversionUtilTest {
 
         // String[]
         assertEquals(new java.sql.Date(cal.getTimeInMillis()), ConversionUtil.convert(java.sql.Date.class, new String[]{"11920213"}));
+        
+        // String[] {null}
+        assertNull(ConversionUtil.convert(java.sql.Date.class, new String[] {null}));
 
         // Date
         assertEquals(new java.sql.Date(cal.getTimeInMillis()), ConversionUtil.convert(java.sql.Date.class, cal.getTime()));
@@ -297,7 +309,10 @@ public class ConversionUtilTest {
 
         // String[]
         assertEquals(new Timestamp(cal.getTimeInMillis()), ConversionUtil.convert(Timestamp.class, new String[]{"11920213"}));
-
+        
+        // String[] {null}
+        assertNull(ConversionUtil.convert(Timestamp.class, new String[] {null}));
+        
         // Date
         assertEquals(new Timestamp(cal.getTimeInMillis()), ConversionUtil.convert(Timestamp.class, cal.getTime()));
 
@@ -336,7 +351,10 @@ public class ConversionUtilTest {
 
         // String[]
         assertEquals(1L, (long)ConversionUtil.convert(Long.class, new String[] {"1"}));
-
+        
+        // String[] {null}
+        assertNull(ConversionUtil.convert(Long.class, new String[] {null}));
+        
         try {
             ConversionUtil.convert(Long.class, "hogehogehoge");
             fail();
@@ -384,6 +402,9 @@ public class ConversionUtilTest {
         // String[]
         assertEquals((short)1, (short)ConversionUtil.convert(Short.class, new String[] {"1"}));
 
+        // String[] {null}
+        assertNull(ConversionUtil.convert(Short.class, new String[] {null}));
+
         try {
             ConversionUtil.convert(Short.class, "hogehogehoge");
             fail();
@@ -428,6 +449,9 @@ public class ConversionUtilTest {
 
         // String[]
         assertEquals("HOGE", ConversionUtil.convert(String.class, new String[] {"HOGE"}));
+        
+        // String[] {null}
+        assertEquals(null, ConversionUtil.convert(String.class, new String[] {null}));
 
         // Number
         assertEquals("12.34", ConversionUtil.convert(String.class, 12.34));
@@ -455,8 +479,8 @@ public class ConversionUtilTest {
 
         // array of String
         assertArrayEquals(
-            new String[]{"hoge", "fuga", "piyo"}
-          , ConversionUtil.convert(String[].class, new String[]{"hoge", "fuga", "piyo"})
+            new String[]{"hoge", "fuga", null, "piyo"}
+          , ConversionUtil.convert(String[].class, new String[]{"hoge", "fuga", null, "piyo"})
         );
 
         // array of Objects
@@ -504,8 +528,8 @@ public class ConversionUtilTest {
 
         // array of Object
         assertArrayEquals(
-            new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3)}
-          , ConversionUtil.convert(Object[].class, new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3)})
+            new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3), null}
+          , ConversionUtil.convert(Object[].class, new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3), null})
         );
 
         // array of primitives
@@ -516,13 +540,14 @@ public class ConversionUtilTest {
 
         // list
         assertArrayEquals(
-            new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3)}
+            new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3), null}
           , ConversionUtil.convert(
                 Object[].class
               , new ArrayList<Object>(){{
                   add("1");
                   add(Integer.valueOf(2));
                   add(BigDecimal.valueOf(3));
+                  add(null);
                 }}
             )
         );
@@ -557,9 +582,4 @@ public class ConversionUtilTest {
                 BigInteger.valueOf(333),
                 ConversionUtil.convert(BigInteger.class, "333"));
     }
-
-//    @Test
-//    public void testPrivateConstructor() {
-//        TestUtil.testPrivateConstructor(ConversionUtil.class);
-//    }
 }
