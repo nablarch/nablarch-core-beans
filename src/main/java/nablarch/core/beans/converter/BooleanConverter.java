@@ -38,6 +38,9 @@ public class BooleanConverter implements Converter<Boolean> {
             return intVal != 0;
         } else if (value instanceof String) {
             final String strVal = String.class.cast(value);
+            if (strVal.isEmpty()) {
+                return null;
+            }
             return strVal.equalsIgnoreCase("true")
                     || strVal.equals("1")
                     || strVal.equalsIgnoreCase("on");
@@ -45,6 +48,21 @@ public class BooleanConverter implements Converter<Boolean> {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Boolean.class);
         } else {
             throw new ConversionException(Boolean.class, value);
+        }
+    }
+
+    /**
+     * {@code boolean}に変換するための{@link Converter}。
+     * <p>
+     * プリミティブへの変換を行うので、{@link BooleanConverter}で変換後の値が{@code null}の場合には、
+     * {@code false}に変換し返却する。
+     */
+    public static class Primitive extends BooleanConverter {
+
+        @Override
+        public Boolean convert(final Object value) {
+            final Boolean result = super.convert(value);
+            return result == null ? Boolean.FALSE : result;
         }
     }
 }

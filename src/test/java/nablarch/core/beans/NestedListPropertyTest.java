@@ -3,6 +3,7 @@ package nablarch.core.beans;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.collection.IsArrayContainingInOrder.arrayContaining;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -404,7 +405,7 @@ public class NestedListPropertyTest {
         } catch (Exception e) {
             fail();
         }
-        assertThat(bean.getChildren().get(0).getName(), is(""));
+        assertThat(bean.getChildren().get(0).getName(), is(isEmptyString()));
     }
 
     /**
@@ -524,7 +525,7 @@ public class NestedListPropertyTest {
         } catch (Exception e) {
             fail();
         }
-        assertThat(bean.getArray()[0].getName(), is(""));
+        assertThat(bean.getArray()[0].getName(), is(isEmptyString()));
     }
 
 }

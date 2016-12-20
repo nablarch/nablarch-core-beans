@@ -35,8 +35,12 @@ public class IntegerConverter implements Converter<Integer> {
         if (value instanceof Number) {
             return Number.class.cast(value).intValue();
         } else if (value instanceof String) {
+            final String stringValue = String.class.cast(value);
+            if (stringValue.isEmpty()) {
+                return null;
+            }
             try {
-                return Integer.parseInt(String.class.cast(value));
+                return Integer.parseInt(stringValue);
             } catch (NumberFormatException e) {
                 throw new ConversionException(Integer.class, value);
             }
@@ -46,6 +50,21 @@ public class IntegerConverter implements Converter<Integer> {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Integer.class);
         } else {
             throw new ConversionException(Integer.class, value);
+        }
+    }
+
+    /**
+     * {@code int}に変換するための{@link Converter}。
+     * <p>
+     * プリミティブへの変換を行うので、{@link IntegerConverter}で変換後の値が{@code null}の場合には、
+     * {@code 0}に変換し返却する。
+     */
+    public static class Primitive extends IntegerConverter {
+
+        @Override
+        public Integer convert(final Object value) {
+            final Integer result = super.convert(value);
+            return result == null ? 0 : result;
         }
     }
 }

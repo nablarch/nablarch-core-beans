@@ -34,8 +34,12 @@ public class ShortConverter implements Converter<Short> {
         if (value instanceof Number) {
             return Number.class.cast(value).shortValue();
         } else if (value instanceof String) {
+            final String stringValue = String.class.cast(value);
             try {
-                return Short.parseShort(String.class.cast(value));
+                if (stringValue.isEmpty()) {
+                    return null;
+                }
+                return Short.parseShort(stringValue);
             } catch (NumberFormatException e) {
                 throw new ConversionException(Short.class, value);
             }
@@ -45,6 +49,21 @@ public class ShortConverter implements Converter<Short> {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Short.class);
         } else {
             throw new ConversionException(Short.class, value);
+        }
+    }
+
+    /**
+     * {@code short}に変換するための{@link Converter}。
+     * <p>
+     * プリミティブへの変換を行うので、{@link ShortConverter}で変換後の値が{@code null}の場合には、
+     * {@code 0}に変換し返却する。
+     */
+    public static class Primitive extends ShortConverter {
+
+        @Override
+        public Short convert(final Object value) {
+            final Short result = super.convert(value);
+            return result == null ? 0 : result;
         }
     }
 }
