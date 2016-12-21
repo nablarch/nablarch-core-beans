@@ -1,15 +1,14 @@
 package nablarch.core.beans;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.text.IsEmptyString.isEmptyString;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 /**
  * ネストしたBeanへ値を設定するテスト.
@@ -231,6 +230,6 @@ public class NestedPropertyTest {
             fail();
         }
         assertThat(bean.getChild(), is(not(nullValue())));
-        assertThat(bean.getChild().getName(), is(""));
+        assertThat(bean.getChild().getName(), is(isEmptyString()));
     }
 }

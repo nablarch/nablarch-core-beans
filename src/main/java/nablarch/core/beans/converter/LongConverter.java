@@ -34,8 +34,12 @@ public class LongConverter implements Converter<Long> {
         if (value instanceof Number) {
             return Number.class.cast(value).longValue();
         } else if (value instanceof String) {
+            final String stringValue = String.class.cast(value);
+            if (stringValue.isEmpty()) {
+                return null;
+            }
             try {
-                return Long.parseLong(String.class.cast(value));
+                return Long.parseLong(stringValue);
             } catch (NumberFormatException e) {
                 throw new ConversionException(Long.class, value);
             }
@@ -46,5 +50,21 @@ public class LongConverter implements Converter<Long> {
         } else {
             throw new ConversionException(Long.class, value);
         }
+    }
+
+    /**
+     * {@code long}に変換するための{@link Converter}。
+     * <p>
+     * プリミティブへの変換を行うので、{@link LongConverter}で変換後の値が{@code null}の場合には、
+     * {@code 0}に変換し返却する。
+     */
+    public static class Primitive extends LongConverter {
+
+        @Override
+        public Long convert(final Object value) {
+            final Long result = super.convert(value);
+            return result == null ? 0L : result;
+        }
+        
     }
 }

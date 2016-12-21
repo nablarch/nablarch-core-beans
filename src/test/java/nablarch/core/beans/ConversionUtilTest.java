@@ -17,6 +17,7 @@ import nablarch.core.repository.SystemRepository;
 import nablarch.core.repository.di.DiContainer;
 import nablarch.core.repository.di.config.xml.XmlComponentDefinitionLoader;
 
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -24,6 +25,12 @@ import org.junit.Test;
  * @author tajima
  */
 public class ConversionUtilTest {
+
+    @After
+    public void tearDown() {
+        SystemRepository.clear();
+    }
+
     @Test
     public void testConvertBigDecimal() {
         // convert from Numbers
@@ -142,7 +149,7 @@ public class ConversionUtilTest {
         assertEquals(Boolean.FALSE, ConversionUtil.convert(Boolean.class, "false"));
         assertEquals(Boolean.FALSE, ConversionUtil.convert(Boolean.class, "off"));
         assertEquals(Boolean.FALSE, ConversionUtil.convert(Boolean.class, "0"));
-        assertEquals(Boolean.FALSE, ConversionUtil.convert(Boolean.class, ""));
+        assertEquals(null, ConversionUtil.convert(Boolean.class, ""));
 
         assertEquals(Boolean.FALSE, ConversionUtil.convert(Boolean.class, "one"));
         assertEquals(Boolean.FALSE, ConversionUtil.convert(Boolean.class, "true "));
