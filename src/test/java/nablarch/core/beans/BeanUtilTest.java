@@ -17,6 +17,7 @@ import static org.junit.Assert.fail;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1719,7 +1720,34 @@ public class BeanUtilTest {
         ));
         
     }
-    
+
+    /**
+     * マイクロ秒を持つTimestampがコピー出来ることを検証するケース。
+     */
+    @Test
+    public void copyTimestampWithMicroSeconds() throws Exception {
+        final WithTimestamp src = new WithTimestamp();
+        final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        timestamp.setNanos(100000001);
+        src.timestamp = timestamp;
+        final WithTimestamp actual = BeanUtil.createAndCopy(WithTimestamp.class, src);
+        assertThat(actual.timestamp, is(timestamp));
+    }
+
+    public static class WithTimestamp {
+
+        private Timestamp timestamp;
+
+        public Timestamp getTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(final Timestamp timestamp) {
+            this.timestamp = timestamp;
+        }
+    }
+
+
     private static Matcher<Map<? extends String, ?>> hasEntry(String key, Object value) {
         return IsMapContaining.<String, Object>hasEntry(key, value);
     }
