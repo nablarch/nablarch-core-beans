@@ -13,6 +13,9 @@ import nablarch.core.util.DateUtil;
  * <p/>
  * 変換元の型に応じて、以下のとおり変換を行う。
  * <p/>
+ * <b>Timestamp型</b>：<br>
+ * 同一の値となる{@code java.sql.Timestamp}オブジェクトを返却する。
+ * <p/>
  * <b>日付型</b>：<br>
  * 同一日付・時刻を表す{@code java.sql.Timestamp}オブジェクトを返却する。
  * <p/>
@@ -31,8 +34,13 @@ import nablarch.core.util.DateUtil;
  */
 public class SqlTimestampConverter implements Converter<Timestamp> {
     @Override
-    public Timestamp convert(Object value) {
-        if (value instanceof Date) {
+    public Timestamp convert(final Object value) {
+        if (value instanceof Timestamp) {
+            final Timestamp src = Timestamp.class.cast(value);
+            final Timestamp dest = new Timestamp(src.getTime());
+            dest.setNanos(src.getNanos());
+            return dest;
+        } else if (value instanceof Date) {
             Calendar cal = Calendar.getInstance();
             cal.setTime(Date.class.cast(value));
             return new Timestamp(cal.getTimeInMillis());
@@ -47,7 +55,7 @@ public class SqlTimestampConverter implements Converter<Timestamp> {
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Timestamp.class);
         } else {
-            throw new ConversionException(java.sql.Date.class, value);
+            throw new ConversionException(Timestamp.class, value);
         }
     }
 
