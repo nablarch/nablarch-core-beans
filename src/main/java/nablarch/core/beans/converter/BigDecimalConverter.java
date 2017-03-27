@@ -5,6 +5,7 @@ import java.math.BigInteger;
 
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
+import nablarch.core.util.NumberUtil;
 
 /**
  * {@code BigDecimal}型への変換を行う {@link Converter} 。
@@ -46,7 +47,9 @@ public class BigDecimalConverter implements Converter<BigDecimal> {
             }
         } else if (value instanceof String) {
             try {
-                return new BigDecimal(value.toString());
+                final BigDecimal result = new BigDecimal(value.toString());
+                NumberUtil.verifyBigDecimalScale(result);
+                return result;
             } catch (NumberFormatException e) {
                 throw new ConversionException(BigDecimal.class, value);
             }
