@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import nablarch.test.support.log.app.OnMemoryLogWriter;
 import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsMapContaining;
 
@@ -50,6 +51,7 @@ public class BeanUtilTest {
     public void setUp() throws Exception {
         // デフォルト設定で動作させるよう、リポジトリをクリアする。
         SystemRepository.clear();
+        OnMemoryLogWriter.clear();
     }
 
     public static class UserDto {
@@ -388,6 +390,10 @@ public class BeanUtilTest {
         assertEquals("Rakutaro Nabu", dto.getFullName());
         assertEquals(34, dto.getAge());
         assertArrayEquals(new byte[] {0x00, 0x30}, dto.bin);
+        assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
+                containsString("An error occurred while writing to the property :unknownProperty"),
+                not(containsString("nablarch.core.beans.BeansException"))
+        )));
     }
 
     @Test
@@ -635,6 +641,10 @@ public class BeanUtilTest {
         assertThat(dest.phones, is(new String[]{"777-8888-9999"}));
         assertThat(dest.address.addr, is("兵庫県神戸市"));
         assertThat(dest.address.postCode, is("333-4444"));
+        assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
+                containsString("An error occurred while copying the property :ssn"),
+                not(containsString("nablarch.core.beans.BeansException"))
+        )));
 
         // コピー元に存在しないプロパティを指定するケース
         src.age = 10;
@@ -710,6 +720,10 @@ public class BeanUtilTest {
         assertThat(dest.phones, is(new String[]{"111-2222-3333", "444-5555-6666"}));
         assertThat(dest.address.addr, is("東京都新宿区"));
         assertThat(dest.address.postCode, is("111-2222"));
+        assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
+                containsString("An error occurred while copying the property :ssn"),
+                not(containsString("nablarch.core.beans.BeansException"))
+        )));
 
         // コピー元に存在しないプロパティを指定するケース
         src.age = 10;
@@ -903,7 +917,7 @@ public class BeanUtilTest {
         assertThat(dest.bin, is(nullValue()));
 
         // コピー先に存在しないプロパティを指定するケース
-        src = new HashMap<String, Object>(){{;
+        src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -915,6 +929,10 @@ public class BeanUtilTest {
         assertThat(dest.age, is(10));
         assertThat(dest.firstName, is("太朗"));
         assertThat(dest.lastName, is("山田"));
+        assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
+                containsString("An error occurred while writing to the property :ssn"),
+                not(containsString("nablarch.core.beans.BeansException"))
+        )));
 
         // コピー元に存在しないプロパティを指定するケース
         src = new HashMap<String, Object>(){{;
@@ -987,6 +1005,10 @@ public class BeanUtilTest {
         assertThat(dest.age, is(0));
         assertThat(dest.firstName, is("太朗"));
         assertThat(dest.lastName, is("山田"));
+        assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
+                containsString("An error occurred while writing to the property :ssn"),
+                not(containsString("nablarch.core.beans.BeansException"))
+        )));
 
         // コピー元に存在しないプロパティを指定するケース
         src = new HashMap<String, Object>(){{;
