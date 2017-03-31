@@ -486,7 +486,7 @@ public final class BeanUtil {
             try {
                 setProperty(bean, entry.getKey(), entry.getValue());
             } catch (BeansException bex) {
-                LOGGER.logDebug("An error occurred while writing to the property :" + entry.getKey(), bex);
+                LOGGER.logDebug("An error occurred while writing to the property :" + entry.getKey());
             }
         }
         return bean;
@@ -524,7 +524,7 @@ public final class BeanUtil {
             try {
                 setProperty(bean, include, map.get(include));
             } catch (BeansException bex) {
-                LOGGER.logDebug("An error occurred while writing to the property :" + include, bex);
+                LOGGER.logDebug("An error occurred while writing to the property :" + include);
             }
         }
         return bean;
@@ -566,7 +566,7 @@ public final class BeanUtil {
                 }
                 setProperty(bean, entry.getKey(), entry.getValue());
             } catch (BeansException bex) {
-                LOGGER.logDebug("An error occurred while writing to the property :" + entry.getKey(), bex);
+                LOGGER.logDebug("An error occurred while writing to the property :" + entry.getKey());
             }
         }
         return bean;
@@ -688,7 +688,7 @@ public final class BeanUtil {
                     }
                 }
             } catch (BeansException bex) {
-                LOGGER.logDebug("An error occurred while copying the property :" + propertyName, bex);
+                LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
             } catch (Exception e) {
                 throw new BeansException(e);
             }
@@ -801,7 +801,7 @@ public final class BeanUtil {
                     setPropertyValue(destBean, destPd, copyInner(val, innerDestBean, false));
                 }
             } catch (BeansException bex) {
-                LOGGER.logDebug("An error occurred while copying the property :" + propertyName, bex);
+                LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
             } catch (Exception e) {
                 throw new BeansException(e);
             }

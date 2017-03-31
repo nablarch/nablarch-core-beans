@@ -1,5 +1,5 @@
 group = 'com.nablarch.framework'
-version = '1.1.5'
+version = '1.2.0'
 description = 'ビーンユーティリティ'
 
 buildscript {
@@ -18,7 +18,7 @@ apply plugin: 'com.nablarch.dev.nablarch-build'
 apply plugin: 'com.nablarch.dev.nablarch-maven-deploy'
 apply plugin: 'com.nablarch.dev.nablarch-sonarqube'
 apply plugin: 'com.nablarch.dev.nablarch-version'
-apply plugin: 'cobertura'
+apply from: 'https://github.com/nablarch/nablarch-gradle-plugin/blob/develop/scripts/cobertura/cobertura-0.0.1.gradle?raw=true'
 
 // ビルド時のJavaバージョンを指定する
 sourceCompatibility=JavaVersion.VERSION_1_6
@@ -26,25 +26,25 @@ targetCompatibility=JavaVersion.VERSION_1_6
 
 configurations {
   testCompile.exclude group:'*', module: 'hamcrest-core'
-  all*.exclude module: 'nablarch-test-support'
+  all*.exclude module: 'nablarch-test-support-hereis'
+  all*.exclude module: 'h2'
+  all*.exclude module: 'commons-dbcp'
+  all*.exclude module: 'eclipselink'
+  all*.exclude module: 'jsp-api-2.1-glassfish'
 }
 
 dependencies {
   compile "com.nablarch.framework:nablarch-core:${nablarchCoreVersion}"
 
-  testRuntime "com.nablarch.framework:nablarch-core-applog:${nablarchCoreApplogVersion}"
+  testCompile "com.nablarch.framework:nablarch-core-applog:${nablarchCoreApplogVersion}"
   testCompile "com.nablarch.framework:nablarch-core-repository:${nablarchCoreRepositoryVersion}"
 
   testCompile 'org.jmockit:jmockit:1.30'
   testCompile 'junit:junit:4.12'
   testCompile 'org.hamcrest:hamcrest-all:1.3'
-  
-  // for cobertura
-  testRuntime 'org.slf4j:slf4j-nop:1.7.24'
 }
 
 test {
-
   jvmArgs (
       '-XX:PermSize=32m',
       '-XX:+UseParallelGC',
@@ -53,51 +53,6 @@ test {
   )
 
   ignoreFailures = true
-
-  doFirst {
-    def logDir = new File('log')
-    if (!logDir.exists()) {
-      assert logDir.mkdirs()
-    }
-  }
-
-  cobertura {
-    coverageSourceDirs = ["${projectDir}/src/main/java/"]
-    coverageIgnoreTrivial = true
-    coverageFormats = ['xml']
-    coverageDirs = [project.sourceSets.main.output.classesDir]
-  }
-}
-
-def coberturaReportDir = new File(project.buildDir, "cobertura-report")
-
-task generateCoberturaReportByAnt(dependsOn: 'cobertura') {
-  def dataFile = "${project.buildDir}/cobertura/cobertura.ser"
-
-  inputs.file file(dataFile)
-  outputs.dir coberturaReportDir
-
-  doLast {
-    ant {
-      taskdef(resource: 'tasks.properties', classpath: configurations.cobertura.asPath + ':' + configurations.testRuntime.asPath)
-
-      'cobertura-report'(
-              destdir: coberturaReportDir,
-              datafile: dataFile,
-              srcdir: "${projectDir}/src/main/java/",
-              format: 'xml'
-      )
-    }
-  }
-}
-
-task coverage(dependsOn: ['clean', 'generateCoberturaReportByAnt'])
-
-sonarRunner {
-  sonarProperties {
-    property "sonar.java.coveragePlugin", "cobertura"
-    property "sonar.cobertura.reportPath", "${coberturaReportDir}/coverage.xml"
-  }
 }
 
 tasks.sonarRunner {
