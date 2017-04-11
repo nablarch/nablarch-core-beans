@@ -6,10 +6,12 @@ import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import nablarch.core.beans.ConversionManager;
 import nablarch.core.beans.Converter;
+import nablarch.core.beans.ExtensionConverter;
 import nablarch.core.beans.converter.BigDecimalConverter;
 import nablarch.core.beans.converter.BooleanConverter;
 import nablarch.core.beans.converter.DateConverter;
@@ -60,5 +62,10 @@ public class CustomConversionManager implements ConversionManager {
     @Override
     public Map<Class<?>, Converter<?>> getConverters() {
         return converters;
+    }
+
+    @Override
+    public List<ExtensionConverter<?>> getExtensionConvertor() {
+        return null;
     }
 }

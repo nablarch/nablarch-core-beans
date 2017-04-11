@@ -3,6 +3,7 @@ version = '1.2.0'
 description = 'ビーンユーティリティ'
 
 buildscript {
+  ext.kotlin_version = '1.1.1'
   repositories {
     mavenLocal()
     maven { url "${developLibUrl}" }
@@ -11,10 +12,12 @@ buildscript {
   dependencies {
     classpath "com.nablarch.dev:nablarch-gradle-plugin:${nablarchGradlePluginVersion}"
     classpath "net.saliman:gradle-cobertura-plugin:${coberturaPluginVersion}"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
   }
 }
 
 apply plugin: 'com.nablarch.dev.nablarch-build'
+apply plugin: 'kotlin'
 apply plugin: 'com.nablarch.dev.nablarch-maven-deploy'
 apply plugin: 'com.nablarch.dev.nablarch-sonarqube'
 apply plugin: 'com.nablarch.dev.nablarch-version'
@@ -42,6 +45,7 @@ dependencies {
   testCompile 'org.jmockit:jmockit:1.30'
   testCompile 'junit:junit:4.12'
   testCompile 'org.hamcrest:hamcrest-all:1.3'
+  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
 test {
@@ -61,5 +65,8 @@ tasks.sonarRunner {
 
 task wrapper(type: Wrapper) {
   gradleVersion = '2.13'
+}
+repositories {
+  mavenCentral()
 }
 
