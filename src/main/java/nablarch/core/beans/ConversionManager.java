@@ -1,5 +1,6 @@
 package nablarch.core.beans;
 
+import java.util.List;
 import java.util.Map;
 
 import nablarch.core.util.annotation.Published;
@@ -20,4 +21,13 @@ public interface ConversionManager {
      * @return {@link Converter}を格納したMap
      */
     Map<Class<?>, Converter<?>> getConverters();
+
+    /**
+     * 拡張の型変換リストを返す。
+     * <p>
+     * 優先順位が高いものをリストのより先頭に設定する必要がある。
+     *
+     * @return 拡張型変換のリスト
+     */
+    List<ExtensionConverter<?>> getExtensionConvertor();
 }
