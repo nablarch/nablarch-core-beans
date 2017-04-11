@@ -1,12 +1,13 @@
 package nablarch.core.beans
 
+import nablarch.core.repository.*
 import org.hamcrest.Matchers.*
 import org.junit.*
 import org.junit.Assert.*
 import java.util.*
 
 /**
- * [nablarch.core.beans.BeanUtil]にの[java.util.List]及び配列に関するテスト。
+ * [nablarch.core.beans.BeanUtil]の[java.util.List]及び配列に関するテスト。
  */
 internal class BeanUtilTestWithListAndArray {
 
@@ -32,6 +33,11 @@ internal class BeanUtilTestWithListAndArray {
     )
 
     data class Obj(var name: String? = null)
+
+    @Before
+    fun setUp() {
+        SystemRepository.clear()
+    }
 
     @Test
     fun createAndCopy_オブジェクトからListをコピーできること() {
@@ -95,7 +101,7 @@ internal class BeanUtilTestWithListAndArray {
 
 
         val actual = BeanUtil.createAndCopyExcludes(WithList::class.java, src, "objects")
-        assertThat("指定しなかったnumsプロパティ以外がコピーされていること", actual,
+        assertThat("objectsプロパティ以外がコピーされていること", actual,
             `is`(WithList(
                 "なまえ",
                 listOf("a", "1", "aaa"),
@@ -105,7 +111,7 @@ internal class BeanUtilTestWithListAndArray {
     }
 
     @Test
-    fun createAndCopy_オブジェクトが持つ配列がListいコピーできること() {
+    fun createAndCopy_オブジェクトが持つ配列がListにコピーできること() {
         val actual = BeanUtil.createAndCopy(WithList::class.java,
             WithArray(
                 "aaa",
@@ -134,8 +140,7 @@ internal class BeanUtilTestWithListAndArray {
                 "objects" to listOf(Obj("あ"), Obj("い"))
             ))
 
-        assertThat("指定しなかったnumsプロパティ以外がコピーされていること", actual,
-            `is`(WithList(
+        assertThat(actual, `is`(WithList(
                 "なまえ",
                 listOf("a", "1", "aaa"),
                 arrayListOf(1, 11, 111),
@@ -154,7 +159,7 @@ internal class BeanUtilTestWithListAndArray {
                 "objects" to listOf(Obj("あ"), Obj("い"))
             ), "name", "nums")
 
-        assertThat("指定しなかったnumsプロパティ以外がコピーされていること", actual,
+        assertThat("nameとnumsプロパティのみがコピーされていること", actual,
             `is`(WithList(
                 "なまえ",
                 null,
@@ -174,7 +179,7 @@ internal class BeanUtilTestWithListAndArray {
                 "objects" to listOf(Obj("あ"), Obj("い"))
             ), "nums")
 
-        assertThat("指定しなかったnumsプロパティ以外がコピーされていること", actual,
+        assertThat("除外したnumsプロパティ以外がコピー出来ていること", actual,
             `is`(WithList(
                 "なまえ",
                 listOf("a", "1", "aaa"),
