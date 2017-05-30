@@ -45,7 +45,7 @@ dependencies {
   testCompile 'org.jmockit:jmockit:1.30'
   testCompile 'junit:junit:4.12'
   testCompile 'org.hamcrest:hamcrest-all:1.3'
-  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  testCompile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
 test {
