@@ -9,7 +9,7 @@ import java.util.*
 /**
  * [nablarch.core.beans.BeanUtil]の[java.util.List]及び配列に関するテスト。
  */
-internal class BeanUtilTestWithListAndArray {
+internal class BeanUtilWithListAndArrayTest {
 
     data class WithList(
         var name: String? = null,
