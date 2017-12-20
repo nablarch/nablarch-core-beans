@@ -410,6 +410,13 @@ public class BeanUtilTest {
         assertEquals("Rakutaro Nabu", dto.getFullName());
         assertEquals(34, dto.getAge());
         assertArrayEquals(new byte[] {0x30, 0x40}, dto.getBin());
+
+        // サロゲートペア対応
+        dto = BeanUtil.createAndCopy(UserDto.class, new HashMap<String, Object>() {{
+            put("firstName", "𠀃𠀄𠀅");
+            put("lastName", "😁");
+        }});
+        assertEquals("𠀃𠀄𠀅 😁", dto.getFullName());
     }
 
     @Test
@@ -456,6 +463,13 @@ public class BeanUtilTest {
         assertEquals("09011112222", dto.getPhoneNumbers()[0]);
         assertEquals("08033334444", dto.getPhoneNumbers()[1]);
 
+        // サロゲートペア対応
+        entity.setFirstName("𠀃𠀄𠀅");
+        entity.setLastName("😁");
+
+        BeanUtil.copy(entity, dto);
+
+        assertEquals("𠀃𠀄𠀅 😁", dto.getFullName());
 
         entity.setAge(34);
         entity.setFirstName(null);
@@ -470,6 +484,13 @@ public class BeanUtilTest {
 
         assertEquals("- -", dto.getFullName());
         assertEquals(34, dto.getAge());
+
+        // サロゲートペア対応
+        dto.setFirstName("𠀃𠀄𠀅");
+        dto.setLastName("😁");
+
+        BeanUtil.copyExcludesNull(entity, dto);
+        assertEquals("𠀃𠀄𠀅 😁", dto.getFullName());
     }
 
     @Test
@@ -933,7 +954,7 @@ public class BeanUtilTest {
     @Test
     public void testCreateAndCopyIncludesForMap() {
 
-        Map<String, Object> src = new HashMap<String, Object>(){{;
+        Map<String, Object> src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -951,7 +972,7 @@ public class BeanUtilTest {
         assertThat(dest.bin, is(new byte[] {0x30}));
 
         // null値のプロパティを指定するケース
-        src = new HashMap<String, Object>(){{;
+        src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -985,7 +1006,7 @@ public class BeanUtilTest {
         )));
 
         // コピー元に存在しないプロパティを指定するケース
-        src = new HashMap<String, Object>(){{;
+        src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1013,7 +1034,7 @@ public class BeanUtilTest {
         }
 
         // サロゲートペアを扱うテストケース
-        src = new HashMap<String, Object>(){{;
+        src = new HashMap<String, Object>(){{
             put("firstName", "😁");
             put("lastName", "😁");
         }};
@@ -1027,7 +1048,7 @@ public class BeanUtilTest {
     @Test
     public void testCreateAndCopyExcludesForMap() {
 
-        Map<String, Object> src = new HashMap<String, Object>(){{;
+        Map<String, Object> src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1043,7 +1064,7 @@ public class BeanUtilTest {
         assertThat(dest.address, is(nullValue()));
 
         // コピー先に存在しないプロパティを除外指定するケース
-        src = new HashMap<String, Object>(){{;
+        src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1053,7 +1074,7 @@ public class BeanUtilTest {
         dest = BeanUtil.createAndCopyExcludes(UserDto.class, src, "age", "address", "ssn");
 
         // コピー先に存在しないプロパティを除外指定しないケース
-        src = new HashMap<String, Object>(){{;
+        src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1071,7 +1092,7 @@ public class BeanUtilTest {
         )));
 
         // コピー元に存在しないプロパティを指定するケース
-        src = new HashMap<String, Object>(){{;
+        src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1099,7 +1120,7 @@ public class BeanUtilTest {
         }
 
         // サロゲートペアを扱うテストケース
-        src = new HashMap<String, Object>(){{;
+        src = new HashMap<String, Object>(){{
             put("firstName", "😁");
             put("lastName", "😁");
         }};
