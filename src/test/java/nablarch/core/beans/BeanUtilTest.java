@@ -412,10 +412,11 @@ public class BeanUtilTest {
         assertArrayEquals(new byte[] {0x30, 0x40}, dto.getBin());
 
         // サロゲートペア対応
-        dto = BeanUtil.createAndCopy(UserDto.class, new HashMap<String, Object>() {{
-            put("firstName", "𠀃𠀄𠀅");
-            put("lastName", "😁");
-        }});
+        entity = new UserEntity();
+        entity.setFirstName("𠀃𠀄𠀅");
+        entity.setLastName("😁");
+
+        dto = BeanUtil.createAndCopy(UserDto.class, entity);
         assertEquals("𠀃𠀄𠀅 😁", dto.getFullName());
     }
 
