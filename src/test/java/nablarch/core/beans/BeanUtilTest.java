@@ -394,6 +394,13 @@ public class BeanUtilTest {
                 containsString("An error occurred while writing to the property :unknownProperty"),
                 not(containsString("nablarch.core.beans.BeansException"))
         )));
+
+        // サロゲートペア対応
+        dto = BeanUtil.createAndCopy(UserDto.class, new HashMap<String, Object>() {{
+            put("firstName", "𠀃𠀄𠀅");
+            put("lastName", "😁");
+        }});
+        assertEquals("𠀃𠀄𠀅 😁", dto.getFullName());
     }
 
     @Test
