@@ -394,6 +394,13 @@ public class BeanUtilTest {
                 containsString("An error occurred while writing to the property :unknownProperty"),
                 not(containsString("nablarch.core.beans.BeansException"))
         )));
+
+        // サロゲートペア対応
+        dto = BeanUtil.createAndCopy(UserDto.class, new HashMap<String, Object>() {{
+            put("firstName", "𠀃𠀄𠀅");
+            put("lastName", "😁");
+        }});
+        assertEquals("𠀃𠀄𠀅 😁", dto.getFullName());
     }
 
     @Test
@@ -410,6 +417,14 @@ public class BeanUtilTest {
         assertEquals("Rakutaro Nabu", dto.getFullName());
         assertEquals(34, dto.getAge());
         assertArrayEquals(new byte[] {0x30, 0x40}, dto.getBin());
+
+        // サロゲートペア対応
+        entity = new UserEntity();
+        entity.setFirstName("𠀃𠀄𠀅");
+        entity.setLastName("😁");
+
+        dto = BeanUtil.createAndCopy(UserDto.class, entity);
+        assertEquals("𠀃𠀄𠀅 😁", dto.getFullName());
     }
 
     @Test
@@ -456,6 +471,13 @@ public class BeanUtilTest {
         assertEquals("09011112222", dto.getPhoneNumbers()[0]);
         assertEquals("08033334444", dto.getPhoneNumbers()[1]);
 
+        // サロゲートペア対応
+        entity.setFirstName("𠀃𠀄𠀅");
+        entity.setLastName("😁");
+
+        BeanUtil.copy(entity, dto);
+
+        assertEquals("𠀃𠀄𠀅 😁", dto.getFullName());
 
         entity.setAge(34);
         entity.setFirstName(null);
@@ -470,6 +492,13 @@ public class BeanUtilTest {
 
         assertEquals("- -", dto.getFullName());
         assertEquals(34, dto.getAge());
+
+        // サロゲートペア対応
+        dto.setFirstName("𠀃𠀄𠀅");
+        dto.setLastName("😁");
+
+        BeanUtil.copyExcludesNull(entity, dto);
+        assertEquals("𠀃𠀄𠀅 😁", dto.getFullName());
     }
 
     @Test
@@ -668,6 +697,19 @@ public class BeanUtilTest {
         assertThat(dest.phones, is(new String[]{"777-8888-9999"}));
         assertThat(dest.address.addr, is("兵庫県神戸市"));
         assertThat(dest.address.postCode, is("333-4444"));
+
+        // サロゲートペアを扱うテストケース
+        src.firstName = "😁";
+        src.lastName = "😁";
+        src.address = new AddressEntity("111-2222", "😁");
+
+        dest.firstName = "𠀃𠀄𠀅";
+        dest.lastName = "𠀃𠀄𠀅";
+        BeanUtil.copyIncludes(src, dest,  "firstName", "lastName", "address");
+
+        assertThat(dest.firstName, is("😁"));
+        assertThat(dest.lastName, is("😁"));
+        assertThat(dest.address.addr, is("😁"));
     }
 
     @Test
@@ -747,6 +789,20 @@ public class BeanUtilTest {
         assertThat(dest.phones, is(new String[]{"111-2222-3333", "444-5555-6666"}));
         assertThat(dest.address.addr, is("東京都新宿区"));
         assertThat(dest.address.postCode, is("111-2222"));
+
+        // サロゲートペアを扱うテストケース
+        src.firstName = "𠀃𠀄𠀅";
+        src.lastName = "𠀃𠀄𠀅";
+        src.address = new AddressEntity("111-2222", "𠀃𠀄𠀅");
+
+        dest.firstName = "😁";
+        dest.lastName = "😁";
+
+        BeanUtil.copyExcludes(src, dest, "lastName");
+
+        assertThat(dest.firstName, is("𠀃𠀄𠀅"));
+        assertThat(dest.lastName, is("😁"));
+        assertThat(dest.address.addr, is("𠀃𠀄𠀅"));
     }
 
     @Test
@@ -825,6 +881,17 @@ public class BeanUtilTest {
         assertThat(dest.age, is(0));
         assertThat(dest.firstName, is(nullValue()));
         assertThat(dest.lastName, is(nullValue()));
+
+
+        // サロゲートペアを扱うテストケース
+        src = new UserEntity();
+        src.firstName = "😁";
+        src.lastName = "😁";
+
+        dest = BeanUtil.createAndCopyIncludes(UserDto.class, src, "firstName", "lastName");
+
+        assertThat(dest.firstName, is("😁"));
+        assertThat(dest.lastName, is("😁"));
     }
 
     @Test
@@ -878,12 +945,24 @@ public class BeanUtilTest {
         assertThat(dest.age, is(0));
         assertThat(dest.firstName, is(nullValue()));
         assertThat(dest.lastName, is(nullValue()));
+
+        // サロゲートペアを扱うテストケース
+        src = new UserEntity();
+        src.firstName = "😁";
+        src.lastName = "😁";
+        src.address = new AddressEntity("111-2222", "😁");
+
+        dest = BeanUtil.createAndCopyExcludes(UserDto.class, src);
+
+        assertThat(dest.firstName, is("😁"));
+        assertThat(dest.lastName, is("😁"));
+        assertThat(dest.address.addr, is("😁"));
     }
 
     @Test
     public void testCreateAndCopyIncludesForMap() {
 
-        Map<String, Object> src = new HashMap<String, Object>(){{;
+        Map<String, Object> src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -901,7 +980,7 @@ public class BeanUtilTest {
         assertThat(dest.bin, is(new byte[] {0x30}));
 
         // null値のプロパティを指定するケース
-        src = new HashMap<String, Object>(){{;
+        src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -935,7 +1014,7 @@ public class BeanUtilTest {
         )));
 
         // コピー元に存在しないプロパティを指定するケース
-        src = new HashMap<String, Object>(){{;
+        src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -962,12 +1041,22 @@ public class BeanUtilTest {
             assertThat(e, instanceOf(BeansException.class));
         }
 
+        // サロゲートペアを扱うテストケース
+        src = new HashMap<String, Object>(){{
+            put("firstName", "😁");
+            put("lastName", "😁");
+        }};
+
+        dest = BeanUtil.createAndCopyIncludes(UserDto.class, src, "firstName", "lastName");
+
+        assertThat(dest.firstName, is("😁"));
+        assertThat(dest.lastName, is("😁"));
     }
 
     @Test
     public void testCreateAndCopyExcludesForMap() {
 
-        Map<String, Object> src = new HashMap<String, Object>(){{;
+        Map<String, Object> src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -983,7 +1072,7 @@ public class BeanUtilTest {
         assertThat(dest.address, is(nullValue()));
 
         // コピー先に存在しないプロパティを除外指定するケース
-        src = new HashMap<String, Object>(){{;
+        src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -993,7 +1082,7 @@ public class BeanUtilTest {
         dest = BeanUtil.createAndCopyExcludes(UserDto.class, src, "age", "address", "ssn");
 
         // コピー先に存在しないプロパティを除外指定しないケース
-        src = new HashMap<String, Object>(){{;
+        src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1011,7 +1100,7 @@ public class BeanUtilTest {
         )));
 
         // コピー元に存在しないプロパティを指定するケース
-        src = new HashMap<String, Object>(){{;
+        src = new HashMap<String, Object>(){{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1037,6 +1126,17 @@ public class BeanUtilTest {
         } catch (Exception e) {
             assertThat(e, instanceOf(BeansException.class));
         }
+
+        // サロゲートペアを扱うテストケース
+        src = new HashMap<String, Object>(){{
+            put("firstName", "😁");
+            put("lastName", "😁");
+        }};
+
+        dest = BeanUtil.createAndCopyExcludes(UserDto.class, src);
+
+        assertThat(dest.firstName, is("😁"));
+        assertThat(dest.lastName, is("😁"));
     }
 
     @Test(expected = BeansException.class)
@@ -1118,6 +1218,19 @@ public class BeanUtilTest {
                 hasEntry("address.postCode", "1111234"),
                 hasEntry("address.addr", "住所")
         ));
+
+        // サロゲートペアを扱うテストケース
+        address.setAddr("😁");
+        input.setAddress(address);
+        input.setFirstName("😁");
+        input.setLastName("😁");
+
+        final Map<String, Object> surrogate = BeanUtil.createMapAndCopy(input);
+        assertThat(surrogate, allOf(
+                hasEntry("firstName", "😁"),
+                hasEntry("lastName", "😁"),
+                hasEntry("address.addr", "😁")
+        ));
     }
 
     /**
@@ -1143,6 +1256,19 @@ public class BeanUtilTest {
                 not(hasKey("fullName")),            // コピー対象外
                 not(hasKey("address.addr")),        // コピー対象外
                 not(hasKey("bin"))                  // コピー対象外
+        ));
+
+        // サロゲートペアを扱うテストケース
+        address.setAddr("😁");
+        input.setAddress(address);
+        input.setFirstName("😁");
+        input.setLastName("😁");
+
+        final Map<String, Object> surrogate = BeanUtil.createMapAndCopyExcludes(input,"addr");
+        assertThat(surrogate, allOf(
+                hasEntry("firstName", "😁"),
+                hasEntry("lastName", "😁"),
+                not(hasKey("address.addr"))        // コピー対象外
         ));
     }
 
@@ -1170,6 +1296,18 @@ public class BeanUtilTest {
                 hasEntry("address.postCode", "1111234"),
                 hasEntry("phoneNumbers", new String[] {"1", "3", "5"}),
                 hasEntry("bin", new byte[] {0x32, 0x33, 0x00}),
+                not(hasKey("firstName")),
+                not(hasKey("lastName"))
+        ));
+
+        // サロゲートペアを扱うテストケース
+        address.setAddr("😁");
+        input.setAddress(address);
+        input.setFirstName("😁");
+
+        final Map<String, Object> surrogate = BeanUtil.createMapAndCopyIncludes(input, "address");
+        assertThat(surrogate, allOf(
+                hasEntry("address.addr", "😁"),
                 not(hasKey("firstName")),
                 not(hasKey("lastName"))
         ));
@@ -1228,6 +1366,22 @@ public class BeanUtilTest {
                 ))
         ));
 
+        address.setAddr("😁");
+        user.setAddress(address);
+        user.setFirstName("😁");
+        user.setLastName("😁");
+
+        final Map<String, Object> map2 = BeanUtil.createMapAndCopy(user);
+        final UserDto surrogate = BeanUtil.createAndCopyExcludes(UserDto.class, map2);
+
+        assertThat(surrogate, allOf(
+                hasProperty("firstName", is("😁")),
+                hasProperty("lastName", is("😁")),
+                hasProperty("address", allOf(
+                        hasProperty("postCode", is("1111222")),
+                        hasProperty("addr", is("😁"))
+                ))
+        ));
     }
 
     /**
