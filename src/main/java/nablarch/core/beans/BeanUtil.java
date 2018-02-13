@@ -11,6 +11,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -653,9 +655,9 @@ public final class BeanUtil {
      * @param <DEST> コピー先のBeanの型
      * @return コピー先のBeanオブジェクト
      */
-    protected static <SRC, DEST> DEST copyInner(final SRC srcBean, final DEST destBean, final boolean excludesNull, final String... excludesProperties) {
+    protected static <SRC, DEST> DEST copyInner(final SRC srcBean, final DEST destBean, final boolean excludesNull, final Collection<String> excludesProperties) {
 
-        final List<String> excludesList = Arrays.asList(excludesProperties);
+        final Collection<String> excludesList = excludesProperties;
 
         final PropertyDescriptor[] srcPds = getPropertyDescriptors(srcBean.getClass());
         final PropertyDescriptor[] destPds = getPropertyDescriptors(destBean.getClass());
@@ -683,7 +685,7 @@ public final class BeanUtil {
                             if (innerDestBean == null) {
                                 innerDestBean = createInstance(destPd.getPropertyType());
                             }
-                            setPropertyValue(destBean, destPd, copyInner(val, innerDestBean, excludesNull));
+                            setPropertyValue(destBean, destPd, copyInner(val, innerDestBean, excludesNull, Collections.<String>emptySet()));
                         }
                     }
                 }
@@ -727,7 +729,7 @@ public final class BeanUtil {
      * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
      */
     public static <SRC, DEST> DEST copy(final SRC srcBean, final DEST destBean) {
-        return copyInner(srcBean, destBean, false);
+        return copyInner(srcBean, destBean, false, Collections.<String>emptySet());
     }
 
     /**
@@ -744,7 +746,7 @@ public final class BeanUtil {
      * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
      */
     public static <SRC, DEST> DEST copyExcludesNull(final SRC srcBean, final DEST destBean) {
-        return copyInner(srcBean, destBean, true);
+        return copyInner(srcBean, destBean, true, Collections.<String>emptySet());
     }
 
     /**
@@ -798,7 +800,7 @@ public final class BeanUtil {
                     if (innerDestBean == null) {
                         innerDestBean = createInstance(destPd.getPropertyType());
                     }
-                    setPropertyValue(destBean, destPd, copyInner(val, innerDestBean, false));
+                    setPropertyValue(destBean, destPd, copyInner(val, innerDestBean, false, Collections.<String>emptySet()));
                 }
             } catch (BeansException bex) {
                 LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
@@ -824,7 +826,7 @@ public final class BeanUtil {
      * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
      */
     public static <SRC, DEST> DEST copyExcludes(final SRC srcBean, final DEST destBean, final String... excludes) {
-        return copyInner(srcBean, destBean, false, excludes);
+        return copyInner(srcBean, destBean, false, Arrays.asList(excludes));
     }
 
     /**
