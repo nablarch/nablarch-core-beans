@@ -1,12 +1,16 @@
 package nablarch.core.beans.converter;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
 import nablarch.core.util.DateUtil;
-
 
 /**
  * {@code java.util.Date}型への変換を行う {@link Converter} 。
@@ -31,6 +35,16 @@ import nablarch.core.util.DateUtil;
  */
 public class DateConverter implements Converter<Date> {
 
+    private final List<String> patterns;
+
+    public DateConverter() {
+        this.patterns = Collections.emptyList();
+    }
+
+    public DateConverter(String... patterns) {
+        this.patterns = Arrays.asList(patterns);
+    }
+
     @Override
     public Date convert(Object value) {
         if (value instanceof Date) {
@@ -38,6 +52,21 @@ public class DateConverter implements Converter<Date> {
         } else if (value instanceof Calendar) {
             return Calendar.class.cast(value).getTime();
         } else if (value instanceof String) {
+            if (patterns.isEmpty() == false) {
+                ParseException lastThrownException = null;
+                for (String pattern : patterns) {
+                    try {
+                        return new SimpleDateFormat(pattern).parse(String.class.cast(value));
+                    } catch (ParseException ignore) {
+                        //複数のパターンを順番に試すのでParseExceptionは無視する
+                        lastThrownException = ignore;
+                    }
+                }
+                //すべてのパターンが失敗した場合は例外をスロー
+                throw new IllegalArgumentException(
+                        "the string was not formatted " + patterns + ". date = " + value + ".",
+                        lastThrownException);
+            }
             return DateUtil.getDate(String.class.cast(value));
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Date.class);
