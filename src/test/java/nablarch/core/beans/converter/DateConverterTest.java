@@ -4,6 +4,8 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 
 import org.junit.Rule;
@@ -29,20 +31,20 @@ public class DateConverterTest {
 
     @Test
     public void カスタムパターン() {
-        DateConverter sut = new DateConverter("yyyy/MM/dd HH:mm");
+        DateConverter sut = new DateConverter(Collections.singletonList("yyyy/MM/dd HH:mm"));
         assertThat(sut.convert("2018/02/13 17:35"), is(date("2018-02-13 17:35:00")));
     }
 
     @Test
     public void カスタムパターン_配列() {
-        DateConverter sut = new DateConverter("yyyy/MM/dd HH:mm");
+        DateConverter sut = new DateConverter(Collections.singletonList("yyyy/MM/dd HH:mm"));
         assertThat(sut.convert(new String[] { "2018/02/13 17:35" }),
                 is(date("2018-02-13 17:35:00")));
     }
 
     @Test
     public void 複数のカスタムパターン() {
-        DateConverter sut = new DateConverter("yyyy/MM/dd", "yyyy-MM-dd");
+        DateConverter sut = new DateConverter(Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"));
         assertThat(sut.convert("2018/02/14"), is(date("2018-02-14 00:00:00")));
         assertThat(sut.convert("2018-02-14"), is(date("2018-02-14 00:00:00")));
     }
@@ -61,7 +63,7 @@ public class DateConverterTest {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(
                 "the string was not formatted [yyyy/MM/dd, yyyy.MM.dd]. date = 2018-02-14.");
-        DateConverter sut = new DateConverter("yyyy/MM/dd", "yyyy.MM.dd");
+        DateConverter sut = new DateConverter(Arrays.asList("yyyy/MM/dd", "yyyy.MM.dd"));
         sut.convert("2018-02-14");
     }
 

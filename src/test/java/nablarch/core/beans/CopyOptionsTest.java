@@ -4,6 +4,8 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 
 import org.junit.Rule;
@@ -20,8 +22,8 @@ public class CopyOptionsTest {
     @Test
     public void hasNamedConverter() {
         CopyOptions sut = CopyOptions.options()
-                .datePatternByName("foo", "yyyy/MM/dd", "yyyy-MM-dd")
-                .converterByName("bar", new DateConverter("yyyy.MM.dd"))
+                .datePatternsByName("foo", Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
+                .converterByName("bar", new DateConverter(Collections.singletonList("yyyy.MM.dd")))
                 .build();
         assertThat(sut.hasNamedConverter("foo"), is(true));
         assertThat(sut.hasNamedConverter("bar"), is(true));
@@ -31,8 +33,8 @@ public class CopyOptionsTest {
     @Test
     public void convertByName() {
         CopyOptions sut = CopyOptions.options()
-                .datePatternByName("foo", "yyyy/MM/dd", "yyyy-MM-dd")
-                .converterByName("bar", new DateConverter("yyyy.MM.dd"))
+                .datePatternsByName("foo", Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
+                .converterByName("bar", new DateConverter(Collections.singletonList("yyyy.MM.dd")))
                 .build();
         assertThat((Date) sut.convertByName("foo", "2018/02/14"), is(date("2018-02-14 00:00:00")));
         assertThat((Date) sut.convertByName("foo", "2018-02-14"), is(date("2018-02-14 00:00:00")));
@@ -44,7 +46,7 @@ public class CopyOptionsTest {
         expectedException.expect(IllegalArgumentException.class);
         CopyOptions sut = CopyOptions.options()
                 .datePatternByName("foo", "yyyyMMdd")
-                .converterByName("bar", new DateConverter("yyyyMMdd"))
+                .converterByName("bar", new DateConverter(Collections.singletonList("yyyyMMdd")))
                 .build();
         sut.convertByName("baz", "20180214");
     }
@@ -58,7 +60,7 @@ public class CopyOptionsTest {
             }
         };
         CopyOptions sut = CopyOptions.options()
-                .datePattern("yyyy/MM/dd", "yyyy-MM-dd")
+                .datePatterns(Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
                 .converter(Object.class, converter)
                 .build();
         assertThat(sut.hasTypedConverter(Date.class), is(true));
@@ -76,7 +78,7 @@ public class CopyOptionsTest {
             }
         };
         CopyOptions sut = CopyOptions.options()
-                .datePattern("yyyy/MM/dd", "yyyy-MM-dd")
+                .datePatterns(Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
                 .converter(Object.class, converter)
                 .build();
         assertThat((Date) sut.convertByType(Date.class, "2018/02/14"),
@@ -90,7 +92,7 @@ public class CopyOptionsTest {
     public void convertByType失敗() {
         expectedException.expect(IllegalArgumentException.class);
         CopyOptions sut = CopyOptions.options()
-                .datePattern("yyyy/MM/dd", "yyyy-MM-dd")
+                .datePatterns(Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
                 .build();
         sut.convertByType(Date.class, "20180214");
     }

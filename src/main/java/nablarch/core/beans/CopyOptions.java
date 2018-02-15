@@ -2,6 +2,7 @@ package nablarch.core.beans;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import nablarch.core.beans.converter.DateConverter;
@@ -58,12 +59,22 @@ public final class CopyOptions {
         private final Map<String, Converter<?>> namedConverters = new HashMap<String, Converter<?>>();
 
         @Published
-        public Builder datePattern(String... patterns) {
+        public Builder datePattern(String pattern) {
+            return datePatterns(Collections.singletonList(pattern));
+        }
+
+        @Published
+        public Builder datePatterns(List<String> patterns) {
             return converter(java.util.Date.class, new DateConverter(patterns));
         }
 
         @Published
-        public Builder datePatternByName(String propertyName, String... patterns) {
+        public Builder datePatternByName(String propertyName, String pattern) {
+            return datePatternsByName(propertyName, Collections.singletonList(pattern));
+        }
+
+        @Published
+        public Builder datePatternsByName(String propertyName, List<String> patterns) {
             return converterByName(propertyName, new DateConverter(patterns));
         }
 

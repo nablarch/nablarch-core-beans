@@ -2,7 +2,6 @@ package nablarch.core.beans.converter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -41,8 +40,8 @@ public class DateConverter implements Converter<Date> {
         this.patterns = Collections.emptyList();
     }
 
-    public DateConverter(String... patterns) {
-        this.patterns = Arrays.asList(patterns);
+    public DateConverter(List<String> patterns) {
+        this.patterns = patterns;
     }
 
     @Override
