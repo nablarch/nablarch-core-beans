@@ -18,35 +18,81 @@ public class CopyOptionsTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     @Test
-    public void hasConverter() {
+    public void hasNamedConverter() {
         CopyOptions sut = CopyOptions.options()
-                .datePattern("foo", "yyyy/MM/dd", "yyyy-MM-dd")
-                .converter("bar", new DateConverter("yyyy.MM.dd"))
+                .datePatternByName("foo", "yyyy/MM/dd", "yyyy-MM-dd")
+                .converterByName("bar", new DateConverter("yyyy.MM.dd"))
                 .build();
-        assertThat(sut.hasConverter("foo"), is(true));
-        assertThat(sut.hasConverter("bar"), is(true));
-        assertThat(sut.hasConverter("baz"), is(false));
+        assertThat(sut.hasNamedConverter("foo"), is(true));
+        assertThat(sut.hasNamedConverter("bar"), is(true));
+        assertThat(sut.hasNamedConverter("baz"), is(false));
     }
 
     @Test
-    public void convert() {
+    public void convertByName() {
         CopyOptions sut = CopyOptions.options()
-                .datePattern("foo", "yyyy/MM/dd", "yyyy-MM-dd")
-                .converter("bar", new DateConverter("yyyy.MM.dd"))
+                .datePatternByName("foo", "yyyy/MM/dd", "yyyy-MM-dd")
+                .converterByName("bar", new DateConverter("yyyy.MM.dd"))
                 .build();
-        assertThat((Date) sut.convert("foo", "2018/02/14"), is(date("2018-02-14 00:00:00")));
-        assertThat((Date) sut.convert("foo", "2018-02-14"), is(date("2018-02-14 00:00:00")));
-        assertThat((Date) sut.convert("bar", "2018.02.14"), is(date("2018-02-14 00:00:00")));
+        assertThat((Date) sut.convertByName("foo", "2018/02/14"), is(date("2018-02-14 00:00:00")));
+        assertThat((Date) sut.convertByName("foo", "2018-02-14"), is(date("2018-02-14 00:00:00")));
+        assertThat((Date) sut.convertByName("bar", "2018.02.14"), is(date("2018-02-14 00:00:00")));
     }
 
     @Test
-    public void convert失敗() {
+    public void convertByName失敗() {
         expectedException.expect(IllegalArgumentException.class);
         CopyOptions sut = CopyOptions.options()
-                .datePattern("foo", "yyyy/MM/dd", "yyyy-MM-dd")
-                .converter("bar", new DateConverter("yyyy.MM.dd"))
+                .datePatternByName("foo", "yyyyMMdd")
+                .converterByName("bar", new DateConverter("yyyyMMdd"))
                 .build();
-        sut.convert("baz", "20180214");
+        sut.convertByName("baz", "20180214");
+    }
+
+    @Test
+    public void hasTypedConverter() {
+        Converter<Object> converter = new Converter<Object>() {
+            @Override
+            public Object convert(Object value) {
+                return null;
+            }
+        };
+        CopyOptions sut = CopyOptions.options()
+                .datePattern("yyyy/MM/dd", "yyyy-MM-dd")
+                .converter(Object.class, converter)
+                .build();
+        assertThat(sut.hasTypedConverter(Date.class), is(true));
+        assertThat(sut.hasTypedConverter(Object.class), is(true));
+        assertThat(sut.hasTypedConverter(String.class), is(false));
+    }
+
+    @Test
+    public void convertByType() {
+        final Object object = new Object();
+        Converter<Object> converter = new Converter<Object>() {
+            @Override
+            public Object convert(Object value) {
+                return object;
+            }
+        };
+        CopyOptions sut = CopyOptions.options()
+                .datePattern("yyyy/MM/dd", "yyyy-MM-dd")
+                .converter(Object.class, converter)
+                .build();
+        assertThat((Date) sut.convertByType(Date.class, "2018/02/14"),
+                is(date("2018-02-14 00:00:00")));
+        assertThat((Date) sut.convertByType(Date.class, "2018-02-14"),
+                is(date("2018-02-14 00:00:00")));
+        assertThat(sut.convertByType(Object.class, "test"), is(sameInstance(object)));
+    }
+
+    @Test
+    public void convertByType失敗() {
+        expectedException.expect(IllegalArgumentException.class);
+        CopyOptions sut = CopyOptions.options()
+                .datePattern("yyyy/MM/dd", "yyyy-MM-dd")
+                .build();
+        sut.convertByType(Date.class, "20180214");
     }
 
     private static Date date(String sqlTimestampPattern) {

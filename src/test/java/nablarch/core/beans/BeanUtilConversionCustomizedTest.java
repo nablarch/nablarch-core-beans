@@ -38,25 +38,55 @@ public class BeanUtilConversionCustomizedTest {
     }
 
     @Test
-    public void カスタム日付パターン() {
+    public void プロパティ名を指定したカスタム日付パターン() {
         Src srcBean = new Src();
         srcBean.setFoo("2018/02/14");
         Dest destBean = new Dest();
         CopyOptions copyOptions = CopyOptions.options()
-                .datePattern("foo", "yyyy/MM/dd").build();
+                .datePatternByName("foo", "yyyy/MM/dd").build();
         BeanUtil.copy(srcBean, destBean, copyOptions);
 
         assertThat(destBean.getFoo(), is(date("2018-02-14 00:00:00")));
     }
 
     @Test
-    public void カスタムコンバーター() {
+    public void プロパティ名を指定したカスタムコンバーター() {
         final java.util.Date date = new java.util.Date();
         Src srcBean = new Src();
         srcBean.setFoo("2018-02-14");
         Dest destBean = new Dest();
         CopyOptions copyOptions = CopyOptions.options()
-                .converter("foo", new Converter<java.util.Date>() {
+                .converterByName("foo", new Converter<java.util.Date>() {
+                    @Override
+                    public java.util.Date convert(Object value) {
+                        return date;
+                    }
+                }).build();
+        BeanUtil.copy(srcBean, destBean, copyOptions);
+
+        assertThat(destBean.getFoo(), is(sameInstance(date)));
+    }
+
+    @Test
+    public void グローバルなカスタム日付パターン() {
+        Src srcBean = new Src();
+        srcBean.setFoo("2018/02/14");
+        Dest destBean = new Dest();
+        CopyOptions copyOptions = CopyOptions.options()
+                .datePattern("yyyy/MM/dd").build();
+        BeanUtil.copy(srcBean, destBean, copyOptions);
+
+        assertThat(destBean.getFoo(), is(date("2018-02-14 00:00:00")));
+    }
+
+    @Test
+    public void クラスを指定したカスタムコンバーター() {
+        final java.util.Date date = new java.util.Date();
+        Src srcBean = new Src();
+        srcBean.setFoo("2018-02-14");
+        Dest destBean = new Dest();
+        CopyOptions copyOptions = CopyOptions.options()
+                .converter(java.util.Date.class, new Converter<java.util.Date>() {
                     @Override
                     public java.util.Date convert(Object value) {
                         return date;

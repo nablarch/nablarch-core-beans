@@ -9,10 +9,14 @@ import nablarch.core.util.annotation.Published;
 
 public final class CopyOptions {
 
-    final Map<String, Converter<?>> converters;
+    private final Map<Class<?>, Converter<?>> typedConverters;
+    private final Map<String, Converter<?>> namedConverters;
 
-    private CopyOptions(Map<String, Converter<?>> converters) {
-        this.converters = Collections.unmodifiableMap(converters);
+    private CopyOptions(
+            Map<Class<?>, Converter<?>> typedConverters,
+            Map<String, Converter<?>> namedConverters) {
+        this.typedConverters = Collections.unmodifiableMap(typedConverters);
+        this.namedConverters = Collections.unmodifiableMap(namedConverters);
     }
 
     @Published
@@ -20,12 +24,26 @@ public final class CopyOptions {
         return new Builder();
     }
 
-    public boolean hasConverter(String propertyName) {
-        return converters.containsKey(propertyName);
+    public boolean hasTypedConverter(Class<?> clazz) {
+        return typedConverters.containsKey(clazz);
     }
 
-    public Object convert(String propertyName, Object value) {
-        Converter<?> converter = converters.get(propertyName);
+    public boolean hasNamedConverter(String propertyName) {
+        return namedConverters.containsKey(propertyName);
+    }
+
+    public Object convertByType(Class<?> clazz, Object value) {
+        Converter<?> converter = typedConverters.get(clazz);
+        if (converter == null) {
+            throw new IllegalArgumentException(
+                    "Converter is not found for " + clazz.getName() + ".");
+        }
+        Object converted = converter.convert(value);
+        return converted;
+    }
+
+    public Object convertByName(String propertyName, Object value) {
+        Converter<?> converter = namedConverters.get(propertyName);
         if (converter == null) {
             throw new IllegalArgumentException(
                     "Converter is not found named by '" + propertyName + "'.");
@@ -36,22 +54,34 @@ public final class CopyOptions {
 
     public static class Builder {
 
-        private final Map<String, Converter<?>> converters = new HashMap<String, Converter<?>>();
+        private final Map<Class<?>, Converter<?>> typedConverters = new HashMap<Class<?>, Converter<?>>();
+        private final Map<String, Converter<?>> namedConverters = new HashMap<String, Converter<?>>();
 
         @Published
-        public Builder datePattern(String propertyName, String... patterns) {
-            return converter(propertyName, new DateConverter(patterns));
+        public Builder datePattern(String... patterns) {
+            return converter(java.util.Date.class, new DateConverter(patterns));
+        }
+
+        @Published
+        public Builder datePatternByName(String propertyName, String... patterns) {
+            return converterByName(propertyName, new DateConverter(patterns));
         }
 
         @Published(tag = "architect")
-        public Builder converter(String propertyName, Converter<?> converter) {
-            this.converters.put(propertyName, converter);
+        public <T> Builder converter(Class<T> clazz, Converter<T> converter) {
+            this.typedConverters.put(clazz, converter);
+            return this;
+        }
+
+        @Published(tag = "architect")
+        public Builder converterByName(String propertyName, Converter<?> converter) {
+            this.namedConverters.put(propertyName, converter);
             return this;
         }
 
         @Published
         public CopyOptions build() {
-            return new CopyOptions(converters);
+            return new CopyOptions(typedConverters, namedConverters);
         }
     }
 }
