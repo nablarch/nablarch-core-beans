@@ -130,12 +130,22 @@ public final class CopyOptions {
             return this;
         }
 
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Published(tag = "architect")
         public <T> Builder converter(Class<T> clazz, Converter<T> converter) {
-            this.typedConverters.put(clazz, converter);
+            Converter<T> newConverter = converter;
+            Converter<?> registered = this.typedConverters.get(clazz);
+            if (registered != null) {
+                if (registered instanceof Mergeable
+                        && registered.getClass() == converter.getClass()) {
+                    newConverter = ((Mergeable) registered).merge((Mergeable) converter);
+                }
+            }
+            this.typedConverters.put(clazz, newConverter);
             return this;
         }
 
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Published(tag = "architect")
         public <T> Builder converterByName(String propertyName, Class<T> clazz,
                 Converter<T> converter) {
@@ -144,7 +154,15 @@ public final class CopyOptions {
                 converters = new HashMap<Class<?>, Converter<?>>();
                 this.namedConverters.put(propertyName, converters);
             }
-            converters.put(clazz, converter);
+            Converter<T> newConverter = converter;
+            Converter<?> registered = converters.get(clazz);
+            if (registered != null) {
+                if (registered instanceof Mergeable
+                        && registered.getClass() == converter.getClass()) {
+                    newConverter = ((Mergeable) registered).merge((Mergeable) converter);
+                }
+            }
+            converters.put(clazz, newConverter);
             return this;
         }
 

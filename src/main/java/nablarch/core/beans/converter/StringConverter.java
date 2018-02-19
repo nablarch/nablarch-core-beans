@@ -5,6 +5,7 @@ import java.util.Date;
 
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
+import nablarch.core.beans.Mergeable;
 import nablarch.core.util.DateUtil;
 import nablarch.core.util.StringUtil;
 
@@ -29,7 +30,7 @@ import nablarch.core.util.StringUtil;
  * @author kawasima
  * @author tajima
  */
-public class StringConverter implements Converter<String> {
+public class StringConverter implements Mergeable<String, StringConverter> {
 
     private final String datePattern;
     private final String numberPattern;
@@ -60,4 +61,10 @@ public class StringConverter implements Converter<String> {
         return StringUtil.toString(value);
     }
 
+    @Override
+    public StringConverter merge(StringConverter other) {
+        return new StringConverter(
+                datePattern != null ? datePattern : other.datePattern,
+                numberPattern != null ? datePattern : other.numberPattern);
+    }
 }

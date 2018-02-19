@@ -177,6 +177,25 @@ public class CopyOptionsTest {
         sut.convertByType(java.util.Date.class, "20180214");
     }
 
+    @Test
+    public void datePatternAndNumberPattern() throws Exception {
+        CopyOptions sut = CopyOptions.options()
+                .datePattern("yyyy/MM/dd").numberPattern("#,###")
+                .datePatternByName("foo", "yyyy.MM.dd").numberPatternByName("foo", "#,####")
+                .build();
+
+        assertThat(sut.hasTypedConverter(String.class), is(true));
+        assertThat((String) sut.convertByType(String.class, date("2018-02-19 00:00:00")),
+                is("2018/02/19"));
+        assertThat((String) sut.convertByType(String.class, 1234567890), is("1,234,567,890"));
+
+        assertThat(sut.hasNamedConverter("foo", String.class), is(true));
+        assertThat((String) sut.convertByName("foo", String.class, date("2018-02-19 00:00:00")),
+                is("2018.02.19"));
+        assertThat((String) sut.convertByName("foo", String.class, 1234567890),
+                is("12,3456,7890"));
+    }
+
     private static java.util.Date date(String sqlTimestampPattern) {
         return new java.util.Date(Timestamp.valueOf(sqlTimestampPattern).getTime());
     }
