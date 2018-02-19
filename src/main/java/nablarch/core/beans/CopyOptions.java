@@ -34,22 +34,19 @@ public final class CopyOptions {
     }
 
     public CopyOptions merge(CopyOptions other) {
-        HashMap<Class<?>, Converter<?>> tc = new HashMap<Class<?>, Converter<?>>(typedConverters);
-        for (Class<?> clazz : other.typedConverters.keySet()) {
-            if (tc.containsKey(clazz) == false) {
-                tc.put(clazz, other.typedConverters.get(clazz));
+        return new CopyOptions(
+                merge(typedConverters, other.typedConverters),
+                merge(namedConverters, other.namedConverters));
+    }
+
+    private static <K, V> Map<K, V> merge(Map<K, V> main, Map<K, V> sub) {
+        HashMap<K, V> merged = new HashMap<K, V>(main);
+        for (K key : sub.keySet()) {
+            if (merged.containsKey(key) == false) {
+                merged.put(key, sub.get(key));
             }
         }
-
-        HashMap<String, Map<Class<?>, Converter<?>>> nc = new HashMap<String, Map<Class<?>, Converter<?>>>(
-                namedConverters);
-        for (String propertyName : other.namedConverters.keySet()) {
-            if (nc.containsKey(propertyName) == false) {
-                nc.put(propertyName, other.namedConverters.get(propertyName));
-            }
-        }
-
-        return new CopyOptions(tc, nc);
+        return merged;
     }
 
     public boolean hasTypedConverter(Class<?> clazz) {
