@@ -2,11 +2,10 @@ package nablarch.core.beans.converter;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
-import nablarch.core.util.DateUtil;
-
 
 /**
  * {@code java.sql.Date}型への変換を行う {@link Converter} 。
@@ -32,6 +31,17 @@ import nablarch.core.util.DateUtil;
  * @author tajima
  */
 public class SqlDateConverter implements Converter<java.sql.Date> {
+
+    private final DateConverter dateConverter;
+
+    public SqlDateConverter() {
+        this.dateConverter = new DateConverter();
+    }
+
+    public SqlDateConverter(List<String> patterns) {
+        this.dateConverter = new DateConverter(patterns);
+    }
+
     @Override
     public java.sql.Date convert(Object value) {
         if (value instanceof Date) {
@@ -44,7 +54,7 @@ public class SqlDateConverter implements Converter<java.sql.Date> {
             truncateTime(cal);
             return new java.sql.Date(cal.getTimeInMillis());
         } else if (value instanceof String) {
-            Date d = DateUtil.getDate(String.class.cast(value));
+            Date d = dateConverter.convertFromString(String.class.cast(value));
             Calendar cal = Calendar.getInstance();
             cal.setTime(d);
             truncateTime(cal);

@@ -3,10 +3,10 @@ package nablarch.core.beans.converter;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
-import nablarch.core.util.DateUtil;
 
 /**
  * {@code java.sql.Timestamp}型への変換を行う {@link Converter} 。
@@ -33,6 +33,17 @@ import nablarch.core.util.DateUtil;
  * @author tajima
  */
 public class SqlTimestampConverter implements Converter<Timestamp> {
+
+    private final DateConverter dateConverter;
+
+    public SqlTimestampConverter() {
+        this.dateConverter = new DateConverter();
+    }
+
+    public SqlTimestampConverter(List<String> patterns) {
+        this.dateConverter = new DateConverter(patterns);
+    }
+
     @Override
     public Timestamp convert(final Object value) {
         if (value instanceof Timestamp) {
@@ -48,10 +59,8 @@ public class SqlTimestampConverter implements Converter<Timestamp> {
             Calendar cal = Calendar.class.cast(value);
             return new Timestamp(cal.getTimeInMillis());
         } else if (value instanceof String) {
-            Date d = DateUtil.getDate(String.class.cast(value));
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(d);
-            return new Timestamp(cal.getTimeInMillis());
+            Date d = dateConverter.convert(String.class.cast(value));
+            return new Timestamp(d.getTime());
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Timestamp.class);
         } else {

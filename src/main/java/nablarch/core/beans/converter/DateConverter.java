@@ -51,26 +51,30 @@ public class DateConverter implements Converter<Date> {
         } else if (value instanceof Calendar) {
             return Calendar.class.cast(value).getTime();
         } else if (value instanceof String) {
-            if (patterns.isEmpty() == false) {
-                ParseException lastThrownException = null;
-                for (String pattern : patterns) {
-                    try {
-                        return new SimpleDateFormat(pattern).parse(String.class.cast(value));
-                    } catch (ParseException ignore) {
-                        //複数のパターンを順番に試すのでParseExceptionは無視する
-                        lastThrownException = ignore;
-                    }
-                }
-                //すべてのパターンが失敗した場合は例外をスロー
-                throw new IllegalArgumentException(
-                        "the string was not formatted " + patterns + ". date = " + value + ".",
-                        lastThrownException);
-            }
-            return DateUtil.getDate(String.class.cast(value));
+            return convertFromString(String.class.cast(value));
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Date.class);
         } else {
             throw new ConversionException(Date.class, value);
         }
+    }
+
+    Date convertFromString(String value) {
+        if (patterns.isEmpty() == false) {
+            ParseException lastThrownException = null;
+            for (String pattern : patterns) {
+                try {
+                    return new SimpleDateFormat(pattern).parse(value);
+                } catch (ParseException ignore) {
+                    //複数のパターンを順番に試すのでParseExceptionは無視する
+                    lastThrownException = ignore;
+                }
+            }
+            //すべてのパターンが失敗した場合は例外をスロー
+            throw new IllegalArgumentException(
+                    "the string was not formatted " + patterns + ". date = " + value + ".",
+                    lastThrownException);
+        }
+        return DateUtil.getDate(value);
     }
 }

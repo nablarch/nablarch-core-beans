@@ -684,8 +684,8 @@ public final class BeanUtil {
                 final Object val = getter.invoke(srcBean);
                 if (!(excludesNull && val == null)) {
                     final PropertyDescriptor destPd = getPropertyDescriptor(destPds, propertyName);
-                    if (copyOptions.hasNamedConverter(propertyName)) {
-                        setPropertyValue(destBean, destPd, copyOptions.convertByName(propertyName, val), false);
+                    if (copyOptions.hasNamedConverter(propertyName, destPd.getPropertyType())) {
+                        setPropertyValue(destBean, destPd, copyOptions.convertByName(propertyName, destPd.getPropertyType(), val), false);
                     } else if (copyOptions.hasTypedConverter(destPd.getPropertyType())) {
                         setPropertyValue(destBean, destPd, copyOptions.convertByType(destPd.getPropertyType(), val), false);
                     } else if (ConversionUtil.hasConverter(destPd.getPropertyType())) {

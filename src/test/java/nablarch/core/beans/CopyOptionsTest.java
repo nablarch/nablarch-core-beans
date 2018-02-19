@@ -23,22 +23,28 @@ public class CopyOptionsTest {
     public void hasNamedConverter() {
         CopyOptions sut = CopyOptions.options()
                 .datePatternsByName("foo", Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
-                .converterByName("bar", new DateConverter(Collections.singletonList("yyyy.MM.dd")))
+                .converterByName("bar", Date.class,
+                        new DateConverter(Collections.singletonList("yyyy.MM.dd")))
                 .build();
-        assertThat(sut.hasNamedConverter("foo"), is(true));
-        assertThat(sut.hasNamedConverter("bar"), is(true));
-        assertThat(sut.hasNamedConverter("baz"), is(false));
+        assertThat(sut.hasNamedConverter("foo", Date.class), is(true));
+        assertThat(sut.hasNamedConverter("foo", String.class), is(false));
+        assertThat(sut.hasNamedConverter("bar", Date.class), is(true));
+        assertThat(sut.hasNamedConverter("baz", Date.class), is(false));
     }
 
     @Test
     public void convertByName() {
         CopyOptions sut = CopyOptions.options()
                 .datePatternsByName("foo", Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
-                .converterByName("bar", new DateConverter(Collections.singletonList("yyyy.MM.dd")))
+                .converterByName("bar", Date.class,
+                        new DateConverter(Collections.singletonList("yyyy.MM.dd")))
                 .build();
-        assertThat((Date) sut.convertByName("foo", "2018/02/14"), is(date("2018-02-14 00:00:00")));
-        assertThat((Date) sut.convertByName("foo", "2018-02-14"), is(date("2018-02-14 00:00:00")));
-        assertThat((Date) sut.convertByName("bar", "2018.02.14"), is(date("2018-02-14 00:00:00")));
+        assertThat((Date) sut.convertByName("foo", Date.class, "2018/02/14"),
+                is(date("2018-02-14 00:00:00")));
+        assertThat((Date) sut.convertByName("foo", Date.class, "2018-02-14"),
+                is(date("2018-02-14 00:00:00")));
+        assertThat((Date) sut.convertByName("bar", Date.class, "2018.02.14"),
+                is(date("2018-02-14 00:00:00")));
     }
 
     @Test
@@ -46,9 +52,10 @@ public class CopyOptionsTest {
         expectedException.expect(IllegalArgumentException.class);
         CopyOptions sut = CopyOptions.options()
                 .datePatternByName("foo", "yyyyMMdd")
-                .converterByName("bar", new DateConverter(Collections.singletonList("yyyyMMdd")))
+                .converterByName("bar", Date.class,
+                        new DateConverter(Collections.singletonList("yyyyMMdd")))
                 .build();
-        sut.convertByName("baz", "20180214");
+        sut.convertByName("baz", Date.class, "20180214");
     }
 
     @Test
