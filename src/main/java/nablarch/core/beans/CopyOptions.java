@@ -33,6 +33,25 @@ public final class CopyOptions {
         return new Builder();
     }
 
+    public CopyOptions merge(CopyOptions other) {
+        HashMap<Class<?>, Converter<?>> tc = new HashMap<Class<?>, Converter<?>>(typedConverters);
+        for (Class<?> clazz : other.typedConverters.keySet()) {
+            if (tc.containsKey(clazz) == false) {
+                tc.put(clazz, other.typedConverters.get(clazz));
+            }
+        }
+
+        HashMap<String, Map<Class<?>, Converter<?>>> nc = new HashMap<String, Map<Class<?>, Converter<?>>>(
+                namedConverters);
+        for (String propertyName : other.namedConverters.keySet()) {
+            if (nc.containsKey(propertyName) == false) {
+                nc.put(propertyName, other.namedConverters.get(propertyName));
+            }
+        }
+
+        return new CopyOptions(tc, nc);
+    }
+
     public boolean hasTypedConverter(Class<?> clazz) {
         return typedConverters.containsKey(clazz);
     }

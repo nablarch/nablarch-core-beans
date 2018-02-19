@@ -178,7 +178,7 @@ public class CopyOptionsTest {
     }
 
     @Test
-    public void datePatternAndNumberPattern() throws Exception {
+    public void datePatternAndNumberPattern() {
         CopyOptions sut = CopyOptions.options()
                 .datePattern("yyyy/MM/dd").numberPattern("#,###")
                 .datePatternByName("foo", "yyyy.MM.dd").numberPatternByName("foo", "#,####")
@@ -196,7 +196,46 @@ public class CopyOptionsTest {
                 is("12,3456,7890"));
     }
 
+    @Test
+    public void merge() {
+        MockConverter mockConverter1 = new MockConverter();
+        MockConverter mockConverter2 = new MockConverter();
+        MockConverter mockConverter3 = new MockConverter();
+        MockConverter mockConverter4 = new MockConverter();
+
+        CopyOptions base = CopyOptions.options()
+                .converterByName("foo", Object.class, mockConverter1)
+                .converter(Object.class, mockConverter2)
+                .build();
+
+        CopyOptions other = CopyOptions.options()
+                //fooのConverterはbaseにあるのでこちらは無視される
+                .converterByName("foo", Object.class, mockConverter3)
+                .converterByName("bar", Object.class, mockConverter3)
+                //ObjectのConverterはbaseにあるのでこちらは無視される
+                .converter(Object.class, mockConverter4)
+                .build();
+
+        CopyOptions sut = base.merge(other);
+
+        assertThat(sut.convertByName("foo", Object.class, null),
+                is(sameInstance(mockConverter1.mockValue)));
+        assertThat(sut.convertByName("bar", Object.class, null),
+                is(sameInstance(mockConverter3.mockValue)));
+        assertThat(sut.convertByType(Object.class, null),
+                is(sameInstance(mockConverter2.mockValue)));
+    }
+
     private static java.util.Date date(String sqlTimestampPattern) {
         return new java.util.Date(Timestamp.valueOf(sqlTimestampPattern).getTime());
+    }
+
+    private static class MockConverter implements Converter<Object> {
+        final Object mockValue = new Object();
+
+        @Override
+        public Object convert(Object value) {
+            return mockValue;
+        }
     }
 }
