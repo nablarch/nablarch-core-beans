@@ -1,12 +1,14 @@
 package nablarch.core.beans.converter;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import nablarch.core.beans.ConversionException;
 
@@ -45,7 +47,7 @@ public class BigDecimalConverterTest {
         final BigDecimal actual = sut.convert(1.1D);
         assertThat(actual, closeTo(new BigDecimal("1.1"), new BigDecimal("0.000001")));
     }
-    
+
     @Test
     public void fromFloat() throws Exception {
         final BigDecimal actual = sut.convert(1.2F);
@@ -90,7 +92,7 @@ public class BigDecimalConverterTest {
 
     @Test
     public void fromStringArray() throws Exception {
-        final BigDecimal actual = sut.convert(new String[] {"123"});
+        final BigDecimal actual = sut.convert(new String[] { "123" });
         assertThat(actual, comparesEqualTo(new BigDecimal("123")));
     }
 
@@ -119,6 +121,20 @@ public class BigDecimalConverterTest {
     public void fromInvalidScaleInArray() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("Illegal scale(-99999): needs to be between(-9999, 9999)");
-        sut.convert(new String[] {"100e99999"});
+        sut.convert(new String[] { "100e99999" });
+    }
+
+    @Test
+    public void パターンを指定して文字列から変換() {
+        BigDecimalConverter converter = new BigDecimalConverter(Arrays.asList("#,###", "#,####.#"));
+        assertThat(converter.convert("1,234,567"), is(new BigDecimal("1234567")));
+        assertThat(converter.convert("1,2345.67"), is(new BigDecimal("12345.67")));
+    }
+
+    @Test
+    public void パターンを指定して文字列から変換失敗() {
+        expectedException.expect(IllegalArgumentException.class);
+        BigDecimalConverter sut = new BigDecimalConverter(Arrays.asList("#,###", "#,####.#"));
+        sut.convert("Not number");
     }
 }

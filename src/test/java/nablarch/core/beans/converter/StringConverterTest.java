@@ -62,6 +62,18 @@ public class StringConverterTest {
     @Test
     public void dateWithPattern() throws Exception {
         Date value = new Date(Timestamp.valueOf("2018-02-19 00:00:00").getTime());
-        assertThat(new StringConverter("yyyy/MM/dd").convert(value), is("2018/02/19"));
+        assertThat(new StringConverter("yyyy/MM/dd", null).convert(value), is("2018/02/19"));
+    }
+
+    @Test
+    public void longWithoutPattern() throws Exception {
+        Long value = 1234567890L;
+        assertThat(sut.convert(value), is("1234567890"));
+    }
+
+    @Test
+    public void longWithPattern() throws Exception {
+        Long value = 1234567890L;
+        assertThat(new StringConverter(null, "#,###").convert(value), is("1,234,567,890"));
     }
 }

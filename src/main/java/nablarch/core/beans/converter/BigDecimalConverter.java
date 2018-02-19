@@ -2,6 +2,10 @@ package nablarch.core.beans.converter;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.util.Collections;
+import java.util.List;
 
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
@@ -33,6 +37,17 @@ import nablarch.core.util.NumberUtil;
  * @author tajima
  */
 public class BigDecimalConverter implements Converter<BigDecimal> {
+
+    private final List<String> patterns;
+
+    public BigDecimalConverter() {
+        this.patterns = Collections.emptyList();
+    }
+
+    public BigDecimalConverter(List<String> patterns) {
+        this.patterns = patterns;
+    }
+
     @Override
     public BigDecimal convert(final Object value) {
         if (value instanceof Number) {
@@ -47,7 +62,7 @@ public class BigDecimalConverter implements Converter<BigDecimal> {
             }
         } else if (value instanceof String) {
             try {
-                final BigDecimal result = new BigDecimal(value.toString());
+                final BigDecimal result = convertFromString(String.class.cast(value));
                 NumberUtil.verifyBigDecimalScale(result);
                 return result;
             } catch (NumberFormatException e) {
@@ -60,5 +75,24 @@ public class BigDecimalConverter implements Converter<BigDecimal> {
         } else {
             throw new ConversionException(BigDecimal.class, value);
         }
+    }
+
+    private BigDecimal convertFromString(String value) {
+        if (patterns.isEmpty() == false) {
+            ParseException lastThrownException = null;
+            for (String pattern : patterns) {
+                try {
+                    return this.convert(new DecimalFormat(pattern).parse(String.class.cast(value)));
+                } catch (ParseException ignore) {
+                    //複数のパターンを順番に試すのでParseExceptionは無視する
+                    lastThrownException = ignore;
+                }
+            }
+            //すべてのパターンが失敗した場合は例外をスロー
+            throw new IllegalArgumentException(
+                    "the string was not formatted " + patterns + ". number = " + value + ".",
+                    lastThrownException);
+        }
+        return new BigDecimal(value);
     }
 }
