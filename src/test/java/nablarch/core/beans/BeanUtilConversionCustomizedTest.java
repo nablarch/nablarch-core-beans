@@ -3,6 +3,7 @@ package nablarch.core.beans;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -21,7 +22,7 @@ public class BeanUtilConversionCustomizedTest {
         srcBean.setFoo("20180214");
         srcBean.setBar("20180215");
         srcBean.setBaz("20180216");
-        Dest destBean = new Dest();
+        DateDest destBean = new DateDest();
         CopyOptions copyOptions = CopyOptions.options().build();
         BeanUtil.copy(srcBean, destBean, copyOptions);
 
@@ -32,7 +33,7 @@ public class BeanUtilConversionCustomizedTest {
 
     @Test
     public void 文字列への変換_デフォルト日付パターン() {
-        Dest destBean = new Dest();
+        DateDest destBean = new DateDest();
         destBean.setFoo(date("2018-02-14 00:00:00"));
         destBean.setBar(java.sql.Date.valueOf("2018-02-15"));
         destBean.setBaz(Timestamp.valueOf("2018-02-16 00:00:00"));
@@ -52,7 +53,7 @@ public class BeanUtilConversionCustomizedTest {
         srcBean.setFoo("2018/02/14");
         srcBean.setBar("2018/02/15");
         srcBean.setBaz("2018/02/16");
-        Dest destBean = new Dest();
+        DateDest destBean = new DateDest();
         CopyOptions copyOptions = CopyOptions.options().build();
         BeanUtil.copy(srcBean, destBean, copyOptions);
 
@@ -67,7 +68,7 @@ public class BeanUtilConversionCustomizedTest {
         srcBean.setFoo("2018/02/14");
         srcBean.setBar("2018-02-15");
         srcBean.setBaz("2018.02.16 12:34:56");
-        Dest destBean = new Dest();
+        DateDest destBean = new DateDest();
         CopyOptions copyOptions = CopyOptions.options()
                 .datePatternByName("foo", "yyyy/MM/dd")
                 .datePatternByName("bar", "yyyy-MM-dd")
@@ -82,7 +83,7 @@ public class BeanUtilConversionCustomizedTest {
 
     @Test
     public void 文字列への変換_プロパティ名を指定したカスタム日付パターン() {
-        Dest destBean = new Dest();
+        DateDest destBean = new DateDest();
         destBean.setFoo(date("2018-02-14 00:00:00"));
         destBean.setBar(java.sql.Date.valueOf("2018-02-15"));
         destBean.setBaz(Timestamp.valueOf("2018-02-16 12:34:56"));
@@ -106,7 +107,7 @@ public class BeanUtilConversionCustomizedTest {
         final Timestamp timestamp = new Timestamp(0);
         Src srcBean = new Src();
         srcBean.setFoo("2018-02-14");
-        Dest destBean = new Dest();
+        DateDest destBean = new DateDest();
         CopyOptions copyOptions = CopyOptions.options()
                 .converterByName("foo", java.util.Date.class, new Converter<java.util.Date>() {
                     @Override
@@ -140,7 +141,7 @@ public class BeanUtilConversionCustomizedTest {
         srcBean.setFoo("2018/02/14");
         srcBean.setBar("2018/02/15");
         srcBean.setBaz("2018/02/16");
-        Dest destBean = new Dest();
+        DateDest destBean = new DateDest();
         CopyOptions copyOptions = CopyOptions.options()
                 .datePattern("yyyy/MM/dd").build();
         BeanUtil.copy(srcBean, destBean, copyOptions);
@@ -152,7 +153,7 @@ public class BeanUtilConversionCustomizedTest {
 
     @Test
     public void 文字列への変換_グローバルなカスタム日付パターン() {
-        Dest destBean = new Dest();
+        DateDest destBean = new DateDest();
         destBean.setFoo(date("2018-02-14 00:00:00"));
         destBean.setBar(java.sql.Date.valueOf("2018-02-15"));
         destBean.setBaz(Timestamp.valueOf("2018-02-16 00:00:00"));
@@ -175,7 +176,7 @@ public class BeanUtilConversionCustomizedTest {
         srcBean.setFoo("2018-02-14");
         srcBean.setBar("2018-02-15");
         srcBean.setBaz("2018-02-16");
-        Dest destBean = new Dest();
+        DateDest destBean = new DateDest();
         CopyOptions copyOptions = CopyOptions.options()
                 .converter(java.util.Date.class, new Converter<java.util.Date>() {
                     @Override
@@ -201,6 +202,120 @@ public class BeanUtilConversionCustomizedTest {
         assertThat(destBean.getFoo(), is(sameInstance(date)));
         assertThat(destBean.getBar(), is(sameInstance(sqlDate)));
         assertThat(destBean.getBaz(), is(sameInstance(timestamp)));
+    }
+
+    @Test
+    public void デフォルト数字パターン() {
+        Src srcBean = new Src();
+        srcBean.setFoo("1234567890");
+        srcBean.setBar("1234567890");
+        srcBean.setBaz("1234567890");
+        NumberDest destBean = new NumberDest();
+        CopyOptions copyOptions = CopyOptions.options().build();
+        BeanUtil.copy(srcBean, destBean, copyOptions);
+
+        assertThat(destBean.getFoo(), is(1234567890));
+        assertThat(destBean.getBar(), is(1234567890L));
+        assertThat(destBean.getBaz(), is(new BigDecimal("1234567890")));
+    }
+
+    @Test
+    public void 文字列への変換_デフォルト数字パターン() {
+        NumberDest destBean = new NumberDest();
+        destBean.setFoo(1234567890);
+        destBean.setBar(1234567890L);
+        destBean.setBaz(new BigDecimal("1234567890"));
+
+        Src srcBean = new Src();
+        CopyOptions copyOptions = CopyOptions.options().build();
+        BeanUtil.copy(destBean, srcBean, copyOptions);
+
+        assertThat(srcBean.getFoo(), is("1234567890"));
+        assertThat(srcBean.getBar(), is("1234567890"));
+        assertThat(srcBean.getBaz(), is("1234567890"));
+    }
+
+    @Test
+    public void デフォルト数字パターンの変換失敗() {
+        Src srcBean = new Src();
+        srcBean.setFoo("1,234,567,890");
+        srcBean.setBar("1,234,567,890");
+        srcBean.setBaz("1,234,567,890");
+        NumberDest destBean = new NumberDest();
+        CopyOptions copyOptions = CopyOptions.options().build();
+        BeanUtil.copy(srcBean, destBean, copyOptions);
+
+        assertThat(destBean.getFoo(), is(nullValue()));
+        assertThat(destBean.getBar(), is(nullValue()));
+        assertThat(destBean.getBaz(), is(nullValue()));
+    }
+
+    @Test
+    public void プロパティ名を指定したカスタム数字パターン() {
+        Src srcBean = new Src();
+        srcBean.setFoo("1,234,567,890");
+        srcBean.setBar("1,234,567,890");
+        srcBean.setBaz("1,234,567,890");
+        NumberDest destBean = new NumberDest();
+        CopyOptions copyOptions = CopyOptions.options()
+                .numberPatternByName("foo", "#,###")
+                .build();
+        BeanUtil.copy(srcBean, destBean, copyOptions);
+
+        assertThat(destBean.getFoo(), is(1234567890));
+        assertThat(destBean.getBar(), is(nullValue()));
+        assertThat(destBean.getBaz(), is(nullValue()));
+    }
+
+    @Test
+    public void 文字列への変換_プロパティ名を指定したカスタム数字パターン() {
+        NumberDest destBean = new NumberDest();
+        destBean.setFoo(1234567890);
+        destBean.setBar(1234567890L);
+        destBean.setBaz(new BigDecimal("1234567890"));
+        Src srcBean = new Src();
+        CopyOptions copyOptions = CopyOptions.options()
+                .numberPatternByName("foo", "#,###")
+                .numberPatternByName("bar", "#,####")
+                .numberPatternByName("baz", "#,#####")
+                .build();
+        BeanUtil.copy(destBean, srcBean, copyOptions);
+
+        assertThat(srcBean.getFoo(), is("1,234,567,890"));
+        assertThat(srcBean.getBar(), is("12,3456,7890"));
+        assertThat(srcBean.getBaz(), is("12345,67890"));
+    }
+
+    @Test
+    public void グローバルなカスタム数字パターン() {
+        Src srcBean = new Src();
+        srcBean.setFoo("1,234,567,890");
+        srcBean.setBar("1,234,567,890");
+        srcBean.setBaz("1,234,567,890");
+        NumberDest destBean = new NumberDest();
+        CopyOptions copyOptions = CopyOptions.options()
+                .numberPattern("#,###").build();
+        BeanUtil.copy(srcBean, destBean, copyOptions);
+
+        assertThat(destBean.getFoo(), is(1234567890));
+        assertThat(destBean.getBar(), is(1234567890L));
+        assertThat(destBean.getBaz(), is(new BigDecimal("1234567890")));
+    }
+
+    @Test
+    public void 文字列への変換_グローバルなカスタム数字パターン() {
+        NumberDest destBean = new NumberDest();
+        destBean.setFoo(1234567890);
+        destBean.setBar(1234567890L);
+        destBean.setBaz(new BigDecimal("1234567890"));
+        Src srcBean = new Src();
+        CopyOptions copyOptions = CopyOptions.options()
+                .numberPattern("#,###").build();
+        BeanUtil.copy(destBean, srcBean, copyOptions);
+
+        assertThat(srcBean.getFoo(), is("1,234,567,890"));
+        assertThat(srcBean.getBar(), is("1,234,567,890"));
+        assertThat(srcBean.getBaz(), is("1,234,567,890"));
     }
 
     private static Date date(String sqlTimestampPattern) {
@@ -238,7 +353,7 @@ public class BeanUtilConversionCustomizedTest {
         }
     }
 
-    public static class Dest {
+    public static class DateDest {
 
         private java.util.Date foo;
         private java.sql.Date bar;
@@ -265,6 +380,37 @@ public class BeanUtilConversionCustomizedTest {
         }
 
         public void setBaz(Timestamp baz) {
+            this.baz = baz;
+        }
+    }
+
+    public static class NumberDest {
+
+        private Integer foo;
+        private Long bar;
+        private BigDecimal baz;
+
+        public Integer getFoo() {
+            return foo;
+        }
+
+        public void setFoo(Integer foo) {
+            this.foo = foo;
+        }
+
+        public Long getBar() {
+            return bar;
+        }
+
+        public void setBar(Long bar) {
+            this.bar = bar;
+        }
+
+        public BigDecimal getBaz() {
+            return baz;
+        }
+
+        public void setBaz(BigDecimal baz) {
             this.baz = baz;
         }
     }

@@ -1,12 +1,16 @@
 package nablarch.core.beans;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import nablarch.core.beans.converter.BigDecimalConverter;
 import nablarch.core.beans.converter.DateConverter;
+import nablarch.core.beans.converter.IntegerConverter;
+import nablarch.core.beans.converter.LongConverter;
 import nablarch.core.beans.converter.SqlDateConverter;
 import nablarch.core.beans.converter.SqlTimestampConverter;
 import nablarch.core.beans.converter.StringConverter;
@@ -95,6 +99,34 @@ public final class CopyOptions {
             converterByName(propertyName, java.util.Date.class, new DateConverter(patterns));
             converterByName(propertyName, java.sql.Date.class, new SqlDateConverter(patterns));
             converterByName(propertyName, Timestamp.class, new SqlTimestampConverter(patterns));
+            return this;
+        }
+
+        @Published
+        public Builder numberPattern(String pattern) {
+            return numberPatterns(Collections.singletonList(pattern));
+        }
+
+        @Published
+        public Builder numberPatterns(List<String> patterns) {
+            converter(String.class, new StringConverter(null, patterns.get(0)));
+            converter(Integer.class, new IntegerConverter(patterns));
+            converter(Long.class, new LongConverter(patterns));
+            converter(BigDecimal.class, new BigDecimalConverter(patterns));
+            return this;
+        }
+
+        @Published
+        public Builder numberPatternByName(String propertyName, String pattern) {
+            return numberPatternsByName(propertyName, Collections.singletonList(pattern));
+        }
+
+        @Published
+        public Builder numberPatternsByName(String propertyName, List<String> patterns) {
+            converterByName(propertyName, String.class, new StringConverter(null, patterns.get(0)));
+            converterByName(propertyName, Integer.class, new IntegerConverter(patterns));
+            converterByName(propertyName, Long.class, new LongConverter(patterns));
+            converterByName(propertyName, BigDecimal.class, new BigDecimalConverter(patterns));
             return this;
         }
 
