@@ -9,6 +9,7 @@ import java.util.Map;
 import nablarch.core.beans.converter.DateConverter;
 import nablarch.core.beans.converter.SqlDateConverter;
 import nablarch.core.beans.converter.SqlTimestampConverter;
+import nablarch.core.beans.converter.StringConverter;
 import nablarch.core.util.annotation.Published;
 
 public final class CopyOptions {
@@ -75,6 +76,7 @@ public final class CopyOptions {
         @Published
         public Builder datePatterns(List<String> patterns) {
             //FIXME nablarch-jsr310-adaptor
+            converter(String.class, new StringConverter(patterns.get(0)));
             converter(java.util.Date.class, new DateConverter(patterns));
             converter(java.sql.Date.class, new SqlDateConverter(patterns));
             converter(Timestamp.class, new SqlTimestampConverter(patterns));
@@ -89,6 +91,7 @@ public final class CopyOptions {
         @Published
         public Builder datePatternsByName(String propertyName, List<String> patterns) {
             //FIXME nablarch-jsr310-adaptor
+            converterByName(propertyName, String.class, new StringConverter(patterns.get(0)));
             converterByName(propertyName, java.util.Date.class, new DateConverter(patterns));
             converterByName(propertyName, java.sql.Date.class, new SqlDateConverter(patterns));
             converterByName(propertyName, Timestamp.class, new SqlTimestampConverter(patterns));

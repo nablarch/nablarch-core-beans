@@ -3,10 +3,10 @@ package nablarch.core.beans;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,28 +23,45 @@ public class CopyOptionsTest {
     public void hasNamedConverter() {
         CopyOptions sut = CopyOptions.options()
                 .datePatternsByName("foo", Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
-                .converterByName("bar", Date.class,
+                .converterByName("bar", java.util.Date.class,
                         new DateConverter(Collections.singletonList("yyyy.MM.dd")))
                 .build();
-        assertThat(sut.hasNamedConverter("foo", Date.class), is(true));
-        assertThat(sut.hasNamedConverter("foo", String.class), is(false));
-        assertThat(sut.hasNamedConverter("bar", Date.class), is(true));
-        assertThat(sut.hasNamedConverter("baz", Date.class), is(false));
+        assertThat(sut.hasNamedConverter("foo", java.util.Date.class), is(true));
+        assertThat(sut.hasNamedConverter("foo", java.sql.Date.class), is(true));
+        assertThat(sut.hasNamedConverter("foo", Timestamp.class), is(true));
+        assertThat(sut.hasNamedConverter("foo", String.class), is(true));
+        assertThat(sut.hasNamedConverter("foo", Object.class), is(false));
+
+        assertThat(sut.hasNamedConverter("bar", java.util.Date.class), is(true));
+        assertThat(sut.hasNamedConverter("bar", java.sql.Date.class), is(false));
+        assertThat(sut.hasNamedConverter("bar", Timestamp.class), is(false));
+        assertThat(sut.hasNamedConverter("bar", String.class), is(false));
+
+        assertThat(sut.hasNamedConverter("baz", java.util.Date.class), is(false));
     }
 
     @Test
     public void convertByName() {
         CopyOptions sut = CopyOptions.options()
                 .datePatternsByName("foo", Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
-                .converterByName("bar", Date.class,
+                .converterByName("bar", java.util.Date.class,
                         new DateConverter(Collections.singletonList("yyyy.MM.dd")))
                 .build();
-        assertThat((Date) sut.convertByName("foo", Date.class, "2018/02/14"),
+        assertThat((java.util.Date) sut.convertByName("foo", java.util.Date.class, "2018/02/14"),
                 is(date("2018-02-14 00:00:00")));
-        assertThat((Date) sut.convertByName("foo", Date.class, "2018-02-14"),
+        assertThat((java.util.Date) sut.convertByName("foo", java.util.Date.class, "2018-02-14"),
                 is(date("2018-02-14 00:00:00")));
-        assertThat((Date) sut.convertByName("bar", Date.class, "2018.02.14"),
+        assertThat((java.sql.Date) sut.convertByName("foo", java.sql.Date.class, "2018/02/14"),
+                is(java.sql.Date.valueOf("2018-02-14")));
+        assertThat((Timestamp) sut.convertByName("foo", Timestamp.class, "2018/02/14"),
+                is(Timestamp.valueOf("2018-02-14 00:00:00")));
+
+        assertThat((java.util.Date) sut.convertByName("bar", java.util.Date.class, "2018.02.14"),
                 is(date("2018-02-14 00:00:00")));
+
+        //文字列への変換
+        assertThat((String) sut.convertByName("foo", String.class, date("2018-02-14 00:00:00")),
+                is("2018/02/14"));
     }
 
     @Test
@@ -52,27 +69,30 @@ public class CopyOptionsTest {
         expectedException.expect(IllegalArgumentException.class);
         CopyOptions sut = CopyOptions.options()
                 .datePatternByName("foo", "yyyyMMdd")
-                .converterByName("bar", Date.class,
+                .converterByName("bar", java.util.Date.class,
                         new DateConverter(Collections.singletonList("yyyyMMdd")))
                 .build();
-        sut.convertByName("baz", Date.class, "20180214");
+        sut.convertByName("baz", java.util.Date.class, "20180214");
     }
 
     @Test
     public void hasTypedConverter() {
-        Converter<Object> converter = new Converter<Object>() {
+        Converter<BigDecimal> converter = new Converter<BigDecimal>() {
             @Override
-            public Object convert(Object value) {
+            public BigDecimal convert(Object value) {
                 return null;
             }
         };
         CopyOptions sut = CopyOptions.options()
                 .datePatterns(Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
-                .converter(Object.class, converter)
+                .converter(BigDecimal.class, converter)
                 .build();
-        assertThat(sut.hasTypedConverter(Date.class), is(true));
-        assertThat(sut.hasTypedConverter(Object.class), is(true));
-        assertThat(sut.hasTypedConverter(String.class), is(false));
+        assertThat(sut.hasTypedConverter(java.util.Date.class), is(true));
+        assertThat(sut.hasTypedConverter(java.sql.Date.class), is(true));
+        assertThat(sut.hasTypedConverter(Timestamp.class), is(true));
+        assertThat(sut.hasTypedConverter(String.class), is(true));
+        assertThat(sut.hasTypedConverter(BigDecimal.class), is(true));
+        assertThat(sut.hasTypedConverter(Object.class), is(false));
     }
 
     @Test
@@ -88,10 +108,20 @@ public class CopyOptionsTest {
                 .datePatterns(Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
                 .converter(Object.class, converter)
                 .build();
-        assertThat((Date) sut.convertByType(Date.class, "2018/02/14"),
+        assertThat((java.util.Date) sut.convertByType(java.util.Date.class, "2018/02/14"),
                 is(date("2018-02-14 00:00:00")));
-        assertThat((Date) sut.convertByType(Date.class, "2018-02-14"),
+        assertThat((java.util.Date) sut.convertByType(java.util.Date.class, "2018-02-14"),
                 is(date("2018-02-14 00:00:00")));
+        assertThat((java.sql.Date) sut.convertByType(java.sql.Date.class, "2018/02/14"),
+                is(java.sql.Date.valueOf("2018-02-14")));
+        assertThat((Timestamp) sut.convertByType(Timestamp.class, "2018/02/14"),
+                is(Timestamp.valueOf("2018-02-14 00:00:00")));
+
+        //文字列への変換
+        assertThat((String) sut.convertByType(String.class, date("2018-02-14 00:00:00")),
+                is("2018/02/14"));
+
+        //登録されたConverterの使用
         assertThat(sut.convertByType(Object.class, "test"), is(sameInstance(object)));
     }
 
@@ -101,10 +131,10 @@ public class CopyOptionsTest {
         CopyOptions sut = CopyOptions.options()
                 .datePatterns(Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
                 .build();
-        sut.convertByType(Date.class, "20180214");
+        sut.convertByType(java.util.Date.class, "20180214");
     }
 
-    private static Date date(String sqlTimestampPattern) {
-        return new Date(Timestamp.valueOf(sqlTimestampPattern).getTime());
+    private static java.util.Date date(String sqlTimestampPattern) {
+        return new java.util.Date(Timestamp.valueOf(sqlTimestampPattern).getTime());
     }
 }

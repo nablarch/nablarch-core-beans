@@ -31,6 +31,22 @@ public class BeanUtilConversionCustomizedTest {
     }
 
     @Test
+    public void 文字列への変換_デフォルト日付パターン() {
+        Dest destBean = new Dest();
+        destBean.setFoo(date("2018-02-14 00:00:00"));
+        destBean.setBar(java.sql.Date.valueOf("2018-02-15"));
+        destBean.setBaz(Timestamp.valueOf("2018-02-16 00:00:00"));
+
+        Src srcBean = new Src();
+        CopyOptions copyOptions = CopyOptions.options().build();
+        BeanUtil.copy(destBean, srcBean, copyOptions);
+
+        assertThat(srcBean.getFoo(), is("Wed Feb 14 00:00:00 JST 2018"));
+        assertThat(srcBean.getBar(), is("2018-02-15"));
+        assertThat(srcBean.getBaz(), is("2018-02-16 00:00:00.0"));
+    }
+
+    @Test
     public void デフォルト日付パターンの変換失敗() {
         Src srcBean = new Src();
         srcBean.setFoo("2018/02/14");
@@ -62,6 +78,25 @@ public class BeanUtilConversionCustomizedTest {
         assertThat(destBean.getFoo(), is(date("2018-02-14 00:00:00")));
         assertThat(destBean.getBar(), is(java.sql.Date.valueOf("2018-02-15")));
         assertThat(destBean.getBaz(), is(Timestamp.valueOf("2018-02-16 12:34:56")));
+    }
+
+    @Test
+    public void 文字列への変換_プロパティ名を指定したカスタム日付パターン() {
+        Dest destBean = new Dest();
+        destBean.setFoo(date("2018-02-14 00:00:00"));
+        destBean.setBar(java.sql.Date.valueOf("2018-02-15"));
+        destBean.setBaz(Timestamp.valueOf("2018-02-16 12:34:56"));
+        Src srcBean = new Src();
+        CopyOptions copyOptions = CopyOptions.options()
+                .datePatternByName("foo", "yyyy/MM/dd")
+                .datePatternByName("bar", "yyyy-MM-dd")
+                .datePatternByName("baz", "yyyy.MM.dd HH:mm:ss")
+                .build();
+        BeanUtil.copy(destBean, srcBean, copyOptions);
+
+        assertThat(srcBean.getFoo(), is("2018/02/14"));
+        assertThat(srcBean.getBar(), is("2018-02-15"));
+        assertThat(srcBean.getBaz(), is("2018.02.16 12:34:56"));
     }
 
     @Test
@@ -113,6 +148,22 @@ public class BeanUtilConversionCustomizedTest {
         assertThat(destBean.getFoo(), is(date("2018-02-14 00:00:00")));
         assertThat(destBean.getBar(), is(java.sql.Date.valueOf("2018-02-15")));
         assertThat(destBean.getBaz(), is(Timestamp.valueOf("2018-02-16 00:00:00")));
+    }
+
+    @Test
+    public void 文字列への変換_グローバルなカスタム日付パターン() {
+        Dest destBean = new Dest();
+        destBean.setFoo(date("2018-02-14 00:00:00"));
+        destBean.setBar(java.sql.Date.valueOf("2018-02-15"));
+        destBean.setBaz(Timestamp.valueOf("2018-02-16 00:00:00"));
+        Src srcBean = new Src();
+        CopyOptions copyOptions = CopyOptions.options()
+                .datePattern("yyyy/MM/dd").build();
+        BeanUtil.copy(destBean, srcBean, copyOptions);
+
+        assertThat(srcBean.getFoo(), is("2018/02/14"));
+        assertThat(srcBean.getBar(), is("2018/02/15"));
+        assertThat(srcBean.getBaz(), is("2018/02/16"));
     }
 
     @Test
