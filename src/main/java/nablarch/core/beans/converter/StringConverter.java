@@ -1,7 +1,10 @@
 package nablarch.core.beans.converter;
 
+import java.util.Date;
+
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
+import nablarch.core.util.DateUtil;
 import nablarch.core.util.StringUtil;
 
 /**
@@ -27,6 +30,16 @@ import nablarch.core.util.StringUtil;
  */
 public class StringConverter implements Converter<String> {
 
+    private final String pattern;
+
+    public StringConverter() {
+        this.pattern = null;
+    }
+
+    public StringConverter(String pattern) {
+        this.pattern = pattern;
+    }
+
     @Override
     public String convert(Object value) {
         if (value instanceof String) {
@@ -35,6 +48,8 @@ public class StringConverter implements Converter<String> {
             return Boolean.class.cast(value) ? "1" : "0";
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, String.class);
+        } else if (pattern != null && value instanceof Date) {
+            return DateUtil.formatDate(Date.class.cast(value), pattern);
         }
         return StringUtil.toString(value);
     }
