@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import nablarch.core.beans.factory.CopyOptionsFactoryManager;
 import nablarch.core.log.Logger;
 import nablarch.core.log.LoggerManager;
 import nablarch.core.util.StringUtil;
@@ -660,6 +661,9 @@ public final class BeanUtil {
      */
     protected static <SRC, DEST> DEST copyInner(final SRC srcBean, final DEST destBean, final boolean excludesNull, final Collection<String> excludesProperties, final Collection<String> includesProperties, final CopyOptions copyOptions) {
 
+        CopyOptions mergedCopyOptions = CopyOptionsFactoryManager.getInstance()
+                .createAndMergeCopyOptions(srcBean, destBean, copyOptions);
+
         final Collection<String> excludesList = excludesProperties;
 
         final PropertyDescriptor[] srcPds = getPropertyDescriptors(srcBean.getClass());
@@ -684,10 +688,10 @@ public final class BeanUtil {
                 final Object val = getter.invoke(srcBean);
                 if (!(excludesNull && val == null)) {
                     final PropertyDescriptor destPd = getPropertyDescriptor(destPds, propertyName);
-                    if (copyOptions.hasNamedConverter(propertyName, destPd.getPropertyType())) {
-                        setPropertyValue(destBean, destPd, copyOptions.convertByName(propertyName, destPd.getPropertyType(), val), false);
-                    } else if (copyOptions.hasTypedConverter(destPd.getPropertyType())) {
-                        setPropertyValue(destBean, destPd, copyOptions.convertByType(destPd.getPropertyType(), val), false);
+                    if (mergedCopyOptions.hasNamedConverter(propertyName, destPd.getPropertyType())) {
+                        setPropertyValue(destBean, destPd, mergedCopyOptions.convertByName(propertyName, destPd.getPropertyType(), val), false);
+                    } else if (mergedCopyOptions.hasTypedConverter(destPd.getPropertyType())) {
+                        setPropertyValue(destBean, destPd, mergedCopyOptions.convertByType(destPd.getPropertyType(), val), false);
                     } else if (ConversionUtil.hasConverter(destPd.getPropertyType())) {
                         setPropertyValue(destBean, destPd, val, true);
                     } else {
