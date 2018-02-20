@@ -7,18 +7,24 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import nablarch.core.beans.CopyOptions.ConvertersProvider;
 import nablarch.core.beans.converter.DateConverter;
 import nablarch.core.beans.converter.StringConverter;
+import nablarch.test.support.SystemRepositoryResource;
 
 public class CopyOptionsTest {
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
+    @Rule
+    public SystemRepositoryResource resource = new SystemRepositoryResource(null);
 
     @Test
     public void datePatternsByName() {
@@ -301,6 +307,26 @@ public class CopyOptionsTest {
         assertThat(copyOptions2.merge(copyOptions1).isTargetProperty("baz"), is(false));
     }
 
+    @Test
+    public void ConvertersProviderをカスタマイズした日付パターン() throws Exception {
+        MockConvertersProvider provider = new MockConvertersProvider();
+        resource.addComponent("convertersProvider", provider);
+
+        CopyOptions sut = CopyOptions.options().datePattern("yyyy/MM/dd").build();
+        assertThat(sut.convertByType(Object.class, "test"),
+                is(sameInstance(provider.mockDateConverter.mockValue)));
+    }
+
+    @Test
+    public void ConvertersProviderをカスタマイズした数値パターン() throws Exception {
+        MockConvertersProvider provider = new MockConvertersProvider();
+        resource.addComponent("convertersProvider", provider);
+
+        CopyOptions sut = CopyOptions.options().numberPattern("#,###").build();
+        assertThat(sut.convertByType(Object.class, "test"),
+                is(sameInstance(provider.mockNumberConverter.mockValue)));
+    }
+
     private static java.util.Date date(String sqlTimestampPattern) {
         return new java.util.Date(Timestamp.valueOf(sqlTimestampPattern).getTime());
     }
@@ -311,6 +337,24 @@ public class CopyOptionsTest {
         @Override
         public Object convert(Object value) {
             return mockValue;
+        }
+    }
+
+    private static class MockConvertersProvider implements ConvertersProvider {
+
+        final MockConverter mockDateConverter = new MockConverter();
+        final MockConverter mockNumberConverter = new MockConverter();
+
+        @Override
+        public Map<Class<?>, Converter<?>> provideDateConverters(List<String> patterns) {
+            return Collections.<Class<?>, Converter<?>> singletonMap(Object.class,
+                    mockDateConverter);
+        }
+
+        @Override
+        public Map<Class<?>, Converter<?>> provideNumberConverters(List<String> patterns) {
+            return Collections.<Class<?>, Converter<?>> singletonMap(Object.class,
+                    mockNumberConverter);
         }
     }
 }

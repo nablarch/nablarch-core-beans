@@ -16,7 +16,7 @@ import nablarch.core.repository.SystemRepository;
 public class CopyOptionsFactoryManager {
 
     /** {@link CopyOptionsFactoryManager}をリポジトリから取得する際に使用する名前 */
-    private static final String COPY_OPTIONS_FACTORY_MANAGER = "copyOptionsFactoryManager";
+    private static final String COPY_OPTIONS_FACTORY_MANAGER_NAME = "copyOptionsFactoryManager";
     /** {@link CopyOptionsFactory}のリスト */
     private List<CopyOptionsFactory> copyOptionsFactories;
 
@@ -62,7 +62,7 @@ public class CopyOptionsFactoryManager {
      * @return {@link CopyOptionsFactoryManager}のインスタンス
      */
     public static CopyOptionsFactoryManager getInstance() {
-        CopyOptionsFactoryManager manager = SystemRepository.get(COPY_OPTIONS_FACTORY_MANAGER);
+        CopyOptionsFactoryManager manager = SystemRepository.get(COPY_OPTIONS_FACTORY_MANAGER_NAME);
         if (manager != null) {
             return manager;
         }

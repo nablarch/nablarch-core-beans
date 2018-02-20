@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import nablarch.core.beans.converter.BigDecimalConverter;
 import nablarch.core.beans.converter.DateConverter;
@@ -16,6 +17,7 @@ import nablarch.core.beans.converter.LongConverter;
 import nablarch.core.beans.converter.SqlDateConverter;
 import nablarch.core.beans.converter.SqlTimestampConverter;
 import nablarch.core.beans.converter.StringConverter;
+import nablarch.core.repository.SystemRepository;
 import nablarch.core.util.annotation.Published;
 
 /**
@@ -210,10 +212,19 @@ public final class CopyOptions {
     @Published
     public static class Builder {
 
+        /** {@link ConvertersProvider}をリポジトリから取得する際に使用する名前 */
+        private static final String CONVERTERS_PROVIDER_NAME = "convertersProvider";
+        /** デフォルトの{@link ConvertersProvider} */
+        private static final ConvertersProvider DEFAULT_CONVERTERS_PROVIDER = new DefaultConvertersProvider();
+        /** クラスに紐づいたコンバーター */
         private final Map<Class<?>, Converter<?>> typedConverters = new HashMap<Class<?>, Converter<?>>();
+        /** プロパティ名とクラスに紐づいたコンバーター */
         private final Map<String, Map<Class<?>, Converter<?>>> namedConverters = new HashMap<String, Map<Class<?>, Converter<?>>>();
+        /** コピー元プロパティが{@code null}の場合にコピーしないかどうかを決定するフラグ */
         private boolean excludesNull;
+        /** コピー対象外のプロパティ名 */
         private final Collection<String> excludesProperties = new HashSet<String>();
+        /** コピー対象のプロパティ名 */
         private final Collection<String> includesProperties = new HashSet<String>();
 
         /**
@@ -240,11 +251,8 @@ public final class CopyOptions {
          * @return 自分自身
          */
         public Builder datePatterns(List<String> patterns) {
-            //FIXME nablarch-jsr310-adaptor
-            converter(String.class, new StringConverter(patterns.get(0), null));
-            converter(java.util.Date.class, new DateConverter(patterns));
-            converter(java.sql.Date.class, new SqlDateConverter(patterns));
-            converter(Timestamp.class, new SqlTimestampConverter(patterns));
+            addOrMergeConverters(typedConverters,
+                    getConvertersProvider().provideDateConverters(patterns));
             return this;
         }
 
@@ -267,11 +275,8 @@ public final class CopyOptions {
          * @return 自分自身
          */
         public Builder datePatternsByName(String propertyName, List<String> patterns) {
-            //FIXME nablarch-jsr310-adaptor
-            converterByName(propertyName, String.class, new StringConverter(patterns.get(0), null));
-            converterByName(propertyName, java.util.Date.class, new DateConverter(patterns));
-            converterByName(propertyName, java.sql.Date.class, new SqlDateConverter(patterns));
-            converterByName(propertyName, Timestamp.class, new SqlTimestampConverter(patterns));
+            addOrMergeConverters(getOrCreateConverters(propertyName),
+                    getConvertersProvider().provideDateConverters(patterns));
             return this;
         }
 
@@ -292,10 +297,8 @@ public final class CopyOptions {
          * @return 自分自身
          */
         public Builder numberPatterns(List<String> patterns) {
-            converter(String.class, new StringConverter(null, patterns.get(0)));
-            converter(Integer.class, new IntegerConverter(patterns));
-            converter(Long.class, new LongConverter(patterns));
-            converter(BigDecimal.class, new BigDecimalConverter(patterns));
+            addOrMergeConverters(typedConverters,
+                    getConvertersProvider().provideNumberConverters(patterns));
             return this;
         }
 
@@ -318,10 +321,8 @@ public final class CopyOptions {
          * @return 自分自身
          */
         public Builder numberPatternsByName(String propertyName, List<String> patterns) {
-            converterByName(propertyName, String.class, new StringConverter(null, patterns.get(0)));
-            converterByName(propertyName, Integer.class, new IntegerConverter(patterns));
-            converterByName(propertyName, Long.class, new LongConverter(patterns));
-            converterByName(propertyName, BigDecimal.class, new BigDecimalConverter(patterns));
+            addOrMergeConverters(getOrCreateConverters(propertyName),
+                    getConvertersProvider().provideNumberConverters(patterns));
             return this;
         }
 
@@ -347,19 +348,24 @@ public final class CopyOptions {
          */
         public <T> Builder converterByName(String propertyName, Class<T> clazz,
                 Converter<T> converter) {
+            Map<Class<?>, Converter<?>> converters = getOrCreateConverters(propertyName);
+            addOrMergeConverter(converters, clazz, converter);
+            return this;
+        }
+
+        private Map<Class<?>, Converter<?>> getOrCreateConverters(String propertyName) {
             Map<Class<?>, Converter<?>> converters = this.namedConverters.get(propertyName);
             if (converters == null) {
                 converters = new HashMap<Class<?>, Converter<?>>();
                 this.namedConverters.put(propertyName, converters);
             }
-            addOrMergeConverter(converters, clazz, converter);
-            return this;
+            return converters;
         }
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
-        private static <T> void addOrMergeConverter(Map<Class<?>, Converter<?>> converters,
-                Class<T> clazz, Converter<T> converter) {
-            Converter<T> newConverter = converter;
+        private static void addOrMergeConverter(Map<Class<?>, Converter<?>> converters,
+                Class<?> clazz, Converter<?> converter) {
+            Converter<?> newConverter = converter;
             Converter<?> registered = converters.get(clazz);
             if (registered != null) {
                 if (registered instanceof Mergeable
@@ -368,6 +374,15 @@ public final class CopyOptions {
                 }
             }
             converters.put(clazz, newConverter);
+        }
+
+        private static void addOrMergeConverters(Map<Class<?>, Converter<?>> converters,
+                Map<Class<?>, Converter<?>> addMe) {
+            for (Entry<Class<?>, Converter<?>> entry : addMe.entrySet()) {
+                Class<?> clazz = entry.getKey();
+                Converter<?> converter = entry.getValue();
+                addOrMergeConverter(converters, clazz, converter);
+            }
         }
 
         /**
@@ -414,6 +429,64 @@ public final class CopyOptions {
         public CopyOptions build() {
             return new CopyOptions(typedConverters, namedConverters, excludesNull,
                     excludesProperties, includesProperties);
+        }
+
+        private static ConvertersProvider getConvertersProvider() {
+            ConvertersProvider provider = SystemRepository.get(CONVERTERS_PROVIDER_NAME);
+            if (provider != null) {
+                return provider;
+            }
+            return DEFAULT_CONVERTERS_PROVIDER;
+        }
+    }
+
+    /**
+     * 日付パターン・数値パターンをもとに{@link Converter}を提供するインターフェース。
+     *
+     */
+    public interface ConvertersProvider {
+
+        /**
+         * 日付パターンをもとに{@link Converter}を提供する。
+         * 
+         * @param patterns 日付パターン
+         * @return 日付パターンをもとにした{@link Converter}のマップ
+         */
+        Map<Class<?>, Converter<?>> provideDateConverters(List<String> patterns);
+
+        /**
+         * 数値パターンをもとに{@link Converter}を提供する。
+         * 
+         * @param patterns 数値パターン
+         * @return 数値パターンをもとにした{@link Converter}のマップ
+         */
+        Map<Class<?>, Converter<?>> provideNumberConverters(List<String> patterns);
+    }
+
+    /**
+     * {@link ConvertersProvider}のデフォルト実装。
+     *
+     */
+    public static class DefaultConvertersProvider implements ConvertersProvider {
+
+        @Override
+        public Map<Class<?>, Converter<?>> provideDateConverters(List<String> patterns) {
+            Map<Class<?>, Converter<?>> converters = new HashMap<Class<?>, Converter<?>>();
+            converters.put(String.class, new StringConverter(patterns.get(0), null));
+            converters.put(java.util.Date.class, new DateConverter(patterns));
+            converters.put(java.sql.Date.class, new SqlDateConverter(patterns));
+            converters.put(Timestamp.class, new SqlTimestampConverter(patterns));
+            return converters;
+        }
+
+        @Override
+        public Map<Class<?>, Converter<?>> provideNumberConverters(List<String> patterns) {
+            Map<Class<?>, Converter<?>> converters = new HashMap<Class<?>, Converter<?>>();
+            converters.put(String.class, new StringConverter(null, patterns.get(0)));
+            converters.put(Integer.class, new IntegerConverter(patterns));
+            converters.put(Long.class, new LongConverter(patterns));
+            converters.put(BigDecimal.class, new BigDecimalConverter(patterns));
+            return converters;
         }
     }
 }
