@@ -35,12 +35,21 @@ import nablarch.core.beans.Converter;
  */
 public class IntegerConverter implements Converter<Integer> {
 
+    /** 数値パターン */
     private final List<String> patterns;
 
+    /**
+     * デフォルトコンストラクタ
+     */
     public IntegerConverter() {
         this.patterns = Collections.emptyList();
     }
 
+    /**
+     * 数値パターンを設定してインスタンスを構築する。
+     * 
+     * @param patterns 数値パターン
+     */
     public IntegerConverter(List<String> patterns) {
         this.patterns = patterns;
     }

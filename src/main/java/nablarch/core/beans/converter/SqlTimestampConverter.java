@@ -20,7 +20,8 @@ import nablarch.core.beans.Converter;
  * 同一日付・時刻を表す{@code java.sql.Timestamp}オブジェクトを返却する。
  * <p/>
  * <b>文字列型</b>：<br>
- * 変換元の日付文字列と同一日付を表す{@code java.sql.Timestamp}オブジェクトを返却する。(時刻は切り捨て)
+ * {@link DateConverter}へ処理を委譲して取得した{@link java.util.Date}オブジェクトから
+ * {@code java.sql.Timestamp}オブジェクトを生成して返却する。(時刻は切り捨て)
  * <p/>
  * <b>文字列型の配列</b>：<br>
  * 要素数が1であれば、その要素を{@code java.sql.Timestamp}オブジェクトに変換して返却する。
@@ -34,12 +35,21 @@ import nablarch.core.beans.Converter;
  */
 public class SqlTimestampConverter implements Converter<Timestamp> {
 
+    /** 日付コンバーター */
     private final DateConverter dateConverter;
 
+    /**
+     * デフォルトコンストラクタ
+     */
     public SqlTimestampConverter() {
         this.dateConverter = new DateConverter();
     }
 
+    /**
+     * 日付パターンを設定してインスタンスを構築する。
+     * 
+     * @param patterns 日付パターン
+     */
     public SqlTimestampConverter(List<String> patterns) {
         this.dateConverter = new DateConverter(patterns);
     }

@@ -24,6 +24,12 @@ import nablarch.core.util.StringUtil;
  * 要素数が1であれば、その要素をそのまま返却する。
  * 要素数が1以外であれば、{@link ConversionException}を送出する。
  * <p/>
+ * <b>日付型（日付パターンが設定されている場合）</b>：<br>
+ * パターンに従ってフォーマットして返却する。
+ * <p/>
+ * <b>数値型（数値パターンが設定されている場合）</b>：<br>
+ * パターンに従ってフォーマットして返却する。
+ * <p/>
  * <b>上記以外</b>：<br>
  * 変換元の値を表す文字列を返却する。
  *
@@ -32,14 +38,25 @@ import nablarch.core.util.StringUtil;
  */
 public class StringConverter implements Mergeable<String, StringConverter> {
 
+    /** 日付パターン */
     private final String datePattern;
+    /** 数値パターン */
     private final String numberPattern;
 
+    /**
+     * デフォルトコンストラクタ。
+     */
     public StringConverter() {
         this.datePattern = null;
         this.numberPattern = null;
     }
 
+    /**
+     * 日付パターンか数値パターン、もしくはその両方を設定してインスタンスを構築する。
+     * 
+     * @param datePattern 日付パターン
+     * @param numberPattern 数値パターン
+     */
     public StringConverter(String datePattern, String numberPattern) {
         this.datePattern = datePattern;
         this.numberPattern = numberPattern;

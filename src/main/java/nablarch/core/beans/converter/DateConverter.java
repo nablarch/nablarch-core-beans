@@ -21,6 +21,7 @@ import nablarch.core.util.DateUtil;
  * <p/>
  * <b>文字列型</b>：<br>
  * 変換元の日付文字列と同一日付を表す{@code java.util.Date}オブジェクトを返却する。
+ * 日付パターンが設定されている場合は日付パターンに従ってパースされた値を返却する。
  * <p/>
  * <b>文字列型の配列</b>：<br>
  * 要素数が1であれば、その要素を{@code java.util.Date}オブジェクトに変換して返却する。
@@ -34,12 +35,21 @@ import nablarch.core.util.DateUtil;
  */
 public class DateConverter implements Converter<Date> {
 
+    /** 日付パターン */
     private final List<String> patterns;
 
+    /**
+     * デフォルトコンストラクタ
+     */
     public DateConverter() {
         this.patterns = Collections.emptyList();
     }
 
+    /**
+     * 日付パターンを設定してインスタンスを構築する。
+     * 
+     * @param patterns 日付パターン
+     */
     public DateConverter(List<String> patterns) {
         this.patterns = patterns;
     }

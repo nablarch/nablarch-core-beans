@@ -34,12 +34,22 @@ import nablarch.core.beans.Converter;
  * @author tajima
  */
 public class LongConverter implements Converter<Long> {
+
+    /** 数値パターン */
     private final List<String> patterns;
 
+    /**
+     * デフォルトコンストラクタ
+     */
     public LongConverter() {
         this.patterns = Collections.emptyList();
     }
 
+    /**
+     * 数値パターンを設定してインスタンスを構築する。
+     * 
+     * @param patterns 数値パターン
+     */
     public LongConverter(List<String> patterns) {
         this.patterns = patterns;
     }

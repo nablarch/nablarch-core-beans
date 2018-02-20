@@ -17,7 +17,8 @@ import nablarch.core.beans.Converter;
  * (時刻は切り捨て)
  * <p/>
  * <b>文字列型</b>：<br>
- * 日付文字列と同一日付を表す{@code java.sql.Date}オブジェクトを返却する。
+ * {@link DateConverter}へ処理を委譲して取得した{@link java.util.Date}オブジェクトから
+ * {@code java.sql.Date}オブジェクトを生成して返却する。
  * (時刻は切り捨て)
  * <p/>
  * <b>文字列型の配列</b>：<br>
@@ -32,12 +33,21 @@ import nablarch.core.beans.Converter;
  */
 public class SqlDateConverter implements Converter<java.sql.Date> {
 
+    /** 日付コンバーター */
     private final DateConverter dateConverter;
 
+    /**
+     * デフォルトコンストラクタ
+     */
     public SqlDateConverter() {
         this.dateConverter = new DateConverter();
     }
 
+    /**
+     * 日付パターンを設定してインスタンスを構築する。
+     * 
+     * @param patterns 日付パターン
+     */
     public SqlDateConverter(List<String> patterns) {
         this.dateConverter = new DateConverter(patterns);
     }
