@@ -2,8 +2,10 @@ package nablarch.core.beans;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -20,12 +22,21 @@ public final class CopyOptions {
 
     private final Map<Class<?>, Converter<?>> typedConverters;
     private final Map<String, Map<Class<?>, Converter<?>>> namedConverters;
+    private final boolean excludesNull;
+    private final Collection<String> excludesProperties;
+    private final Collection<String> includesProperties;
 
     private CopyOptions(
             Map<Class<?>, Converter<?>> typedConverters,
-            Map<String, Map<Class<?>, Converter<?>>> namedConverters) {
+            Map<String, Map<Class<?>, Converter<?>>> namedConverters,
+            boolean excludesNull,
+            Collection<String> excludesProperties,
+            Collection<String> includesProperties) {
         this.typedConverters = Collections.unmodifiableMap(typedConverters);
         this.namedConverters = Collections.unmodifiableMap(namedConverters);
+        this.excludesNull = excludesNull;
+        this.excludesProperties = Collections.unmodifiableCollection(excludesProperties);
+        this.includesProperties = Collections.unmodifiableCollection(includesProperties);
     }
 
     @Published
@@ -36,7 +47,10 @@ public final class CopyOptions {
     public CopyOptions merge(CopyOptions other) {
         return new CopyOptions(
                 merge(typedConverters, other.typedConverters),
-                merge(namedConverters, other.namedConverters));
+                merge(namedConverters, other.namedConverters),
+                excludesNull,
+                merge(excludesProperties, other.excludesProperties),
+                merge(includesProperties, other.includesProperties));
     }
 
     private static <K, V> Map<K, V> merge(Map<K, V> main, Map<K, V> sub) {
@@ -46,6 +60,13 @@ public final class CopyOptions {
                 merged.put(key, sub.get(key));
             }
         }
+        return merged;
+    }
+
+    private static Collection<String> merge(Collection<String> main, Collection<String> sub) {
+        HashSet<String> merged = new HashSet<String>();
+        merged.addAll(main);
+        merged.addAll(sub);
         return merged;
     }
 
@@ -83,10 +104,28 @@ public final class CopyOptions {
         return converted;
     }
 
+    public boolean isExcludesNull() {
+        return excludesNull;
+    }
+
+    public boolean isTargetProperty(String propertyName) {
+        if (excludesProperties.contains(propertyName)) {
+            return false;
+        }
+        if (includesProperties.isEmpty() == false
+                && includesProperties.contains(propertyName) == false) {
+            return false;
+        }
+        return true;
+    }
+
     public static class Builder {
 
         private final Map<Class<?>, Converter<?>> typedConverters = new HashMap<Class<?>, Converter<?>>();
         private final Map<String, Map<Class<?>, Converter<?>>> namedConverters = new HashMap<String, Map<Class<?>, Converter<?>>>();
+        private boolean excludesNull;
+        private final Collection<String> excludesProperties = new HashSet<String>();
+        private final Collection<String> includesProperties = new HashSet<String>();
 
         @Published
         public Builder datePattern(String pattern) {
@@ -178,9 +217,29 @@ public final class CopyOptions {
             converters.put(clazz, newConverter);
         }
 
+        public Builder excludesNull() {
+            this.excludesNull = true;
+            return this;
+        }
+
+        public Builder excludes(String... properties) {
+            for (String property : properties) {
+                this.excludesProperties.add(property);
+            }
+            return this;
+        }
+
+        public Builder includes(String... properties) {
+            for (String property : properties) {
+                this.includesProperties.add(property);
+            }
+            return this;
+        }
+
         @Published
         public CopyOptions build() {
-            return new CopyOptions(typedConverters, namedConverters);
+            return new CopyOptions(typedConverters, namedConverters, excludesNull,
+                    excludesProperties, includesProperties);
         }
     }
 }

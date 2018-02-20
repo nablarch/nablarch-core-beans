@@ -226,6 +226,81 @@ public class CopyOptionsTest {
                 is(sameInstance(mockConverter2.mockValue)));
     }
 
+    @Test
+    public void isExcludesNullデフォルト() {
+        CopyOptions sut = CopyOptions.options().build();
+        assertThat(sut.isExcludesNull(), is(false));
+    }
+
+    @Test
+    public void isExcludesNull() {
+        CopyOptions sut = CopyOptions.options().excludesNull().build();
+        assertThat(sut.isExcludesNull(), is(true));
+    }
+
+    @Test
+    public void excludesNullはマージ元が優先される() {
+        CopyOptions excludesNull = CopyOptions.options().excludesNull().build();
+        CopyOptions includesNull = CopyOptions.options().build();
+        assertThat(excludesNull.merge(includesNull).isExcludesNull(), is(true));
+        assertThat(includesNull.merge(excludesNull).isExcludesNull(), is(false));
+    }
+
+    @Test
+    public void excludesProperties() {
+        CopyOptions sut = CopyOptions.options().excludes("foo", "bar").build();
+        assertThat(sut.isTargetProperty("foo"), is(false));
+        assertThat(sut.isTargetProperty("bar"), is(false));
+        assertThat(sut.isTargetProperty("baz"), is(true));
+    }
+
+    @Test
+    public void includesProperties() {
+        CopyOptions sut = CopyOptions.options().includes("foo", "bar").build();
+        assertThat(sut.isTargetProperty("foo"), is(true));
+        assertThat(sut.isTargetProperty("bar"), is(true));
+        assertThat(sut.isTargetProperty("baz"), is(false));
+    }
+
+    @Test
+    public void excludesPropertiesとincludesPropertiesはexcludesが優先される() {
+        CopyOptions sut = CopyOptions.options()
+                .excludes("foo", "bar")
+                .includes("bar", "baz")
+                .build();
+        assertThat(sut.isTargetProperty("foo"), is(false));
+        assertThat(sut.isTargetProperty("bar"), is(false));
+        assertThat(sut.isTargetProperty("baz"), is(true));
+    }
+
+    @Test
+    public void excludesPropertiesのマージ() {
+        CopyOptions copyOptions1 = CopyOptions.options().excludes("foo").build();
+        CopyOptions copyOptions2 = CopyOptions.options().excludes("bar").build();
+
+        assertThat(copyOptions1.merge(copyOptions2).isTargetProperty("foo"), is(false));
+        assertThat(copyOptions1.merge(copyOptions2).isTargetProperty("bar"), is(false));
+        assertThat(copyOptions1.merge(copyOptions2).isTargetProperty("baz"), is(true));
+
+        assertThat(copyOptions2.merge(copyOptions1).isTargetProperty("foo"), is(false));
+        assertThat(copyOptions2.merge(copyOptions1).isTargetProperty("bar"), is(false));
+        assertThat(copyOptions2.merge(copyOptions1).isTargetProperty("baz"), is(true));
+    }
+
+    @Test
+    public void includesPropertiesのマージ() {
+        CopyOptions copyOptions1 = CopyOptions.options().includes("foo").build();
+        CopyOptions copyOptions2 = CopyOptions.options().includes("bar").build();
+
+        assertThat(copyOptions1.merge(copyOptions2).isTargetProperty("foo"), is(true));
+        assertThat(copyOptions1.merge(copyOptions2).isTargetProperty("bar"), is(true));
+        assertThat(copyOptions1.merge(copyOptions2).isTargetProperty("baz"), is(false));
+
+        assertThat(copyOptions2.merge(copyOptions1).isTargetProperty("foo"), is(true));
+        assertThat(copyOptions2.merge(copyOptions1).isTargetProperty("bar"), is(true));
+        assertThat(copyOptions2.merge(copyOptions1).isTargetProperty("baz"), is(false));
+    }
+
     private static java.util.Date date(String sqlTimestampPattern) {
         return new java.util.Date(Timestamp.valueOf(sqlTimestampPattern).getTime());
     }
