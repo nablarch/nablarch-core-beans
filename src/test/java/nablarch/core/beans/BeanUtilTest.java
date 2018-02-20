@@ -6,13 +6,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -278,6 +272,46 @@ public class BeanUtilTest {
         }
         public void setAddressList(List<Address> addressList) {
             this.addressList = addressList;
+        }
+    }
+
+    public static class SelfNestedBean {
+
+        private String foo;
+        private String bar;
+        private String baz;
+        private SelfNestedBean bean;
+
+        public String getFoo() {
+            return foo;
+        }
+
+        public void setFoo(String foo) {
+            this.foo = foo;
+        }
+
+        public String getBar() {
+            return bar;
+        }
+
+        public void setBar(String bar) {
+            this.bar = bar;
+        }
+
+        public String getBaz() {
+            return baz;
+        }
+
+        public void setBaz(String baz) {
+            this.baz = baz;
+        }
+
+        public SelfNestedBean getBean() {
+            return bean;
+        }
+
+        public void setBean(SelfNestedBean bean) {
+            this.bean = bean;
         }
     }
 
@@ -1908,6 +1942,89 @@ public class BeanUtilTest {
         src.timestamp = timestamp;
         final WithTimestamp actual = BeanUtil.createAndCopy(WithTimestamp.class, src);
         assertThat(actual.timestamp, is(timestamp));
+    }
+
+    @Test
+    public void ネストしたbeanにはexcludesPropertiesは引き継がれない() {
+        SelfNestedBean srcChild = new SelfNestedBean();
+        srcChild.setFoo("1");
+        srcChild.setBar("2");
+        srcChild.setBaz("3");
+
+        SelfNestedBean srcRoot = new SelfNestedBean();
+        srcRoot.setFoo("4");
+        srcRoot.setBar("5");
+        srcRoot.setBaz("6");
+        srcRoot.setBean(srcChild);
+
+        SelfNestedBean dest = new SelfNestedBean();
+
+        BeanUtil.copyExcludes(srcRoot, dest, "bar");
+
+        assertThat(dest.getFoo(), is("4"));
+        assertThat(dest.getBar(), is(nullValue()));
+        assertThat(dest.getBaz(), is("6"));
+        assertThat(dest.getBean(), is(not(sameInstance(srcChild))));
+        assertThat(dest.getBean().getFoo(), is("1"));
+        assertThat(dest.getBean().getBar(), is("2"));
+        assertThat(dest.getBean().getBaz(), is("3"));
+    }
+
+    @Test
+    public void ネストしたbeanにはincludesPropertiesは引き継がれない() {
+        SelfNestedBean srcChild = new SelfNestedBean();
+        srcChild.setFoo("1");
+        srcChild.setBar("2");
+        srcChild.setBaz("3");
+
+        SelfNestedBean srcRoot = new SelfNestedBean();
+        srcRoot.setFoo("4");
+        srcRoot.setBar("5");
+        srcRoot.setBaz("6");
+        srcRoot.setBean(srcChild);
+
+        SelfNestedBean dest = new SelfNestedBean();
+
+        BeanUtil.copyIncludes(srcRoot, dest, "bar", "bean");
+
+        assertThat(dest.getFoo(), is(nullValue()));
+        assertThat(dest.getBar(), is("5"));
+        assertThat(dest.getBaz(), is(nullValue()));
+        assertThat(dest.getBean(), is(not(sameInstance(srcChild))));
+        assertThat(dest.getBean().getFoo(), is("1"));
+        assertThat(dest.getBean().getBar(), is("2"));
+        assertThat(dest.getBean().getBaz(), is("3"));
+    }
+
+    @Test
+    public void ネストしたbeanにもexcludesNullは引き継がれる() {
+        SelfNestedBean srcChild = new SelfNestedBean();
+        srcChild.setFoo("1");
+        srcChild.setBar(null);
+        srcChild.setBaz("3");
+
+        SelfNestedBean srcRoot = new SelfNestedBean();
+        srcRoot.setFoo("4");
+        srcRoot.setBar("5");
+        srcRoot.setBaz(null);
+        srcRoot.setBean(srcChild);
+
+        SelfNestedBean destChild = new SelfNestedBean();
+        destChild.setBar("2");
+
+        SelfNestedBean destRoot = new SelfNestedBean();
+        destRoot.setBaz("6");
+        destRoot.setBean(destChild);
+
+        BeanUtil.copyExcludesNull(srcRoot, destRoot);
+
+        assertThat(destRoot.getFoo(), is("4"));
+        assertThat(destRoot.getBar(), is("5"));
+        assertThat(destRoot.getBaz(), is("6"));
+        assertThat(destRoot.getBean(), is(sameInstance(destChild)));
+        assertThat(destRoot.getBean().getFoo(), is("1"));
+        assertThat(destRoot.getBean().getBar(), is("2"));
+        assertThat(destRoot.getBean().getBaz(), is("3"));
     }
 
     public static class WithTimestamp {
