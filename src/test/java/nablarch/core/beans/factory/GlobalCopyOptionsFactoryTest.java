@@ -15,6 +15,12 @@ import nablarch.core.repository.ObjectLoader;
 import nablarch.core.repository.SystemRepository;
 import nablarch.test.support.SystemRepositoryResource;
 
+/**
+ * {@link GlobalCopyOptionsFactory}のテスト。
+ * 
+ * @author Taichi Uragami
+ *
+ */
 public class GlobalCopyOptionsFactoryTest {
 
     //SystemRepositoryのクリーンアップをしたいだけなのでnullを渡してインスタンス化している

@@ -10,6 +10,13 @@ import org.junit.Test;
 
 import nablarch.test.support.SystemRepositoryResource;
 
+/**
+ * {@link BeanUtil#copy(Object, Object, CopyOptions)}で全体設定、
+ * アノテーションによる設定、メソッド引数に渡した設定の適用を確認するテスト。
+ * 
+ * @author Taichi Uragami
+ *
+ */
 public class BeanUtilHierarchicalOptionTest {
 
     @Rule

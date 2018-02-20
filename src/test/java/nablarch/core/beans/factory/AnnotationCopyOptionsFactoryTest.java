@@ -10,6 +10,12 @@ import org.junit.Test;
 import nablarch.core.beans.CopyOption;
 import nablarch.core.beans.CopyOptions;
 
+/**
+ * {@link AnnotationCopyOptionsFactory}のテスト。
+ * 
+ * @author Taichi Uragami
+ *
+ */
 public class AnnotationCopyOptionsFactoryTest {
 
     @Test

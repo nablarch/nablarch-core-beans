@@ -19,6 +19,11 @@ import nablarch.core.beans.converter.DateConverter;
 import nablarch.core.beans.converter.StringConverter;
 import nablarch.test.support.SystemRepositoryResource;
 
+/**
+ * {@link CopyOptions}のテスト。
+ * @author Taichi Uragami
+ *
+ */
 public class CopyOptionsTest {
 
     @Rule

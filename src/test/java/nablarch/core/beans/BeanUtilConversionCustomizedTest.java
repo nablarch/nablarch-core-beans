@@ -11,6 +11,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+/**
+ * {@link BeanUtil#copy(Object, Object, CopyOptions)}で変換をカスタマイズする場合のテスト。
+ * 
+ * @author Taichi Uragami
+ *
+ */
 public class BeanUtilConversionCustomizedTest {
 
     @Rule
