@@ -588,11 +588,29 @@ public final class BeanUtil {
      *   {@code beanClass}のコンストラクタの実行中に問題が発生した場合。
      */
     public static <T> T createAndCopy(final Class<T> beanClass, final Object srcBean) {
+        return createAndCopy(beanClass, srcBean, CopyOptions.options().build());
+    }
+
+    /**
+     * Java Beansからプロパティをコピーして、別のBeanを作成する。
+     * <p/>
+     * {@code srcBean}がnullである場合、デフォルトコンストラクタで{@code beanClass}を生成して返却する。
+     *
+     * @param <T> 型引数
+     * @param beanClass コピー先のBeanクラス
+     * @param srcBean  コピー元のBean
+     * @param copyOptions コピーの設定
+     * @return コピーされたBeanオブジェクト
+     * @throws BeansException
+     *   {@code beanClass}にデフォルトコンストラクタが定義されていない場合や、
+     *   {@code beanClass}のコンストラクタの実行中に問題が発生した場合。
+     */
+    public static <T> T createAndCopy(final Class<T> beanClass, final Object srcBean, final CopyOptions copyOptions) {
         final T bean = createInstance(beanClass);
         if (srcBean == null) {
             return bean;
         }
-        return copy(srcBean, bean);
+        return copy(srcBean, bean, copyOptions);
     }
 
     /**

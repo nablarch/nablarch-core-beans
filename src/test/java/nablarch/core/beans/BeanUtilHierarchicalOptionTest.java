@@ -24,7 +24,7 @@ public class BeanUtilHierarchicalOptionTest {
             "nablarch/core/beans/sample/global-copy-options-test.xml");
 
     @Test
-    public void 文字列から日付と数値への変換() {
+    public void 文字列から日付と数値への変換_copy() {
         SrcBean src = new SrcBean();
         src.setGlobalOptionDate("2018/02/19");
         src.setGlobalOptionNumber("1,234,567,890");
@@ -48,7 +48,7 @@ public class BeanUtilHierarchicalOptionTest {
     }
 
     @Test
-    public void 日付と数値から文字列への変換() {
+    public void 日付と数値から文字列への変換_copy() {
         DestBean dest = new DestBean();
         dest.setGlobalOptionDate(Timestamp.valueOf("2018-02-19 00:00:00"));
         dest.setGlobalOptionNumber(1234567890);
@@ -61,6 +61,50 @@ public class BeanUtilHierarchicalOptionTest {
 
         SrcBean src = new SrcBean();
         BeanUtil.copy(dest, src, copyOptions);
+
+        assertThat(src.getGlobalOptionDate(), is("2018/02/19"));
+        assertThat(src.getGlobalOptionNumber(), is("1,234,567,890"));
+        assertThat(src.getAnnotatedOptionAtSrcBean(), is("2018-02-19"));
+        assertThat(src.getAnnotatedOptionAtDestBean(), is("2018.02.19"));
+        assertThat(src.getMethodArgOption(), is("2018_02_19"));
+    }
+
+    @Test
+    public void 文字列から日付と数値への変換_createAndCopy() {
+        SrcBean src = new SrcBean();
+        src.setGlobalOptionDate("2018/02/19");
+        src.setGlobalOptionNumber("1,234,567,890");
+        src.setAnnotatedOptionAtSrcBean("2018-02-19");
+        src.setAnnotatedOptionAtDestBean("2018.02.19");
+        src.setMethodArgOption("2018_02_19");
+
+        CopyOptions copyOptions = CopyOptions.options()
+                .datePatternByName("methodArgOption", "yyyy_MM_dd").build();
+
+        DestBean dest = BeanUtil.createAndCopy(DestBean.class, src, copyOptions);
+
+        assertThat(dest.getGlobalOptionDate(), is(Timestamp.valueOf("2018-02-19 00:00:00")));
+        assertThat(dest.getGlobalOptionNumber(), is(1234567890));
+        assertThat(dest.getAnnotatedOptionAtSrcBean(),
+                is(Timestamp.valueOf("2018-02-19 00:00:00")));
+        assertThat(dest.getAnnotatedOptionAtDestBean(),
+                is(Timestamp.valueOf("2018-02-19 00:00:00")));
+        assertThat(dest.getMethodArgOption(), is(Timestamp.valueOf("2018-02-19 00:00:00")));
+    }
+
+    @Test
+    public void 日付と数値から文字列への変換_createAndCopy() {
+        DestBean dest = new DestBean();
+        dest.setGlobalOptionDate(Timestamp.valueOf("2018-02-19 00:00:00"));
+        dest.setGlobalOptionNumber(1234567890);
+        dest.setAnnotatedOptionAtSrcBean(Timestamp.valueOf("2018-02-19 00:00:00"));
+        dest.setAnnotatedOptionAtDestBean(Timestamp.valueOf("2018-02-19 00:00:00"));
+        dest.setMethodArgOption(Timestamp.valueOf("2018-02-19 00:00:00"));
+
+        CopyOptions copyOptions = CopyOptions.options()
+                .datePatternByName("methodArgOption", "yyyy_MM_dd").build();
+
+        SrcBean src = BeanUtil.createAndCopy(SrcBean.class, dest, copyOptions);
 
         assertThat(src.getGlobalOptionDate(), is("2018/02/19"));
         assertThat(src.getGlobalOptionNumber(), is("1,234,567,890"));
