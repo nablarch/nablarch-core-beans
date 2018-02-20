@@ -18,14 +18,36 @@ import nablarch.core.beans.converter.SqlTimestampConverter;
 import nablarch.core.beans.converter.StringConverter;
 import nablarch.core.util.annotation.Published;
 
+/**
+ * {@link BeanUtil#copy(Object, Object) Beanのコピー}で使用される設定をまとめたクラス。
+ * 
+ * @author Taichi Uragami
+ *
+ */
 public final class CopyOptions {
 
+    /** クラスに紐づいたコンバーター */
     private final Map<Class<?>, Converter<?>> typedConverters;
+    /** プロパティ名とクラスに紐づいたコンバーター */
     private final Map<String, Map<Class<?>, Converter<?>>> namedConverters;
+    /** コピー元プロパティが{@code null}の場合にコピーしないかどうかを決定するフラグ */
     private final boolean excludesNull;
+    /** コピー対象外のプロパティ名 */
     private final Collection<String> excludesProperties;
+    /** コピー対象のプロパティ名 */
     private final Collection<String> includesProperties;
 
+    /**
+     * 当クラスは使用者が明示的にコンストラクタを呼び出すのではなく、
+     * {@link Builder#build()}によってインスタンス化されることを想定しているため、
+     * コンストラクタの可視性は{@code private}としている。
+     * 
+     * @param typedConverters クラスに紐づいたコンバーター
+     * @param namedConverters プロパティ名とクラスに紐づいたコンバーター
+     * @param excludesNull コピー元プロパティが{@code null}の場合にコピーしないかどうかを決定するフラグ
+     * @param excludesProperties コピー対象外のプロパティ名
+     * @param includesProperties コピー対象のプロパティ名
+     */
     private CopyOptions(
             Map<Class<?>, Converter<?>> typedConverters,
             Map<String, Map<Class<?>, Converter<?>>> namedConverters,
@@ -39,11 +61,22 @@ public final class CopyOptions {
         this.includesProperties = Collections.unmodifiableCollection(includesProperties);
     }
 
+    /**
+     * ビルダーを取得する。
+     * 
+     * @return ビルダー
+     */
     @Published
     public static Builder options() {
         return new Builder();
     }
 
+    /**
+     * 他の{@link CopyOptions}をマージする。
+     * 
+     * @param other 他の{@link CopyOptions}インスタンス
+     * @return マージされたインスタンス
+     */
     public CopyOptions merge(CopyOptions other) {
         return new CopyOptions(
                 merge(typedConverters, other.typedConverters),
@@ -70,15 +103,39 @@ public final class CopyOptions {
         return merged;
     }
 
+    /**
+     * 指定されたクラスに紐づいたコンバーターを保持しているかどうかを返す。
+     * 
+     * @param clazz クラス
+     * @return 指定されたクラスに紐づいたコンバーターを保持していれば{@link true}
+     */
     public boolean hasTypedConverter(Class<?> clazz) {
         return typedConverters.containsKey(clazz);
     }
 
+    /**
+     * 指定されたプロパティ名とクラスに紐づいたコンバーターを保持しているかどうかを判断して返す。
+     * 
+     * @param propertyName プロパティ名
+     * @param clazz クラス
+     * @return 指定されたプロパティ名とクラスに紐づいたコンバーターを保持していれば{@link true}
+     */
     public boolean hasNamedConverter(String propertyName, Class<?> clazz) {
         return namedConverters.containsKey(propertyName)
                 && namedConverters.get(propertyName).containsKey(clazz);
     }
 
+    /**
+     * クラスに紐づいたコンバーターを使用して値を変換する。
+     * 
+     * <p>
+     * クラスに紐づいたコンバーターが見つからなければ{@link IllegalArgumentException}をスローする。
+     * </p>
+     * 
+     * @param clazz クラス
+     * @param value 変換前の値
+     * @return 変換後の値
+     */
     public Object convertByType(Class<?> clazz, Object value) {
         Converter<?> converter = typedConverters.get(clazz);
         if (converter == null) {
@@ -89,6 +146,18 @@ public final class CopyOptions {
         return converted;
     }
 
+    /**
+     * プロパティ名とクラスに紐づいたコンバーターを使用して値を変換する。
+     * 
+     * <p>
+     * プロパティ名とクラスに紐づいたコンバーターが見つからなければ{@link IllegalArgumentException}をスローする。
+     * </p>
+     * 
+     * @param propertyName プロパティ名
+     * @param clazz クラス
+     * @param value 変換前の値
+     * @return 変換後の値
+     */
     public Object convertByName(String propertyName, Class<?> clazz, Object value) {
         Map<Class<?>, Converter<?>> converters = namedConverters.get(propertyName);
         if (converters == null) {
@@ -104,10 +173,21 @@ public final class CopyOptions {
         return converted;
     }
 
+    /**
+     * コピー元プロパティが{@code null}の場合にコピーしないかどうかを返す。
+     * 
+     * @return コピー元プロパティが{@code null}の場合にコピーしない場合は{@link true}
+     */
     public boolean isExcludesNull() {
         return excludesNull;
     }
 
+    /**
+     * 指定されたプロパティがコピー対象かどうかを返す。
+     * 
+     * @param propertyName プロパティ名
+     * @return コピー対象なら{@link true}
+     */
     public boolean isTargetProperty(String propertyName) {
         if (excludesProperties.contains(propertyName)) {
             return false;
@@ -119,6 +199,15 @@ public final class CopyOptions {
         return true;
     }
 
+    /**
+     * {@link CopyOptions}のビルダー。
+     * 
+     * <p>
+     * {@link CopyOptions#options()}を起点としてメソッドチェーンでコピーの設定が行えるようにするためのクラス。
+     * </p>
+     *
+     */
+    @Published
     public static class Builder {
 
         private final Map<Class<?>, Converter<?>> typedConverters = new HashMap<Class<?>, Converter<?>>();
@@ -127,12 +216,29 @@ public final class CopyOptions {
         private final Collection<String> excludesProperties = new HashSet<String>();
         private final Collection<String> includesProperties = new HashSet<String>();
 
-        @Published
+        /**
+         * {@link CopyOptions#options()}でインスタンス化するためコンストラクタをprivateに設定している。
+         */
+        private Builder() {
+            //nop
+        }
+
+        /**
+         * 日付パターンを設定する。
+         * 
+         * @param pattern 日付パターン
+         * @return 自分自身
+         */
         public Builder datePattern(String pattern) {
             return datePatterns(Collections.singletonList(pattern));
         }
 
-        @Published
+        /**
+         * 日付パターンを設定する。
+         * 
+         * @param patterns 日付パターン
+         * @return 自分自身
+         */
         public Builder datePatterns(List<String> patterns) {
             //FIXME nablarch-jsr310-adaptor
             converter(String.class, new StringConverter(patterns.get(0), null));
@@ -142,12 +248,24 @@ public final class CopyOptions {
             return this;
         }
 
-        @Published
+        /**
+         * プロパティを指定して日付パターンを設定する。
+         * 
+         * @param propertyName 日付パターン適用対象のプロパティ名
+         * @param pattern 日付パターン
+         * @return 自分自身
+         */
         public Builder datePatternByName(String propertyName, String pattern) {
             return datePatternsByName(propertyName, Collections.singletonList(pattern));
         }
 
-        @Published
+        /**
+         * プロパティを指定して日付パターンを設定する。
+         * 
+         * @param propertyName 日付パターン適用対象のプロパティ名
+         * @param patterns 日付パターン
+         * @return 自分自身
+         */
         public Builder datePatternsByName(String propertyName, List<String> patterns) {
             //FIXME nablarch-jsr310-adaptor
             converterByName(propertyName, String.class, new StringConverter(patterns.get(0), null));
@@ -157,12 +275,22 @@ public final class CopyOptions {
             return this;
         }
 
-        @Published
+        /**
+         * 数値パターンを設定する。
+         * 
+         * @param pattern 数値パターン
+         * @return 自分自身
+         */
         public Builder numberPattern(String pattern) {
             return numberPatterns(Collections.singletonList(pattern));
         }
 
-        @Published
+        /**
+         * 数値パターンを設定する。
+         * 
+         * @param patterns 数値パターン
+         * @return 自分自身
+         */
         public Builder numberPatterns(List<String> patterns) {
             converter(String.class, new StringConverter(null, patterns.get(0)));
             converter(Integer.class, new IntegerConverter(patterns));
@@ -171,12 +299,24 @@ public final class CopyOptions {
             return this;
         }
 
-        @Published
+        /**
+         * プロパティを指定して数値パターンを設定する。
+         * 
+         * @param propertyName 数値パターン適用対象のプロパティ名
+         * @param pattern 数値パターン
+         * @return 自分自身
+         */
         public Builder numberPatternByName(String propertyName, String pattern) {
             return numberPatternsByName(propertyName, Collections.singletonList(pattern));
         }
 
-        @Published
+        /**
+         * プロパティを指定して数値パターンを設定する。
+         * 
+         * @param propertyName 数値パターン適用対象のプロパティ名
+         * @param patterns 数値パターン
+         * @return 自分自身
+         */
         public Builder numberPatternsByName(String propertyName, List<String> patterns) {
             converterByName(propertyName, String.class, new StringConverter(null, patterns.get(0)));
             converterByName(propertyName, Integer.class, new IntegerConverter(patterns));
@@ -185,13 +325,26 @@ public final class CopyOptions {
             return this;
         }
 
-        @Published(tag = "architect")
+        /**
+         * クラスに対応するコンバーターを設定する。
+         * 
+         * @param clazz コンバーター適用対象のクラス
+         * @param converter コンバーター
+         * @return 自分自身
+         */
         public <T> Builder converter(Class<T> clazz, Converter<T> converter) {
             addOrMergeConverter(typedConverters, clazz, converter);
             return this;
         }
 
-        @Published(tag = "architect")
+        /**
+         * プロパティを指定してクラスに対応するコンバーターを設定する。
+         * 
+         * @param propertyName コンバーター適用対象のプロパティ名
+         * @param clazz コンバーター適用対象のクラス
+         * @param converter コンバーター
+         * @return 自分自身
+         */
         public <T> Builder converterByName(String propertyName, Class<T> clazz,
                 Converter<T> converter) {
             Map<Class<?>, Converter<?>> converters = this.namedConverters.get(propertyName);
@@ -217,11 +370,22 @@ public final class CopyOptions {
             converters.put(clazz, newConverter);
         }
 
+        /**
+         * コピー元のプロパティが{@code null}の場合はコピーしないよう設定する。
+         * 
+         * @return 自分自身
+         */
         public Builder excludesNull() {
             this.excludesNull = true;
             return this;
         }
 
+        /**
+         * 指定されたプロパティをコピー対象外に設定する。
+         * 
+         * @param properties コピー対象外のプロパティ名
+         * @return 自分自身
+         */
         public Builder excludes(String... properties) {
             for (String property : properties) {
                 this.excludesProperties.add(property);
@@ -229,6 +393,12 @@ public final class CopyOptions {
             return this;
         }
 
+        /**
+         * 指定されたプロパティをコピー対象に設定する。
+         * 
+         * @param properties コピー対象のプロパティ名
+         * @return 自分自身
+         */
         public Builder includes(String... properties) {
             for (String property : properties) {
                 this.includesProperties.add(property);
@@ -236,7 +406,11 @@ public final class CopyOptions {
             return this;
         }
 
-        @Published
+        /**
+         * {@link CopyOptions}を構築する。
+         * 
+         * @return {@link CopyOptions}のインスタンス
+         */
         public CopyOptions build() {
             return new CopyOptions(typedConverters, namedConverters, excludesNull,
                     excludesProperties, includesProperties);

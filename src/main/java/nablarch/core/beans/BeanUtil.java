@@ -649,7 +649,7 @@ public final class BeanUtil {
      *
      * @param srcBean  コピー元のBeanオブジェクト
      * @param destBean コピー先のBeanオブジェクト
-     * @param copyOptions コピーオプション
+     * @param copyOptions コピーの設定
      * @param <SRC> コピー元のBeanの型
      * @param <DEST> コピー先のBeanの型
      * @return コピー先のBeanオブジェクト
@@ -740,6 +740,20 @@ public final class BeanUtil {
         return copyInner(srcBean, destBean, CopyOptions.options().build());
     }
 
+    /**
+     * BeanからBeanに値をコピーする。
+     * <p/>
+     * プロパティのコピーは{@code srcBean}に定義されたプロパティをベースに実行される。
+     * {@code srcBean}に存在し、{@code destBean}に存在しないプロパティはコピーされない。
+     * 
+     * @param srcBean  コピー元のBeanオブジェクト
+     * @param destBean コピー先のBeanオブジェクト
+     * @param copyOptions コピーの設定
+     * @param <SRC>  コピー元のBeanの型
+     * @param <DEST> コピー先のBeanの型
+     * @return コピー先のBeanオブジェクト
+     * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
+     */
     public static <SRC, DEST> DEST copy(final SRC srcBean, final DEST destBean, final CopyOptions copyOptions) {
         return copyInner(srcBean, destBean, copyOptions);
     }

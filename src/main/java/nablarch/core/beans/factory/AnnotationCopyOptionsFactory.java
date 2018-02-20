@@ -13,10 +13,30 @@ import nablarch.core.beans.BeansException;
 import nablarch.core.beans.CopyOption;
 import nablarch.core.beans.CopyOptions;
 
+/**
+ * {@link CopyOption}を読み取って{@link CopyOptions}を構築する{@link CopyOptionsFactory}の実装。
+ * 
+ * @author Taichi Uragami
+ *
+ */
 public final class AnnotationCopyOptionsFactory implements CopyOptionsFactory {
 
+    /**
+     * アノテーションの読み取り対象を{@code src}にするかどうかを表すフラグ。
+     * 
+     * <p>
+     * {@link true}の場合は{@code src}から読み取る。
+     * {@link false}の場合は{@code dest}から読み取る。
+     * </p>
+     * 
+     */
     private final boolean useSrc;
 
+    /**
+     * インスタンスを構築する。
+     * 
+     * @param useSrc アノテーションの読み取り対象を{@code src}にするかどうかを表すフラグ
+     */
     public AnnotationCopyOptionsFactory(boolean useSrc) {
         this.useSrc = useSrc;
     }
