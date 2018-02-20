@@ -659,23 +659,17 @@ public final class BeanUtil {
      * @param <DEST> コピー先のBeanの型
      * @return コピー先のBeanオブジェクト
      */
-    protected static <SRC, DEST> DEST copyInner(final SRC srcBean, final DEST destBean, final boolean excludesNull, final Collection<String> excludesProperties, final Collection<String> includesProperties, final CopyOptions copyOptions) {
+    protected static <SRC, DEST> DEST copyInner(final SRC srcBean, final DEST destBean, final boolean excludesNullUnused, final Collection<String> excludesPropertiesUnused, final Collection<String> includesPropertiesUnused, final CopyOptions copyOptions) {
 
         CopyOptions mergedCopyOptions = CopyOptionsFactoryManager.getInstance()
                 .createAndMergeCopyOptions(srcBean, destBean, copyOptions);
-
-        final Collection<String> excludesList = excludesProperties;
 
         final PropertyDescriptor[] srcPds = getPropertyDescriptors(srcBean.getClass());
         final PropertyDescriptor[] destPds = getPropertyDescriptors(destBean.getClass());
 
         for (PropertyDescriptor pd : srcPds) {
             final String propertyName = pd.getName();
-            if (excludesList.contains(propertyName)) {
-                continue;
-            }
-            if (includesProperties.isEmpty() == false
-                    && includesProperties.contains(propertyName) == false) {
+            if (copyOptions.isTargetProperty(propertyName) == false) {
                 continue;
             }
 
@@ -686,7 +680,7 @@ public final class BeanUtil {
 
             try {
                 final Object val = getter.invoke(srcBean);
-                if (!(excludesNull && val == null)) {
+                if (!(copyOptions.isExcludesNull() && val == null)) {
                     final PropertyDescriptor destPd = getPropertyDescriptor(destPds, propertyName);
                     if (mergedCopyOptions.hasNamedConverter(propertyName, destPd.getPropertyType())) {
                         setPropertyValue(destBean, destPd, mergedCopyOptions.convertByName(propertyName, destPd.getPropertyType(), val), false);
@@ -700,7 +694,7 @@ public final class BeanUtil {
                             if (innerDestBean == null) {
                                 innerDestBean = createInstance(destPd.getPropertyType());
                             }
-                            setPropertyValue(destBean, destPd, copyInner(val, innerDestBean, excludesNull, Collections.<String>emptySet(), Collections.<String>emptySet(), CopyOptions.options().build()), true);
+                            setPropertyValue(destBean, destPd, copyInner(val, innerDestBean, false, Collections.<String>emptySet(), Collections.<String>emptySet(), copyOptions.isExcludesNull() ? CopyOptions.options().excludesNull().build() : CopyOptions.options().build()), true);
                         }
                     }
                 }
@@ -765,7 +759,7 @@ public final class BeanUtil {
      * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
      */
     public static <SRC, DEST> DEST copyExcludesNull(final SRC srcBean, final DEST destBean) {
-        return copyInner(srcBean, destBean, true, Collections.<String>emptySet(), Collections.<String>emptySet(), CopyOptions.options().build());
+        return copyInner(srcBean, destBean, true, Collections.<String>emptySet(), Collections.<String>emptySet(), CopyOptions.options().excludesNull().build());
     }
 
     /**
@@ -792,7 +786,7 @@ public final class BeanUtil {
      * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
      */
     public static <SRC, DEST> DEST copyIncludes(final SRC srcBean, final DEST destBean, final String... includes) {
-        copyInner(srcBean, destBean, false, Collections.<String>emptySet(), Arrays.asList(includes), CopyOptions.options().build());
+        copyInner(srcBean, destBean, false, Collections.<String>emptySet(), Arrays.asList(includes), CopyOptions.options().includes(includes).build());
         return destBean;
     }
 
@@ -811,7 +805,7 @@ public final class BeanUtil {
      * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
      */
     public static <SRC, DEST> DEST copyExcludes(final SRC srcBean, final DEST destBean, final String... excludes) {
-        return copyInner(srcBean, destBean, false, Arrays.asList(excludes), Collections.<String>emptySet(), CopyOptions.options().build());
+        return copyInner(srcBean, destBean, false, Arrays.asList(excludes), Collections.<String>emptySet(), CopyOptions.options().excludes(excludes).build());
     }
 
     /**

@@ -1945,6 +1945,58 @@ public class BeanUtilTest {
     }
 
     @Test
+    public void CopyOptionsでincludesPropertiesを指定する() {
+        SelfNestedBean srcRoot = new SelfNestedBean();
+        srcRoot.setFoo("1");
+        srcRoot.setBar("2");
+        srcRoot.setBaz("3");
+
+        SelfNestedBean dest = new SelfNestedBean();
+
+        CopyOptions options = CopyOptions.options().includes("foo", "bar").build();
+        BeanUtil.copy(srcRoot, dest, options);
+
+        assertThat(dest.getFoo(), is("1"));
+        assertThat(dest.getBar(), is("2"));
+        assertThat(dest.getBaz(), is(nullValue()));
+    }
+
+    @Test
+    public void CopyOptionsでexcludesPropertiesを指定する() {
+        SelfNestedBean srcRoot = new SelfNestedBean();
+        srcRoot.setFoo("1");
+        srcRoot.setBar("2");
+        srcRoot.setBaz("3");
+
+        SelfNestedBean dest = new SelfNestedBean();
+
+        CopyOptions options = CopyOptions.options().excludes("foo", "bar").build();
+        BeanUtil.copy(srcRoot, dest, options);
+
+        assertThat(dest.getFoo(), is(nullValue()));
+        assertThat(dest.getBar(), is(nullValue()));
+        assertThat(dest.getBaz(), is("3"));
+    }
+
+    @Test
+    public void CopyOptionsでexcludesNullを指定する() {
+        SelfNestedBean srcRoot = new SelfNestedBean();
+        srcRoot.setFoo("1");
+        srcRoot.setBar("2");
+        srcRoot.setBaz(null);
+
+        SelfNestedBean dest = new SelfNestedBean();
+        dest.setBaz("3");
+
+        CopyOptions options = CopyOptions.options().excludesNull().build();
+        BeanUtil.copy(srcRoot, dest, options);
+
+        assertThat(dest.getFoo(), is("1"));
+        assertThat(dest.getBar(), is("2"));
+        assertThat(dest.getBaz(), is("3"));
+    }
+
+    @Test
     public void ネストしたbeanにはexcludesPropertiesは引き継がれない() {
         SelfNestedBean srcChild = new SelfNestedBean();
         srcChild.setFoo("1");
