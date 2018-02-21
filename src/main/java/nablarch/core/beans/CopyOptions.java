@@ -1,7 +1,13 @@
 package nablarch.core.beans;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,6 +34,8 @@ import nablarch.core.util.annotation.Published;
  */
 public final class CopyOptions {
 
+    /** 空の{@link CopyOptions} */
+    private static final CopyOptions EMPTY = options().build();
     /** クラスに紐づいたコンバーター */
     private final Map<Class<?>, Converter<?>> typedConverters;
     /** プロパティ名とクラスに紐づいたコンバーター */
@@ -71,6 +79,59 @@ public final class CopyOptions {
     @Published
     public static Builder options() {
         return new Builder();
+    }
+
+    /**
+     * 空の{@link CopyOptions}を取得する。
+     *  
+     * @return 空の{@link CopyOptions}
+     */
+    public static CopyOptions empty() {
+        return EMPTY;
+    }
+
+    /**
+     * {@link CopyOption}アノテーションを読み取って構築された{@link CopyOptions}を取得する。
+     * 
+     * @param clazz アノテーションを読み取る対象のクラス
+     * @return {@link CopyOption}アノテーションを読み取って構築された{@link CopyOptions}
+     */
+    public static CopyOptions fromAnnotation(Class<?> clazz) {
+        CopyOptions.Builder builder = CopyOptions.options();
+        try {
+            Map<String, Field> fields = new HashMap<String, Field>();
+            for (Class<?> c = clazz; c != Object.class; c = c.getSuperclass()) {
+                for (Field field : c.getDeclaredFields()) {
+                    String name = field.getName();
+                    if (fields.containsKey(name) == false) {
+                        fields.put(name, field);
+                    }
+                }
+            }
+            BeanInfo beanInfo = Introspector.getBeanInfo(clazz, Object.class);
+            for (PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {
+                String propertyName = pd.getName();
+                Field field = fields.get(propertyName);
+                if (field == null) {
+                    continue;
+                }
+                CopyOption copyOption = field.getAnnotation(CopyOption.class);
+                if (copyOption == null) {
+                    continue;
+                }
+                if (copyOption.datePattern().length > 0) {
+                    builder.datePatternsByName(propertyName,
+                            Arrays.asList(copyOption.datePattern()));
+                }
+                if (copyOption.numberPattern().length > 0) {
+                    builder.numberPatternsByName(propertyName,
+                            Arrays.asList(copyOption.numberPattern()));
+                }
+            }
+        } catch (IntrospectionException e) {
+            throw new BeansException(e);
+        }
+        return builder.build();
     }
 
     /**

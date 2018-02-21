@@ -332,6 +332,19 @@ public class CopyOptionsTest {
                 is(sameInstance(provider.mockNumberConverter.mockValue)));
     }
 
+    @Test
+    public void アノテーションからCopyOptionsを構築する() {
+        CopyOptions copyOptions = CopyOptions.fromAnnotation(AnnotatedBean.class);
+        assertThat(copyOptions.hasNamedConverter("foo", String.class), is(true));
+        assertThat(copyOptions.hasNamedConverter("bar", String.class), is(false));
+        assertThat(copyOptions.hasNamedConverter("baz", String.class), is(false));
+
+        assertThat(
+                (String) copyOptions.convertByName("foo", String.class,
+                        Timestamp.valueOf("2018-02-19 00:00:00")),
+                is("2018/02/19"));
+    }
+
     private static java.util.Date date(String sqlTimestampPattern) {
         return new java.util.Date(Timestamp.valueOf(sqlTimestampPattern).getTime());
     }
@@ -360,6 +373,38 @@ public class CopyOptionsTest {
         public Map<Class<?>, Converter<?>> provideNumberConverters(List<String> patterns) {
             return Collections.<Class<?>, Converter<?>> singletonMap(Object.class,
                     mockNumberConverter);
+        }
+    }
+
+    public static class AnnotatedBean {
+
+        @CopyOption(datePattern = "yyyy/MM/dd")
+        private String foo;
+        private String bar;
+        private String baz;
+
+        public String getFoo() {
+            return foo;
+        }
+
+        public void setFoo(String foo) {
+            this.foo = foo;
+        }
+
+        public String getBar() {
+            return bar;
+        }
+
+        public void setBar(String bar) {
+            this.bar = bar;
+        }
+
+        public String getBaz() {
+            return baz;
+        }
+
+        public void setBaz(String baz) {
+            this.baz = baz;
         }
     }
 }
