@@ -71,10 +71,9 @@ public class CopyOptionsFactoryManager {
 
     private static CopyOptionsFactoryManager createDefaultInstance() {
         CopyOptionsFactoryManager instance = new CopyOptionsFactoryManager();
-        instance.setCopyOptionsFactories(Arrays.asList(
+        instance.setCopyOptionsFactories(Arrays.<CopyOptionsFactory> asList(
                 new AnnotationCopyOptionsFactory(true),
-                new AnnotationCopyOptionsFactory(false),
-                GlobalCopyOptionsFactory.getInstance()));
+                new AnnotationCopyOptionsFactory(false)));
         return instance;
     }
 }

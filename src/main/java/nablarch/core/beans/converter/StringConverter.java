@@ -82,6 +82,6 @@ public class StringConverter implements Mergeable<String, StringConverter> {
     public StringConverter merge(StringConverter other) {
         return new StringConverter(
                 datePattern != null ? datePattern : other.datePattern,
-                numberPattern != null ? datePattern : other.numberPattern);
+                numberPattern != null ? numberPattern : other.numberPattern);
     }
 }
