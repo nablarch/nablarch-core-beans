@@ -1,8 +1,5 @@
 package nablarch.core.beans.converter;
 
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.util.Collections;
 import java.util.List;
 
 import nablarch.core.beans.ConversionException;
@@ -33,16 +30,13 @@ import nablarch.core.beans.Converter;
  * @author kawasima
  * @author tajima
  */
-public class LongConverter implements Converter<Long> {
-
-    /** 数値パターン */
-    private final List<String> patterns;
+public class LongConverter extends AbstractNumberConverter<Long> {
 
     /**
      * デフォルトコンストラクタ
      */
     public LongConverter() {
-        this.patterns = Collections.emptyList();
+        super();
     }
 
     /**
@@ -51,7 +45,7 @@ public class LongConverter implements Converter<Long> {
      * @param patterns 数値パターン
      */
     public LongConverter(List<String> patterns) {
-        this.patterns = patterns;
+        super(patterns);
     }
 
     @Override
@@ -69,22 +63,8 @@ public class LongConverter implements Converter<Long> {
         }
     }
 
-    private Long convertFromString(String value) {
-        if (patterns.isEmpty() == false) {
-            ParseException lastThrownException = null;
-            for (String pattern : patterns) {
-                try {
-                    return this.convert(new DecimalFormat(pattern).parse(value));
-                } catch (ParseException ignore) {
-                    //複数のパターンを順番に試すのでParseExceptionは無視する
-                    lastThrownException = ignore;
-                }
-            }
-            //すべてのパターンが失敗した場合は例外をスロー
-            throw new IllegalArgumentException(
-                    "the string was not formatted " + patterns + ". number = " + value + ".",
-                    lastThrownException);
-        }
+    @Override
+    protected Long convertFromStringWithoutPattern(String value) {
         try {
             return Long.parseLong(value);
         } catch (NumberFormatException e) {

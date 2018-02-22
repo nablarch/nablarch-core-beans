@@ -2,9 +2,6 @@ package nablarch.core.beans.converter;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.util.Collections;
 import java.util.List;
 
 import nablarch.core.beans.ConversionException;
@@ -36,16 +33,22 @@ import nablarch.core.util.NumberUtil;
  * @author kawasima
  * @author tajima
  */
-public class BigDecimalConverter implements Converter<BigDecimal> {
+public class BigDecimalConverter extends AbstractNumberConverter<BigDecimal> {
 
-    private final List<String> patterns;
-
+    /**
+     * デフォルトコンストラクタ
+     */
     public BigDecimalConverter() {
-        this.patterns = Collections.emptyList();
+        super();
     }
 
+    /**
+     * 数値パターンを設定してインスタンスを構築する。
+     * 
+     * @param patterns 数値パターン
+     */
     public BigDecimalConverter(List<String> patterns) {
-        this.patterns = patterns;
+        super(patterns);
     }
 
     @Override
@@ -77,22 +80,8 @@ public class BigDecimalConverter implements Converter<BigDecimal> {
         }
     }
 
-    private BigDecimal convertFromString(String value) {
-        if (patterns.isEmpty() == false) {
-            ParseException lastThrownException = null;
-            for (String pattern : patterns) {
-                try {
-                    return this.convert(new DecimalFormat(pattern).parse(value));
-                } catch (ParseException ignore) {
-                    //複数のパターンを順番に試すのでParseExceptionは無視する
-                    lastThrownException = ignore;
-                }
-            }
-            //すべてのパターンが失敗した場合は例外をスロー
-            throw new IllegalArgumentException(
-                    "the string was not formatted " + patterns + ". number = " + value + ".",
-                    lastThrownException);
-        }
+    @Override
+    protected BigDecimal convertFromStringWithoutPattern(String value) {
         return new BigDecimal(value);
     }
 }
