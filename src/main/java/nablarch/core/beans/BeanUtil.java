@@ -569,19 +569,8 @@ public final class BeanUtil {
      *   {@code beanClass}のコンストラクタ実行時に問題が発生した場合。
      */
     public static <T> T createAndCopyIncludes(final Class<T> beanClass, final Map<String, ?> map, final String... includes) {
-        final T bean = createInstance(beanClass);
-        if (map == null) {
-            return bean;
-        }
-
-        for (String include : includes) {
-            try {
-                setProperty(bean, include, map.get(include));
-            } catch (BeansException bex) {
-                LOGGER.logDebug("An error occurred while writing to the property :" + include);
-            }
-        }
-        return bean;
+        CopyOptions copyOptions = CopyOptions.options().includes(includes).build();
+        return createAndCopy(beanClass, map, copyOptions);
     }
 
     /**
@@ -607,23 +596,8 @@ public final class BeanUtil {
      *   {@code beanClass}のコンストラクタ実行時に問題が発生した場合。
      */
     public static <T> T createAndCopyExcludes(final Class<T> beanClass, final Map<String, ?> map, final String... excludes) {
-        final T bean = createInstance(beanClass);
-        if (map == null) {
-            return bean;
-        }
-
-        List<String> excludesList = Arrays.asList(excludes);
-        for (Map.Entry<String, ?> entry : map.entrySet()) {
-            try {
-                if (excludesList.contains(entry.getKey())) {
-                    continue;
-                }
-                setProperty(bean, entry.getKey(), entry.getValue());
-            } catch (BeansException bex) {
-                LOGGER.logDebug("An error occurred while writing to the property :" + entry.getKey());
-            }
-        }
-        return bean;
+        CopyOptions copyOptions = CopyOptions.options().excludes(excludes).build();
+        return createAndCopy(beanClass, map, copyOptions);
     }
 
     /**
@@ -680,11 +654,8 @@ public final class BeanUtil {
      *   {@code beanClass}のデフォルトコンストラクタの実行中に問題が発生した場合。
      */
     public static <T> T createAndCopyIncludes(final Class<T> beanClass, final Object srcBean, final String... includes) {
-        final T bean = createInstance(beanClass);
-        if (srcBean == null) {
-            return bean;
-        }
-        return copyIncludes(srcBean, bean, includes);
+        CopyOptions copyOptions = CopyOptions.options().includes(includes).build();
+        return createAndCopy(beanClass, srcBean, copyOptions);
     }
 
     /**
@@ -705,11 +676,8 @@ public final class BeanUtil {
      *   {@code beanClass}のプロパティのデフォルトコンストラクタの実行中に問題が発生した場合。
      */
     public static <T> T createAndCopyExcludes(final Class<T> beanClass, final Object srcBean, final String... excludes) {
-        final T bean = createInstance(beanClass);
-        if (srcBean == null) {
-            return bean;
-        }
-        return copyExcludes(srcBean, bean, excludes);
+        CopyOptions copyOptions = CopyOptions.options().excludes(excludes).build();
+        return createAndCopy(beanClass, srcBean, copyOptions);
     }
 
     /**
