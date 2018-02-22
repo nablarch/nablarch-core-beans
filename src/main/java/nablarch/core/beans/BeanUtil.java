@@ -776,7 +776,7 @@ public final class BeanUtil {
      * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
      */
     public static <SRC, DEST> DEST copy(final SRC srcBean, final DEST destBean) {
-        return copyInner(srcBean, destBean, CopyOptions.options().build());
+        return copyInner(srcBean, destBean, CopyOptions.empty());
     }
 
     /**
