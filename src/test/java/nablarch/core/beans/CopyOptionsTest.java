@@ -372,6 +372,32 @@ public class CopyOptionsTest {
                 is("1,234,567,890"));
     }
 
+    @Test
+    public void Converterの追加は先勝ちとする() {
+        MockConverter converter1 = new MockConverter();
+        MockConverter converter2 = new MockConverter();
+        CopyOptions copyOptions = CopyOptions.options()
+                .converter(Object.class, converter1)
+                .converter(Object.class, converter2)
+                .build();
+
+        assertThat(copyOptions.convertByType(Object.class, null),
+                is(sameInstance(converter1.mockValue)));
+    }
+
+    @Test
+    public void 名前付きConverterの追加は先勝ちとする() {
+        MockConverter converter1 = new MockConverter();
+        MockConverter converter2 = new MockConverter();
+        CopyOptions copyOptions = CopyOptions.options()
+                .converterByName("foo", Object.class, converter1)
+                .converterByName("foo", Object.class, converter2)
+                .build();
+
+        assertThat(copyOptions.convertByName("foo", Object.class, null),
+                is(sameInstance(converter1.mockValue)));
+    }
+
     private static java.util.Date date(String sqlTimestampPattern) {
         return new java.util.Date(Timestamp.valueOf(sqlTimestampPattern).getTime());
     }

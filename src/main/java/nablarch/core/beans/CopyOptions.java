@@ -455,6 +455,11 @@ public final class CopyOptions {
          * 渡された{@link Converter}と同じクラスであればマージした結果が登録される。
          * </p>
          * 
+         * <p>
+         * 既に登録されている{@link Converter}があり、
+         * それが{@link Mergeable}の実装クラスでなければ何もせずメソッドを終了する。
+         * </p>
+         * 
          * @param converters 登録される{@link Map}
          * @param clazz {@link Map}のキーとなるクラス
          * @param converter {@link Map}の値となる{@link Converter}
@@ -468,6 +473,8 @@ public final class CopyOptions {
                 if (registered instanceof Mergeable
                         && registered.getClass() == converter.getClass()) {
                     newConverter = ((Mergeable) registered).merge((Mergeable) converter);
+                } else {
+                    return;
                 }
             }
             converters.put(clazz, newConverter);
