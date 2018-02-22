@@ -239,7 +239,7 @@ public class CopyOptionsTest {
 
     @Test
     public void isExcludesNullデフォルト() {
-        CopyOptions sut = CopyOptions.options().build();
+        CopyOptions sut = CopyOptions.empty();
         assertThat(sut.isExcludesNull(), is(false));
     }
 
@@ -252,7 +252,7 @@ public class CopyOptionsTest {
     @Test
     public void excludesNullはマージ元が優先される() {
         CopyOptions excludesNull = CopyOptions.options().excludesNull().build();
-        CopyOptions includesNull = CopyOptions.options().build();
+        CopyOptions includesNull = CopyOptions.empty();
         assertThat(excludesNull.merge(includesNull).isExcludesNull(), is(true));
         assertThat(includesNull.merge(excludesNull).isExcludesNull(), is(false));
     }

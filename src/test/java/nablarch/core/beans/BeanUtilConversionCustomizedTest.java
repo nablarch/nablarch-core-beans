@@ -29,7 +29,7 @@ public class BeanUtilConversionCustomizedTest {
         srcBean.setBar("20180215");
         srcBean.setBaz("20180216");
         DateDest destBean = new DateDest();
-        CopyOptions copyOptions = CopyOptions.options().build();
+        CopyOptions copyOptions = CopyOptions.empty();
         BeanUtil.copy(srcBean, destBean, copyOptions);
 
         assertThat(destBean.getFoo(), is(date("2018-02-14 00:00:00")));
@@ -45,7 +45,7 @@ public class BeanUtilConversionCustomizedTest {
         destBean.setBaz(Timestamp.valueOf("2018-02-16 00:00:00"));
 
         Src srcBean = new Src();
-        CopyOptions copyOptions = CopyOptions.options().build();
+        CopyOptions copyOptions = CopyOptions.empty();
         BeanUtil.copy(destBean, srcBean, copyOptions);
 
         assertThat(srcBean.getFoo(), is("Wed Feb 14 00:00:00 JST 2018"));
@@ -60,7 +60,7 @@ public class BeanUtilConversionCustomizedTest {
         srcBean.setBar("2018/02/15");
         srcBean.setBaz("2018/02/16");
         DateDest destBean = new DateDest();
-        CopyOptions copyOptions = CopyOptions.options().build();
+        CopyOptions copyOptions = CopyOptions.empty();
         BeanUtil.copy(srcBean, destBean, copyOptions);
 
         assertThat(destBean.getFoo(), is(nullValue()));
@@ -217,7 +217,7 @@ public class BeanUtilConversionCustomizedTest {
         srcBean.setBar("1234567890");
         srcBean.setBaz("1234567890");
         NumberDest destBean = new NumberDest();
-        CopyOptions copyOptions = CopyOptions.options().build();
+        CopyOptions copyOptions = CopyOptions.empty();
         BeanUtil.copy(srcBean, destBean, copyOptions);
 
         assertThat(destBean.getFoo(), is(1234567890));
@@ -233,7 +233,7 @@ public class BeanUtilConversionCustomizedTest {
         destBean.setBaz(new BigDecimal("1234567890"));
 
         Src srcBean = new Src();
-        CopyOptions copyOptions = CopyOptions.options().build();
+        CopyOptions copyOptions = CopyOptions.empty();
         BeanUtil.copy(destBean, srcBean, copyOptions);
 
         assertThat(srcBean.getFoo(), is("1234567890"));
@@ -248,7 +248,7 @@ public class BeanUtilConversionCustomizedTest {
         srcBean.setBar("1,234,567,890");
         srcBean.setBaz("1,234,567,890");
         NumberDest destBean = new NumberDest();
-        CopyOptions copyOptions = CopyOptions.options().build();
+        CopyOptions copyOptions = CopyOptions.empty();
         BeanUtil.copy(srcBean, destBean, copyOptions);
 
         assertThat(destBean.getFoo(), is(nullValue()));
