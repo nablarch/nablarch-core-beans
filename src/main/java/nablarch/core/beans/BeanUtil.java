@@ -482,25 +482,68 @@ public final class BeanUtil {
      * @param map
      *   JavaBeansのプロパティ名をエントリーのキー
      *   プロパティの値をエントリーの値とするMap
+     * @param copyOptions コピーの設定
+     * @return プロパティに値が登録されたBeanオブジェクト
+     * @throws BeansException
+     *   {@code beanClass}にデフォルトコンストラクタが定義されていない場合や、
+     *   {@code beanClass}のコンストラクタ実行時に問題が発生した場合。
+     */
+    public static <T> T createAndCopy(final Class<T> beanClass, final Map<String, ?> map,
+            final CopyOptions copyOptions) {
+        final T bean = createInstance(beanClass);
+        if (map == null) {
+            return bean;
+        }
+
+        final CopyOptions mergedCopyOptions = copyOptions
+                .merge(CopyOptions.fromAnnotation(beanClass));
+        final PropertyDescriptor[] pds = getPropertyDescriptors(beanClass);
+
+        for (Map.Entry<String, ?> entry : map.entrySet()) {
+            final String propertyName = entry.getKey();
+            if (mergedCopyOptions.isTargetProperty(propertyName) == false) {
+                continue;
+            }
+            PropertyDescriptor pd = null;
+            try {
+                pd = getPropertyDescriptor(pds, propertyName);
+            } catch (BeansException ignore) {
+                //props[1] といった名前の場合はプロパティを取得できない
+            }
+            try {
+                final Object value = entry.getValue();
+                if (pd != null && hasConverter(pd, mergedCopyOptions)) {
+                    setPropertyValue(bean, pd, value, mergedCopyOptions);
+                } else {
+                    setProperty(bean, propertyName, value);
+                }
+            } catch (BeansException bex) {
+                LOGGER.logDebug(
+                        "An error occurred while writing to the property :" + entry.getKey());
+            }
+        }
+        return bean;
+    }
+
+    /**
+     * {@link Map}からBeanを生成する。
+     * 
+     * <p>
+     * 内部的には空の{@link CopyOptions}を渡して{@link #createAndCopy(Class, Map, CopyOptions)}を呼び出している。
+     * </p>
+     * 
+     * @param <T> 型引数
+     * @param beanClass 生成したいBeanクラス
+     * @param map
+     *   JavaBeansのプロパティ名をエントリーのキー
+     *   プロパティの値をエントリーの値とするMap
      * @return プロパティに値が登録されたBeanオブジェクト
      * @throws BeansException
      *   {@code beanClass}にデフォルトコンストラクタが定義されていない場合や、
      *   {@code beanClass}のコンストラクタ実行時に問題が発生した場合。
      */
     public static <T> T createAndCopy(final Class<T> beanClass, final Map<String, ?> map) {
-        final T bean = createInstance(beanClass);
-        if (map == null) {
-            return bean;
-        }
-
-        for (Map.Entry<String, ?> entry : map.entrySet()) {
-            try {
-                setProperty(bean, entry.getKey(), entry.getValue());
-            } catch (BeansException bex) {
-                LOGGER.logDebug("An error occurred while writing to the property :" + entry.getKey());
-            }
-        }
-        return bean;
+        return createAndCopy(beanClass, map, CopyOptions.empty());
     }
 
     /**
