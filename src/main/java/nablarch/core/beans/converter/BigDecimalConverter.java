@@ -82,7 +82,7 @@ public class BigDecimalConverter implements Converter<BigDecimal> {
             ParseException lastThrownException = null;
             for (String pattern : patterns) {
                 try {
-                    return this.convert(new DecimalFormat(pattern).parse(String.class.cast(value)));
+                    return this.convert(new DecimalFormat(pattern).parse(value));
                 } catch (ParseException ignore) {
                     //複数のパターンを順番に試すのでParseExceptionは無視する
                     lastThrownException = ignore;
