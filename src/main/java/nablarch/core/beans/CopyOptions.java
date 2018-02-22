@@ -149,6 +149,15 @@ public final class CopyOptions {
                 merge(includesProperties, other.includesProperties));
     }
 
+    /**
+     * ふたつの{@link Map}をマージして作られた新しい{@link Map}を返す。
+     * 
+     * @param <K> キーの型
+     * @param <V> 値の型
+     * @param main ベースとなる{@link Map}
+     * @param sub マージされる{@link Map}
+     * @return マージされた{@link Map}
+     */
     private static <K, V> Map<K, V> merge(Map<K, V> main, Map<K, V> sub) {
         HashMap<K, V> merged = new HashMap<K, V>(main);
         for (K key : sub.keySet()) {
@@ -159,6 +168,13 @@ public final class CopyOptions {
         return merged;
     }
 
+    /**
+     * ふたつの{@link Collection}をマージして作られた新しい{@link Map}を返す。
+     * 
+     * @param main ベースとなる{@link Collection}
+     * @param sub マージされる{@link Collection}
+     * @return マージされた{@link Collection}
+     */
     private static Collection<String> merge(Collection<String> main, Collection<String> sub) {
         HashSet<String> merged = new HashSet<String>();
         merged.addAll(main);
@@ -170,7 +186,7 @@ public final class CopyOptions {
      * 指定されたクラスに紐づいたコンバーターを保持しているかどうかを返す。
      * 
      * @param clazz クラス
-     * @return 指定されたクラスに紐づいたコンバーターを保持していれば{@link true}
+     * @return 指定されたクラスに紐づいたコンバーターを保持していれば{@code true}
      */
     public boolean hasTypedConverter(Class<?> clazz) {
         return typedConverters.containsKey(clazz);
@@ -181,7 +197,7 @@ public final class CopyOptions {
      * 
      * @param propertyName プロパティ名
      * @param clazz クラス
-     * @return 指定されたプロパティ名とクラスに紐づいたコンバーターを保持していれば{@link true}
+     * @return 指定されたプロパティ名とクラスに紐づいたコンバーターを保持していれば{@code true}
      */
     public boolean hasNamedConverter(String propertyName, Class<?> clazz) {
         return namedConverters.containsKey(propertyName)
@@ -239,7 +255,7 @@ public final class CopyOptions {
     /**
      * コピー元プロパティが{@code null}の場合にコピーしないかどうかを返す。
      * 
-     * @return コピー元プロパティが{@code null}の場合にコピーしない場合は{@link true}
+     * @return コピー元プロパティが{@code null}の場合にコピーしない場合は{@code true}
      */
     public boolean isExcludesNull() {
         return excludesNull;
@@ -249,7 +265,7 @@ public final class CopyOptions {
      * 指定されたプロパティがコピー対象かどうかを返す。
      * 
      * @param propertyName プロパティ名
-     * @return コピー対象なら{@link true}
+     * @return コピー対象なら{@code true}
      */
     public boolean isTargetProperty(String propertyName) {
         if (excludesProperties.contains(propertyName)) {
@@ -414,6 +430,13 @@ public final class CopyOptions {
             return this;
         }
 
+        /**
+         * プロパティ名を指定して{@link #namedConverters}から{@link Map}を取得する。
+         * 取得できない場合は新しい{@link Map}を生成して{@link #namedConverters}へ登録する。
+         * 
+         * @param propertyName プロパティ名
+         * @return {@link #namedConverters}から取得された{@link Map}
+         */
         private Map<Class<?>, Converter<?>> getOrCreateConverters(String propertyName) {
             Map<Class<?>, Converter<?>> converters = this.namedConverters.get(propertyName);
             if (converters == null) {
@@ -423,6 +446,19 @@ public final class CopyOptions {
             return converters;
         }
 
+        /**
+         * 指定された{@link Map}に{@link Converter}を登録する。
+         * 
+         * <p>
+         * 既に登録されている{@link Converter}があり、
+         * それが{@link Mergeable}の実装クラスであり、
+         * 渡された{@link Converter}と同じクラスであればマージした結果が登録される。
+         * </p>
+         * 
+         * @param converters 登録される{@link Map}
+         * @param clazz {@link Map}のキーとなるクラス
+         * @param converter {@link Map}の値となる{@link Converter}
+         */
         @SuppressWarnings({ "unchecked", "rawtypes" })
         private static void addOrMergeConverter(Map<Class<?>, Converter<?>> converters,
                 Class<?> clazz, Converter<?> converter) {
@@ -437,6 +473,12 @@ public final class CopyOptions {
             converters.put(clazz, newConverter);
         }
 
+        /**
+         * 指定された{@link Map}にもう一方の{@link Map}の内容を登録する。
+         * 
+         * @param converters ベースとなる{@link Map}
+         * @param addMe マージされる{@link Map}
+         */
         private static void addOrMergeConverters(Map<Class<?>, Converter<?>> converters,
                 Map<Class<?>, Converter<?>> addMe) {
             for (Entry<Class<?>, Converter<?>> entry : addMe.entrySet()) {
@@ -492,6 +534,16 @@ public final class CopyOptions {
                     excludesProperties, includesProperties);
         }
 
+        /**
+         * {@link ConvertersProvider}インスタンスを取得する。
+         * 
+         * <p>
+         * {@link SystemRepository}から取得を試みて、取得できればそれを返す。
+         * 取得できなければ{@link #DEFAULT_CONVERTERS_PROVIDER}を返す。
+         * </p>
+         * 
+         * @return {@link ConvertersProvider}インスタンス
+         */
         private static ConvertersProvider getConvertersProvider() {
             ConvertersProvider provider = SystemRepository.get(CONVERTERS_PROVIDER_NAME);
             if (provider != null) {

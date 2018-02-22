@@ -69,6 +69,22 @@ public class DateConverter implements Converter<Date> {
         }
     }
 
+    /**
+     * {@link String}型の値を変換する。
+     * 
+     * <p>
+     * 日付パターンが設定されている場合は日付パターンによる変換を試行する。
+     * 日付パターンは複数設定でき、1つずつ試行をして変換が出来た最初の値を返す。
+     * 全ての日付パターンで変換が失敗した場合は{@link IllegalArgumentException}をスローする。
+     * </p>
+     * 
+     * <p>
+     * 日付パターンが設定されていない場合は{@link DateUtil#getDate(String)}に処理を委譲する。
+     * </p>
+     * 
+     * @param value 変換前の値
+     * @return 変換された値
+     */
     Date convertFromString(String value) {
         if (patterns.isEmpty() == false) {
             ParseException lastThrownException = null;

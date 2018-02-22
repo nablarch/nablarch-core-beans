@@ -730,6 +730,13 @@ public final class BeanUtil {
         return destBean;
     }
 
+    /**
+     * 指定されたプロパティの情報をもとに有効な{@link Converter}または{@link ExtensionConverter}が存在するか判定する。
+     * 
+     * @param pd プロパティの情報
+     * @param copyOptions コピーの設定
+     * @return 有効な{@link Converter}または{@link ExtensionConverter}が存在する場合は{@code true}
+     */
     private static boolean hasConverter(PropertyDescriptor pd, CopyOptions copyOptions) {
         String propertyName = pd.getName();
         Class<?> clazz = pd.getPropertyType();
