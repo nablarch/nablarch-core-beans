@@ -109,6 +109,22 @@ public class CopyOptionsTest {
     }
 
     @Test
+    public void convertByNameプロパティ名に対応するコンバーターのMapが無い場合() {
+        expectedException.expect(IllegalArgumentException.class);
+        CopyOptions sut = CopyOptions.empty();
+        sut.convertByName("baz", java.util.Date.class, "20180214");
+    }
+
+    @Test
+    public void convertByNameコンバーターが無い場合() {
+        expectedException.expect(IllegalArgumentException.class);
+        CopyOptions sut = CopyOptions.options()
+                .converterByName("baz", Object.class, new MockConverter())
+                .build();
+        sut.convertByName("baz", java.util.Date.class, "20180214");
+    }
+
+    @Test
     public void datePatterns() {
         CopyOptions sut = CopyOptions.options()
                 .datePatterns(Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
@@ -185,6 +201,13 @@ public class CopyOptionsTest {
         CopyOptions sut = CopyOptions.options()
                 .datePatterns(Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
                 .build();
+        sut.convertByType(java.util.Date.class, "20180214");
+    }
+
+    @Test
+    public void convertByTypeコンバーターが無い場合() {
+        expectedException.expect(IllegalArgumentException.class);
+        CopyOptions sut = CopyOptions.empty();
         sut.convertByType(java.util.Date.class, "20180214");
     }
 
@@ -336,13 +359,17 @@ public class CopyOptionsTest {
     public void アノテーションからCopyOptionsを構築する() {
         CopyOptions copyOptions = CopyOptions.fromAnnotation(AnnotatedBean.class);
         assertThat(copyOptions.hasNamedConverter("foo", String.class), is(true));
-        assertThat(copyOptions.hasNamedConverter("bar", String.class), is(false));
+        assertThat(copyOptions.hasNamedConverter("bar", String.class), is(true));
         assertThat(copyOptions.hasNamedConverter("baz", String.class), is(false));
 
         assertThat(
                 (String) copyOptions.convertByName("foo", String.class,
                         Timestamp.valueOf("2018-02-19 00:00:00")),
                 is("2018/02/19"));
+        assertThat(
+                (String) copyOptions.convertByName("bar", String.class,
+                        1234567890),
+                is("1,234,567,890"));
     }
 
     private static java.util.Date date(String sqlTimestampPattern) {
@@ -380,6 +407,7 @@ public class CopyOptionsTest {
 
         @CopyOption(datePattern = "yyyy/MM/dd")
         private String foo;
+        @CopyOption(numberPattern = "#,###")
         private String bar;
         private String baz;
 
