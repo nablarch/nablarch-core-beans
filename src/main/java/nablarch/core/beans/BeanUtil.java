@@ -889,7 +889,7 @@ public final class BeanUtil {
      * BeanからMapにプロパティの値をコピーする。
      * 
      * <p>
-     * 内部的には空の{@link CopyOptions}を渡して{@link #createAndCopy(Class, Map, CopyOptions)}を呼び出している。
+     * 内部的には空の{@link CopyOptions}を渡して{@link #createMapAndCopy(Object, CopyOptions)}を呼び出している。
      * </p>
      * 
      * @param srcBean Bean
