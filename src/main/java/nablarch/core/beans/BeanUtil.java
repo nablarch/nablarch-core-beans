@@ -916,7 +916,7 @@ public final class BeanUtil {
      */
     public static <SRC> Map<String, Object> createMapAndCopyExcludes(final SRC srcBean,
             final String... excludeProperties) {
-        return createMapInner(srcBean, "", CopyOptions.options().excludes(excludeProperties).build());
+        return createMapAndCopy(srcBean, CopyOptions.options().excludes(excludeProperties).build());
     }
 
     /**
@@ -935,7 +935,7 @@ public final class BeanUtil {
      * @return BeanのプロパティをコピーしたMap
      */
     public static <SRC> Map<String, Object> createMapAndCopyIncludes(SRC srcBean, String... includesProperties) {
-        return createMapInner(srcBean, "", CopyOptions.options().includes(includesProperties).build());
+        return createMapAndCopy(srcBean, CopyOptions.options().includes(includesProperties).build());
     }
 
     /**
