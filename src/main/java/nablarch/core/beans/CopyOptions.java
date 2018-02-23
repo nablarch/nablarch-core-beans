@@ -128,6 +128,58 @@ public final class CopyOptions {
     }
 
     /**
+     * {@link #cloneForNestedObjectInCreateMapInner()}から呼び出されるコンストラクタ。
+     * 
+     * <p>
+     * 深くネストされたオブジェクトがコピーされる場合、
+     * {@link Collections#unmodifiableMap(Map)}および{@link Collections#unmodifiableCollection(Collection)}で多重にラップされることを避けるために、
+     * このコンストラクタは定義されている。
+     * </p>
+     * 
+     * <p>
+     * <strong>このコンストラクタの呼び出し元は{@link #cloneForNestedObjectInCreateMapInner()}メソッドだけを想定している。
+     * その他のメソッドからは呼び出してはいけない。</strong>
+     * </p>
+     * 
+     * @param typedConverters クラスに紐づいたコンバーター
+     * @param namedConverters プロパティ名とクラスに紐づいたコンバーター
+     * @param excludesNull コピー元プロパティが{@code null}の場合にコピーしないかどうかを決定するフラグ
+     * @param excludesProperties コピー対象外のプロパティ名
+     */
+    private CopyOptions(Map<Class<?>, Converter<?>> typedConverters,
+            Map<String, Map<Class<?>, Converter<?>>> namedConverters, boolean excludesNull,
+            Collection<String> excludesProperties) {
+        this.typedConverters = typedConverters;
+        this.namedConverters = namedConverters;
+        this.excludesNull = excludesNull;
+        this.excludesProperties = excludesProperties;
+        this.includesProperties = Collections.emptyList();
+    }
+
+    /**
+     * {@link BeanUtil}の{@code createMapInner}メソッドでネストしたプロパティのコピーをするため、
+     * {@code createMapInner}メソッドを再帰的に呼び出す際に渡す{@link CopyOptions}を生成して返す。
+     * 
+     * <p>
+     * 具体的には{@link #includesProperties}が空で他のフィールドは元の{@link CopyOptions}の値を引き継ぐ。
+     * </p>
+     * 
+     * <p>
+     * <strong>このメソッドの呼び出し元は{@link BeanUtil}の{@code createMapInner}メソッドだけを想定している。
+     * その他のメソッドからは呼び出してはいけない。</strong>
+     * </p>
+     * 
+     * @return {@link #includesProperties}以外を引き継いで作られた{@link CopyOptions}のインスタンス
+     */
+    CopyOptions cloneForNestedObjectInCreateMapInner() {
+        return new CopyOptions(
+                typedConverters,
+                namedConverters,
+                excludesNull,
+                excludesProperties);
+    }
+
+    /**
      * ビルダーを取得する。
      * 
      * @return ビルダー

@@ -10,7 +10,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -878,17 +877,27 @@ public final class BeanUtil {
      * BeanがBeanを持つ構造の場合、Mapのキー値は「.」で連結された値となる。
      *
      * @param srcBean Bean
+     * @param copyOptions コピーの設定
+     * @param <SRC> Beanの型
+     * @return BeanのプロパティをコピーしたMap
+     */
+    public static <SRC> Map<String, Object> createMapAndCopy(SRC srcBean, CopyOptions copyOptions) {
+        return createMapInner(srcBean, "", copyOptions);
+    }
+
+    /**
+     * BeanからMapにプロパティの値をコピーする。
+     * 
+     * <p>
+     * 内部的には空の{@link CopyOptions}を渡して{@link #createAndCopy(Class, Map, CopyOptions)}を呼び出している。
+     * </p>
+     * 
+     * @param srcBean Bean
      * @param <SRC> Beanの型
      * @return BeanのプロパティをコピーしたMap
      */
     public static <SRC> Map<String, Object> createMapAndCopy(SRC srcBean) {
-        return createMapInner(srcBean, "", new PropertyFilter() {
-            @Override
-            public boolean test(String prefix, PropertyDescriptor propertyDescriptor) {
-                // 全てのプロパティがコピー対象
-                return true;
-            }
-        });
+        return createMapAndCopy(srcBean, CopyOptions.empty());
     }
 
     /**
@@ -907,14 +916,7 @@ public final class BeanUtil {
      */
     public static <SRC> Map<String, Object> createMapAndCopyExcludes(final SRC srcBean,
             final String... excludeProperties) {
-        final List<String> excludes = Arrays.asList(excludeProperties);
-        return createMapInner(srcBean, "", new PropertyFilter() {
-            @Override
-            public boolean test(String prefix, PropertyDescriptor propertyDescriptor) {
-                // プロパティ名が除外対象以外のものがコピーた対象
-                return !excludes.contains(propertyDescriptor.getName());
-            }
-        });
+        return createMapInner(srcBean, "", CopyOptions.options().excludes(excludeProperties).build());
     }
 
     /**
@@ -933,14 +935,7 @@ public final class BeanUtil {
      * @return BeanのプロパティをコピーしたMap
      */
     public static <SRC> Map<String, Object> createMapAndCopyIncludes(SRC srcBean, String... includesProperties) {
-        final List<String> includes = Arrays.asList(includesProperties);
-        return createMapInner(srcBean, "", new PropertyFilter() {
-            @Override
-            public boolean test(final String prefix, final PropertyDescriptor propertyDescriptor) {
-                // 子供の階層のBeanかコピー対象の場合は、コピー対象とする。
-                return !StringUtil.isNullOrEmpty(prefix) || includes.contains(propertyDescriptor.getName());
-            }
-        });
+        return createMapInner(srcBean, "", CopyOptions.options().includes(includesProperties).build());
     }
 
     /**
@@ -948,19 +943,19 @@ public final class BeanUtil {
      *
      * @param srcBean コピー元のBean
      * @param prefix プロパティ名のプレフィックス
-     * @param filter フィルター(このフィルターが {@code true}を返すプロパティがコピー対象)
+     * @param copyOptions コピーの設定
      * @param <SRC> Beanの型
      * @return BeanのプロパティをコピーしたMap
      */
     private static <SRC> Map<String, Object> createMapInner(
-            final SRC srcBean, final String prefix, final PropertyFilter filter) {
+            final SRC srcBean, final String prefix, final CopyOptions copyOptions) {
 
         final Map<String, Object> result = new HashMap<String, Object>();
         for (PropertyDescriptor descriptor : getPropertyDescriptors(srcBean.getClass())) {
-            if (!filter.test(prefix, descriptor)) {
+            final String propertyName = descriptor.getName();
+            if (copyOptions.isTargetProperty(propertyName) == false) {
                 continue;
             }
-            final String propertyName = descriptor.getName();
             final String key = StringUtil.hasValue(prefix) ? prefix + '.' + propertyName : propertyName;
             final Method readMethod = descriptor.getReadMethod();
             if (readMethod == null) {
@@ -978,28 +973,11 @@ public final class BeanUtil {
                 if (propertyValue == null) {
                     result.put(key, null);
                 } else {
-                    result.putAll(createMapInner(propertyValue, key, filter));
+                    result.putAll(createMapInner(propertyValue, key, copyOptions.cloneForNestedObjectInCreateMapInner()));
                 }
             }
         }
         return result;
-    }
-
-    /**
-     * コピー対象のプロパティをフィルタするインタフェース。
-     */
-    private interface PropertyFilter {
-
-        /**
-         * テストメソッド。
-         * <p>
-         * コピー対象のプロパティの場合に{@code true}を返す。
-         *
-         * @param prefix プレフィックス(階層構造の場合に、親のBeanまでのプロパティ名がプレフィックスとなる)
-         * @param propertyDescriptor {@code PropertyDescriptor}
-         * @return コピー対象のプロパティの場合は、{@code true}
-         */
-        boolean test(String prefix, PropertyDescriptor propertyDescriptor);
     }
 
     /**
