@@ -29,6 +29,61 @@ import nablarch.core.util.annotation.Published;
 /**
  * {@link BeanUtil#copy(Object, Object) Beanのコピー}で使用される設定をまとめたクラス。
  * 
+ * <p>
+ * 当クラスのインスタンスは{@link #options() options}メソッドを起点としたビルダーパターンで構築する。
+ * </p>
+ * 
+ * <p>
+ * 例えば次のコードは日付パターン{@code yyyy/MM/dd}を設定して、
+ * さらにプロパティ{@code createdDate}に対しては{@code yyyy/MM/dd HH:mm}を設定している。
+ * </p>
+ * <pre>{@code
+ * CopyOptions copyOptions = CopyOptions.options()
+ *         .datePattern("yyyy/MM/dd")
+ *         .datePatternByName("createdDate", "yyyy/MM/dd HH:mm")
+ *         .build();
+ * }</pre>
+ * 
+ * <p>
+ * {@link Builder#datePattern(String) datePattern}メソッドと{@link Builder#numberPattern(String) numberPattern}は
+ * 内部的には{@link Builder#converter(Class, Converter) converter}メソッドを呼び出している。
+ * </p>
+ * 
+ * <p>
+ * {@link Builder#datePattern(String) datePattern}メソッドは次のクラスに対する{@link Converter}を追加する。
+ * </p>
+ * <ul>
+ * <li>{@link java.util.Date}</li>
+ * <li>{@link java.sql.Date}</li>
+ * <li>{@link java.sql.Timestamp}</li>
+ * <li>{@link java.lang.String}</li>
+ * </ul>
+ * 
+ * <p>
+ * {@link Builder#numberPattern(String) numberPattern}メソッドは次のクラスに対する{@link Converter}を追加する。
+ * </p>
+ * <ul>
+ * <li>{@code short}とそのラッパークラス</li>
+ * <li>{@code int}とそのラッパークラス</li>
+ * <li>{@code long}とそのラッパークラス</li>
+ * <li>{@link java.math.BigDecimal}</li>
+ * <li>{@link java.lang.String}</li>
+ * </ul>
+ * 
+ * <p>
+ * 同じクラスに対して{@link Builder#converter(Class, Converter) converter}メソッドが複数回呼び出されると、
+ * 先に登録されたものが有効となる。
+ * つまり次のコードで{@link java.util.Date}に対するフォーマットは{@link yyyy/MM/dd}が有効となり、
+ * {@code CustomDateConverter}は無視される。
+ * </p>
+ * 
+ * <pre>{@code
+ * CopyOptions copyOptions = CopyOptions.options()
+ *         .datePattern("yyyy/MM/dd")
+ *         .converter(java.util.Date.class, new CustomDateConverter())
+ *         .build();
+ * }</pre>
+ * 
  * @author Taichi Uragami
  *
  */
@@ -314,6 +369,13 @@ public final class CopyOptions {
         /**
          * 日付パターンを設定する。
          * 
+         * <p>
+         * このメソッドは次のコードと等価である。
+         * </p>
+         * <pre>{@code
+         * datePatterns(Collections.<String>singletonList(pattern))
+         * }</pre>
+         * 
          * @param pattern 日付パターン
          * @return 自分自身
          */
@@ -322,7 +384,7 @@ public final class CopyOptions {
         }
 
         /**
-         * 日付パターンを設定する。
+         * 複数の日付パターンを設定する。
          * 
          * @param patterns 日付パターン
          * @return 自分自身
@@ -336,6 +398,13 @@ public final class CopyOptions {
         /**
          * プロパティを指定して日付パターンを設定する。
          * 
+         * <p>
+         * このメソッドは次のコードと等価である。
+         * </p>
+         * <pre>{@code
+         * datePatternsByName(propertyName, Collections.<String>singletonList(pattern))
+         * }</pre>
+         * 
          * @param propertyName 日付パターン適用対象のプロパティ名
          * @param pattern 日付パターン
          * @return 自分自身
@@ -345,7 +414,7 @@ public final class CopyOptions {
         }
 
         /**
-         * プロパティを指定して日付パターンを設定する。
+         * プロパティを指定して複数の日付パターンを設定する。
          * 
          * @param propertyName 日付パターン適用対象のプロパティ名
          * @param patterns 日付パターン
@@ -360,6 +429,13 @@ public final class CopyOptions {
         /**
          * 数値パターンを設定する。
          * 
+         * <p>
+         * このメソッドは次のコードと等価である。
+         * </p>
+         * <pre>{@code
+         * numberPatterns(Collections.<String>singletonList(pattern))
+         * }</pre>
+         * 
          * @param pattern 数値パターン
          * @return 自分自身
          */
@@ -368,7 +444,7 @@ public final class CopyOptions {
         }
 
         /**
-         * 数値パターンを設定する。
+         * 複数の数値パターンを設定する。
          * 
          * @param patterns 数値パターン
          * @return 自分自身
@@ -382,6 +458,13 @@ public final class CopyOptions {
         /**
          * プロパティを指定して数値パターンを設定する。
          * 
+         * <p>
+         * このメソッドは次のコードと等価である。
+         * </p>
+         * <pre>{@code
+         * numberPatternsByName(propertyName, Collections.<String>singletonList(pattern))
+         * }</pre>
+         * 
          * @param propertyName 数値パターン適用対象のプロパティ名
          * @param pattern 数値パターン
          * @return 自分自身
@@ -391,7 +474,7 @@ public final class CopyOptions {
         }
 
         /**
-         * プロパティを指定して数値パターンを設定する。
+         * プロパティを指定して複数の数値パターンを設定する。
          * 
          * @param propertyName 数値パターン適用対象のプロパティ名
          * @param patterns 数値パターン
