@@ -141,6 +141,10 @@ public class CopyOptionsTest {
         CopyOptions sut = CopyOptions.options()
                 .numberPatterns(Arrays.asList("#,###", "#,###,###"))
                 .build();
+        assertThat(sut.hasTypedConverter(short.class), is(true));
+        assertThat(sut.hasTypedConverter(int.class), is(true));
+        assertThat(sut.hasTypedConverter(long.class), is(true));
+        assertThat(sut.hasTypedConverter(Short.class), is(true));
         assertThat(sut.hasTypedConverter(Integer.class), is(true));
         assertThat(sut.hasTypedConverter(Long.class), is(true));
         assertThat(sut.hasTypedConverter(BigDecimal.class), is(true));

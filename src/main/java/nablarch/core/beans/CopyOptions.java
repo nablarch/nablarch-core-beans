@@ -20,6 +20,7 @@ import nablarch.core.beans.converter.BigDecimalConverter;
 import nablarch.core.beans.converter.DateConverter;
 import nablarch.core.beans.converter.IntegerConverter;
 import nablarch.core.beans.converter.LongConverter;
+import nablarch.core.beans.converter.ShortConverter;
 import nablarch.core.beans.converter.SqlDateConverter;
 import nablarch.core.beans.converter.SqlTimestampConverter;
 import nablarch.core.beans.converter.StringConverter;
@@ -686,6 +687,10 @@ public final class CopyOptions {
         public Map<Class<?>, Converter<?>> provideNumberConverters(List<String> patterns) {
             Map<Class<?>, Converter<?>> converters = new HashMap<Class<?>, Converter<?>>();
             converters.put(String.class, new StringConverter(null, patterns.get(0)));
+            converters.put(short.class, new ShortConverter(patterns));
+            converters.put(int.class, new IntegerConverter(patterns));
+            converters.put(long.class, new LongConverter(patterns));
+            converters.put(Short.class, new ShortConverter(patterns));
             converters.put(Integer.class, new IntegerConverter(patterns));
             converters.put(Long.class, new LongConverter(patterns));
             converters.put(BigDecimal.class, new BigDecimalConverter(patterns));
