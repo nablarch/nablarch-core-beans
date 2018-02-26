@@ -1,5 +1,7 @@
 package nablarch.core.beans.converter;
 
+import java.util.List;
+
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
 
@@ -28,22 +30,44 @@ import nablarch.core.beans.Converter;
  * @author kawasima
  * @author tajima
  */
-public class LongConverter implements Converter<Long> {
+public class LongConverter extends AbstractNumberConverter<Long> {
+
+    /**
+     * デフォルトコンストラクタ
+     */
+    public LongConverter() {
+        super();
+    }
+
+    /**
+     * 数値パターンを設定してインスタンスを構築する。
+     * 
+     * @param patterns 数値パターン
+     */
+    public LongConverter(List<String> patterns) {
+        super(patterns);
+    }
+
     @Override
     public Long convert(Object value) {
         if (value instanceof Number) {
             return Number.class.cast(value).longValue();
         } else if (value instanceof String) {
-            try {
-                return Long.parseLong(String.class.cast(value));
-            } catch (NumberFormatException e) {
-                throw new ConversionException(Long.class, value);
-            }
+            return convertFromString(String.class.cast(value));
         } else if (value instanceof Boolean) {
             return Boolean.class.cast(value) ? 1L : 0L;
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Long.class);
         } else {
+            throw new ConversionException(Long.class, value);
+        }
+    }
+
+    @Override
+    protected Long convertFromStringWithoutPattern(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
             throw new ConversionException(Long.class, value);
         }
     }

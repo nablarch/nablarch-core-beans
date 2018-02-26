@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component-configuration
+  xmlns="http://tis.co.jp/nablarch/component-configuration" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://tis.co.jp/nablarch/component-configuration https://nablarch.github.io/schema/component-configuration.xsd">
+
+  <component name="conversionManager" class="nablarch.core.beans.BasicConversionManager">
+    <property name="datePatterns">
+      <list>
+        <value>yyyy/MM/dd</value>
+      </list>
+    </property>
+    <property name="numberPatterns">
+      <list>
+        <value>#,###</value>
+      </list>
+    </property>
+  </component>
+
+</component-configuration>

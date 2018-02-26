@@ -1,5 +1,7 @@
 package nablarch.core.beans.converter;
 
+import java.util.List;
+
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
 
@@ -28,23 +30,44 @@ import nablarch.core.beans.Converter;
  * @author kawasima
  * @author tajima
  */
-public class IntegerConverter implements Converter<Integer> {
+public class IntegerConverter extends AbstractNumberConverter<Integer> {
+
+    /**
+     * デフォルトコンストラクタ
+     */
+    public IntegerConverter() {
+        super();
+    }
+
+    /**
+     * 数値パターンを設定してインスタンスを構築する。
+     * 
+     * @param patterns 数値パターン
+     */
+    public IntegerConverter(List<String> patterns) {
+        super(patterns);
+    }
 
     @Override
     public Integer convert(final Object value) {
         if (value instanceof Number) {
             return Number.class.cast(value).intValue();
         } else if (value instanceof String) {
-            try {
-                return Integer.parseInt(String.class.cast(value));
-            } catch (NumberFormatException e) {
-                throw new ConversionException(Integer.class, value);
-            }
+            return convertFromString(String.class.cast(value));
         } else if (value instanceof Boolean) {
             return Boolean.class.cast(value) ? 1 : 0;
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Integer.class);
         } else {
+            throw new ConversionException(Integer.class, value);
+        }
+    }
+
+    @Override
+    protected Integer convertFromStringWithoutPattern(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
             throw new ConversionException(Integer.class, value);
         }
     }

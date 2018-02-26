@@ -1,5 +1,7 @@
 package nablarch.core.beans.converter;
 
+import java.util.List;
+
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
 
@@ -28,22 +30,44 @@ import nablarch.core.beans.Converter;
  * @author kawasima
  * @author tajima
  */
-public class ShortConverter implements Converter<Short> {
+public class ShortConverter extends AbstractNumberConverter<Short> {
+
+    /**
+     * デフォルトコンストラクタ
+     */
+    public ShortConverter() {
+        super();
+    }
+
+    /**
+     * 数値パターンを設定してインスタンスを構築する。
+     * 
+     * @param patterns 数値パターン
+     */
+    public ShortConverter(List<String> patterns) {
+        super(patterns);
+    }
+
     @Override
     public Short convert(Object value) {
         if (value instanceof Number) {
             return Number.class.cast(value).shortValue();
         } else if (value instanceof String) {
-            try {
-                return Short.parseShort(String.class.cast(value));
-            } catch (NumberFormatException e) {
-                throw new ConversionException(Short.class, value);
-            }
+            return convertFromString(String.class.cast(value));
         } else if (value instanceof Boolean) {
             return Boolean.class.cast(value) ? (short) 1 : (short) 0;
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Short.class);
         } else {
+            throw new ConversionException(Short.class, value);
+        }
+    }
+
+    @Override
+    protected Short convertFromStringWithoutPattern(String value) {
+        try {
+            return Short.parseShort(value);
+        } catch (NumberFormatException e) {
             throw new ConversionException(Short.class, value);
         }
     }

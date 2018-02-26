@@ -2,11 +2,10 @@ package nablarch.core.beans.converter;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
-import nablarch.core.util.DateUtil;
-
 
 /**
  * {@code java.sql.Date}型への変換を行う {@link Converter} 。
@@ -18,7 +17,8 @@ import nablarch.core.util.DateUtil;
  * (時刻は切り捨て)
  * <p/>
  * <b>文字列型</b>：<br>
- * 日付文字列と同一日付を表す{@code java.sql.Date}オブジェクトを返却する。
+ * {@link DateConverter}へ処理を委譲して取得した{@link java.util.Date}オブジェクトから
+ * {@code java.sql.Date}オブジェクトを生成して返却する。
  * (時刻は切り捨て)
  * <p/>
  * <b>文字列型の配列</b>：<br>
@@ -32,6 +32,26 @@ import nablarch.core.util.DateUtil;
  * @author tajima
  */
 public class SqlDateConverter implements Converter<java.sql.Date> {
+
+    /** 日付コンバーター */
+    private final DateConverter dateConverter;
+
+    /**
+     * デフォルトコンストラクタ
+     */
+    public SqlDateConverter() {
+        this.dateConverter = new DateConverter();
+    }
+
+    /**
+     * 日付パターンを設定してインスタンスを構築する。
+     * 
+     * @param patterns 日付パターン
+     */
+    public SqlDateConverter(List<String> patterns) {
+        this.dateConverter = new DateConverter(patterns);
+    }
+
     @Override
     public java.sql.Date convert(Object value) {
         if (value instanceof Date) {
@@ -44,7 +64,7 @@ public class SqlDateConverter implements Converter<java.sql.Date> {
             truncateTime(cal);
             return new java.sql.Date(cal.getTimeInMillis());
         } else if (value instanceof String) {
-            Date d = DateUtil.getDate(String.class.cast(value));
+            Date d = dateConverter.convertFromString(String.class.cast(value));
             Calendar cal = Calendar.getInstance();
             cal.setTime(d);
             truncateTime(cal);
