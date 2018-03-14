@@ -60,6 +60,23 @@ public final class BeanUtil {
     }
 
     /**
+     * {@link #getPropertyDescriptors(Class)}の戻り値を元にしてプロパティ名と{@link PropertyDescriptor}の{@link Map}を構築する。
+     * 
+     * @param beanClass プロパティを取得したいクラス
+     * @return プロパティ名と{@link PropertyDescriptor}の{@link Map}
+     */
+    private static Map<String, PropertyDescriptor> getPropertyDescriptorsMap(
+            final Class<?> beanClass) {
+        final PropertyDescriptor[] pds = getPropertyDescriptors(beanClass);
+        Map<String, PropertyDescriptor> map = new HashMap<String, PropertyDescriptor>(
+                pds.length);
+        for (PropertyDescriptor pd : pds) {
+            map.put(pd.getName(), pd);
+        }
+        return map;
+    }
+
+    /**
      * 指定したクラスから、特定のプロパティの{@link PropertyDescriptor} を取得する。<br/>
      *
      * @param beanClass プロパティを取得したいクラス
@@ -496,19 +513,14 @@ public final class BeanUtil {
 
         final CopyOptions mergedCopyOptions = copyOptions
                 .merge(CopyOptions.fromAnnotation(beanClass));
-        final PropertyDescriptor[] pds = getPropertyDescriptors(beanClass);
+        final Map<String, PropertyDescriptor> pdMap = getPropertyDescriptorsMap(beanClass);
 
         for (Map.Entry<String, ?> entry : map.entrySet()) {
             final String propertyName = entry.getKey();
             if (mergedCopyOptions.isTargetProperty(propertyName) == false) {
                 continue;
             }
-            PropertyDescriptor pd = null;
-            try {
-                pd = getPropertyDescriptor(pds, propertyName);
-            } catch (BeansException ignore) {
-                //props[1] といった名前の場合はプロパティを取得できない
-            }
+            PropertyDescriptor pd = pdMap.get(propertyName);
             try {
                 final Object value = entry.getValue();
                 if (pd != null && hasConverter(pd, mergedCopyOptions)) {
@@ -698,7 +710,7 @@ public final class BeanUtil {
         CopyOptions mergedCopyOptions = copyOptions.merge(copyOptionsFromSrc).merge(copyOptionsFromDest);
 
         final PropertyDescriptor[] srcPds = getPropertyDescriptors(srcBean.getClass());
-        final PropertyDescriptor[] destPds = getPropertyDescriptors(destBean.getClass());
+        final Map<String, PropertyDescriptor> destPds = getPropertyDescriptorsMap(destBean.getClass());
 
         for (PropertyDescriptor pd : srcPds) {
             final String propertyName = pd.getName();
@@ -714,7 +726,11 @@ public final class BeanUtil {
             try {
                 final Object val = getter.invoke(srcBean);
                 if (!(mergedCopyOptions.isExcludesNull() && val == null)) {
-                    final PropertyDescriptor destPd = getPropertyDescriptor(destPds, propertyName);
+                    final PropertyDescriptor destPd = destPds.get(propertyName);
+                    if (destPd == null) {
+                        LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
+                        continue;
+                    }
                     if (hasConverter(destPd, mergedCopyOptions)) {
                         setPropertyValue(destBean, destPd, val, mergedCopyOptions);
                     } else {
