@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.WeakHashMap;
 
 import nablarch.core.beans.converter.BigDecimalConverter;
 import nablarch.core.beans.converter.DateConverter;
@@ -90,6 +91,8 @@ import nablarch.core.util.annotation.Published;
  */
 public final class CopyOptions {
 
+    /** {@link CopyOption}アノテーションから構築される{@link CopyOptions}のキャッシュ */
+    private static WeakHashMap<Class<?>, CopyOptions> FROM_ANNOTATION_CACHE = new WeakHashMap<Class<?>, CopyOptions>();
     /** 空の{@link CopyOptions} */
     private static final CopyOptions EMPTY = options().build();
     /** クラスに紐づいたコンバーター */
@@ -205,6 +208,12 @@ public final class CopyOptions {
      * @return {@link CopyOption}アノテーションを読み取って構築された{@link CopyOptions}
      */
     public static CopyOptions fromAnnotation(Class<?> clazz) {
+        synchronized (FROM_ANNOTATION_CACHE) {
+            CopyOptions maybeCached = FROM_ANNOTATION_CACHE.get(clazz);
+            if (maybeCached != null) {
+                return maybeCached;
+            }
+        }
         CopyOptions.Builder builder = CopyOptions.options();
         try {
             Map<String, Field> fields = new HashMap<String, Field>();
@@ -239,7 +248,13 @@ public final class CopyOptions {
         } catch (IntrospectionException e) {
             throw new BeansException(e);
         }
-        return builder.build();
+        CopyOptions copyOptions = builder.build();
+        synchronized (FROM_ANNOTATION_CACHE) {
+            if (FROM_ANNOTATION_CACHE.containsKey(clazz) == false) {
+                FROM_ANNOTATION_CACHE.put(clazz, copyOptions);
+            }
+        }
+        return copyOptions;
     }
 
     /**

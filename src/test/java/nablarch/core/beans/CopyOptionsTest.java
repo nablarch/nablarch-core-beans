@@ -377,6 +377,13 @@ public class CopyOptionsTest {
     }
 
     @Test
+    public void アノテーションから構築されたCopyOptionsはキャッシュされる() throws Exception {
+        CopyOptions copyOptions1 = CopyOptions.fromAnnotation(AnnotatedBean.class);
+        CopyOptions copyOptions2 = CopyOptions.fromAnnotation(AnnotatedBean.class);
+        assertThat(copyOptions1 == copyOptions2, is(true));
+    }
+
+    @Test
     public void Converterの追加は先勝ちとする() {
         MockConverter converter1 = new MockConverter();
         MockConverter converter2 = new MockConverter();
