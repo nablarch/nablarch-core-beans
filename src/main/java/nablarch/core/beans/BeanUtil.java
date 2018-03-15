@@ -1014,7 +1014,7 @@ public final class BeanUtil {
          * 主にテストコードからの利用を想定している。
          * </p>
          */
-        static void clearCache() {
+        static synchronized void clearCache() {
             CACHE.clear();
         }
 
