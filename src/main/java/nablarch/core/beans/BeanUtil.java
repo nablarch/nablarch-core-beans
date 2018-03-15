@@ -11,8 +11,10 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import nablarch.core.log.Logger;
 import nablarch.core.log.LoggerManager;
@@ -42,38 +44,7 @@ public final class BeanUtil {
      * @throws BeansException プロパティの取得に失敗した場合。
      */
     public static PropertyDescriptor[] getPropertyDescriptors(final Class<?> beanClass) {
-        try {
-            final BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
-            final PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
-            final PropertyDescriptor[] newPds = new PropertyDescriptor[pds.length - 1];
-
-            int i = 0;
-            for (PropertyDescriptor pd : pds) {
-                if (!pd.getName().equals("class")) {
-                    newPds[i++] = pd;
-                }
-            }
-            return newPds;
-        } catch (IntrospectionException e) {
-            throw new BeansException(e);
-        }
-    }
-
-    /**
-     * {@link #getPropertyDescriptors(Class)}の戻り値を元にしてプロパティ名と{@link PropertyDescriptor}の{@link Map}を構築する。
-     * 
-     * @param beanClass プロパティを取得したいクラス
-     * @return プロパティ名と{@link PropertyDescriptor}の{@link Map}
-     */
-    private static Map<String, PropertyDescriptor> getPropertyDescriptorsMap(
-            final Class<?> beanClass) {
-        final PropertyDescriptor[] pds = getPropertyDescriptors(beanClass);
-        Map<String, PropertyDescriptor> map = new HashMap<String, PropertyDescriptor>(
-                pds.length);
-        for (PropertyDescriptor pd : pds) {
-            map.put(pd.getName(), pd);
-        }
-        return map;
+        return PropertyDescriptors.get(beanClass).array;
     }
 
     /**
@@ -85,33 +56,7 @@ public final class BeanUtil {
      * @throws BeansException {@code propertyName} に対応するプロパティが定義されていない場合。
      */
     public static PropertyDescriptor getPropertyDescriptor(final Class<?> beanClass, final String propertyName) {
-        try {
-            final BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
-            return getPropertyDescriptor(beanInfo.getPropertyDescriptors(), propertyName);
-        } catch (IntrospectionException e) {
-            throw new BeansException(e);
-        }
-    }
-
-    /**
-     * {@link PropertyDescriptor}の配列から、指定したプロパティ名の{@link PropertyDescriptor}を取得する。
-     *
-     * @param pds プロパティディスクリプタの配列
-     * @param propertyName プロパティ名
-     * @return 指定したプロパティのプロパティディスクリプタ
-     * @throws BeansException {@code propertyName} に対応するプロパティディスクリプタが見つからない場合。
-     */
-    private static PropertyDescriptor getPropertyDescriptor(final PropertyDescriptor[] pds, final String propertyName) {
-        try {
-            for (PropertyDescriptor pd : pds) {
-                if (propertyName.equals(pd.getName())) {
-                    return pd;
-                }
-            }
-            throw new IntrospectionException("Unknown property: " + propertyName);
-        } catch (IntrospectionException e) {
-            throw new BeansException(e);
-        }
+        return PropertyDescriptors.get(beanClass).getPropertyDescriptor(propertyName);
     }
 
     /**
@@ -513,7 +458,7 @@ public final class BeanUtil {
 
         final CopyOptions mergedCopyOptions = copyOptions
                 .merge(CopyOptions.fromAnnotation(beanClass));
-        final Map<String, PropertyDescriptor> pdMap = getPropertyDescriptorsMap(beanClass);
+        final Map<String, PropertyDescriptor> pdMap = PropertyDescriptors.get(beanClass).map;
 
         for (Map.Entry<String, ?> entry : map.entrySet()) {
             final String propertyName = entry.getKey();
@@ -710,7 +655,7 @@ public final class BeanUtil {
         CopyOptions mergedCopyOptions = copyOptions.merge(copyOptionsFromSrc).merge(copyOptionsFromDest);
 
         final PropertyDescriptor[] srcPds = getPropertyDescriptors(srcBean.getClass());
-        final Map<String, PropertyDescriptor> destPds = getPropertyDescriptorsMap(destBean.getClass());
+        final Map<String, PropertyDescriptor> destPds = PropertyDescriptors.get(destBean.getClass()).map;
 
         for (PropertyDescriptor pd : srcPds) {
             final String propertyName = pd.getName();
@@ -1018,4 +963,99 @@ public final class BeanUtil {
     /** ロガー */
     private static final Logger
         LOGGER = LoggerManager.get(BeanUtil.class);
+
+    static void clearCache() {
+        PropertyDescriptors.clearCache();
+    }
+
+    /**
+     * クラスの{@link PropertyDescriptor}をまとめたもの。
+     * ただしプロパティ名が{@literal class}のものは除かれている。
+     * 
+     * @author Taichi Uragami
+     *
+     */
+    private static final class PropertyDescriptors {
+
+        /** キャッシュ本体 */
+        private static final WeakHashMap<Class<?>, PropertyDescriptors> CACHE = new WeakHashMap<Class<?>, BeanUtil.PropertyDescriptors>();
+        /** {@link PropertyDescriptor}の配列表現 */
+        final PropertyDescriptor[] array;
+        /** {@link PropertyDescriptor}の{@link Map}表現 */
+        final Map<String, PropertyDescriptor> map;
+
+        /**
+         * コンストラクタ。
+         * 
+         * <p>
+         * クラスの{@link PropertyDescriptor}を取得して配列表現と{@link Map}表現を構築する。
+         * なお、プロパティ名が{@literal class}となる{@link PropertyDescriptor}は無視する。
+         * </p>
+         * 
+         * @param beanClass クラス
+         * @throws IntrospectionException {@link Introspector#getBeanInfo(Class)}からスローされうる例外
+         */
+        PropertyDescriptors(Class<?> beanClass) throws IntrospectionException {
+            final BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
+            PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
+            map = new LinkedHashMap<String, PropertyDescriptor>(pds.length - 1);
+            for (PropertyDescriptor pd : pds) {
+                if (!pd.getName().equals("class")) {
+                    map.put(pd.getName(), pd);
+                }
+            }
+            array = map.values().toArray(new PropertyDescriptor[map.size()]);
+        }
+
+        /**
+         * キャッシュをクリアする。
+         * 
+         * <p>
+         * 主にテストコードからの利用を想定している。
+         * </p>
+         */
+        static void clearCache() {
+            CACHE.clear();
+        }
+
+        /**
+         * 指定したプロパティ名の{@link PropertyDescriptor}を取得する。
+         * 
+         * @param propertyName プロパティ名
+         * @return 指定したプロパティ名の{@link PropertyDescriptor}
+         * @throws BeansException {@code propertyName} に対応する{@link PropertyDescriptor}が見つからない場合。
+         */
+        PropertyDescriptor getPropertyDescriptor(String propertyName) {
+            PropertyDescriptor pd = map.get(propertyName);
+            if (pd != null) {
+                return pd;
+            }
+            throw new BeansException(
+                    new IntrospectionException("Unknown property: " + propertyName));
+        }
+
+        /**
+         * クラスに対応する{@link PropertyDescriptors}を取得する。
+         * 
+         * <p>
+         * {@link PropertyDescriptors}はキャッシュされる。
+         * </p>
+         * 
+         * @param beanClass クラス
+         * @return キャッシュ
+         */
+        static synchronized PropertyDescriptors get(final Class<?> beanClass) {
+            PropertyDescriptors beanDescCache = CACHE.get(beanClass);
+            if (beanDescCache != null) {
+                return beanDescCache;
+            }
+            try {
+                beanDescCache = new PropertyDescriptors(beanClass);
+            } catch (IntrospectionException e) {
+                throw new BeansException(e);
+            }
+            CACHE.put(beanClass, beanDescCache);
+            return beanDescCache;
+        }
+    }
 }
