@@ -264,6 +264,11 @@ public final class CopyOptions {
      * @return マージされたインスタンス
      */
     public CopyOptions merge(CopyOptions other) {
+        if (this == EMPTY && EMPTY.excludesNull == other.excludesNull) {
+            return other;
+        } else if (other == EMPTY) {
+            return this;
+        }
         return new CopyOptions(
                 merge(typedConverters, other.typedConverters),
                 merge(namedConverters, other.namedConverters),
@@ -282,12 +287,14 @@ public final class CopyOptions {
      * @return マージされた{@link Map}
      */
     private static <K, V> Map<K, V> merge(Map<K, V> main, Map<K, V> sub) {
-        HashMap<K, V> merged = new HashMap<K, V>(main);
-        for (K key : sub.keySet()) {
-            if (merged.containsKey(key) == false) {
-                merged.put(key, sub.get(key));
-            }
+        if (main.isEmpty()) {
+            return sub;
+        } else if (sub.isEmpty()) {
+            return main;
         }
+        HashMap<K, V> merged = new HashMap<K, V>(main.size() + sub.size());
+        merged.putAll(sub);
+        merged.putAll(main);
         return merged;
     }
 
@@ -299,7 +306,12 @@ public final class CopyOptions {
      * @return マージされた{@link Collection}
      */
     private static Collection<String> merge(Collection<String> main, Collection<String> sub) {
-        HashSet<String> merged = new HashSet<String>();
+        if (main.isEmpty()) {
+            return sub;
+        } else if (sub.isEmpty()) {
+            return main;
+        }
+        HashSet<String> merged = new HashSet<String>(main.size() + sub.size());
         merged.addAll(main);
         merged.addAll(sub);
         return merged;
