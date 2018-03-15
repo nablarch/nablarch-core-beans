@@ -250,9 +250,7 @@ public final class CopyOptions {
         }
         CopyOptions copyOptions = builder.build();
         synchronized (FROM_ANNOTATION_CACHE) {
-            if (FROM_ANNOTATION_CACHE.containsKey(clazz) == false) {
-                FROM_ANNOTATION_CACHE.put(clazz, copyOptions);
-            }
+            FROM_ANNOTATION_CACHE.put(clazz, copyOptions);
         }
         return copyOptions;
     }
