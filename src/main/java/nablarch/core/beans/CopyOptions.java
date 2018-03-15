@@ -299,7 +299,7 @@ public final class CopyOptions {
     }
 
     /**
-     * ふたつの{@link Collection}をマージして作られた新しい{@link Map}を返す。
+     * ふたつの{@link Collection}をマージして作られた新しい{@link Collection}を返す。
      * 
      * @param main ベースとなる{@link Collection}
      * @param sub マージされる{@link Collection}
