@@ -75,7 +75,7 @@ import nablarch.core.util.annotation.Published;
  * <p>
  * 同じクラスに対して{@link Builder#converter(Class, Converter) converter}メソッドが複数回呼び出されると、
  * 先に登録されたものが有効となる。
- * つまり次のコードで{@link java.util.Date}に対するフォーマットは{@link yyyy/MM/dd}が有効となり、
+ * つまり次のコードで{@link java.util.Date}に対するフォーマットは{@code yyyy/MM/dd}が有効となり、
  * {@code CustomDateConverter}は無視される。
  * </p>
  * 
