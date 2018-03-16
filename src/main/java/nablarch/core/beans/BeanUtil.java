@@ -978,7 +978,7 @@ public final class BeanUtil {
     private static final class PropertyDescriptors {
 
         /** キャッシュ本体 */
-        private static final WeakHashMap<Class<?>, PropertyDescriptors> CACHE = new WeakHashMap<Class<?>, BeanUtil.PropertyDescriptors>();
+        private static final WeakHashMap<Class<?>, PropertyDescriptors> CACHE = new WeakHashMap<Class<?>, PropertyDescriptors>();
         /** {@link PropertyDescriptor}の配列表現 */
         final PropertyDescriptor[] array;
         /** {@link PropertyDescriptor}の{@link Map}表現 */
