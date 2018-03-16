@@ -92,7 +92,7 @@ import nablarch.core.util.annotation.Published;
 public final class CopyOptions {
 
     /** {@link CopyOption}アノテーションから構築される{@link CopyOptions}のキャッシュ */
-    private static WeakHashMap<Class<?>, CopyOptions> FROM_ANNOTATION_CACHE = new WeakHashMap<Class<?>, CopyOptions>();
+    private static final WeakHashMap<Class<?>, CopyOptions> FROM_ANNOTATION_CACHE = new WeakHashMap<Class<?>, CopyOptions>();
     /** 空の{@link CopyOptions} */
     private static final CopyOptions EMPTY = options().build();
     /** クラスに紐づいたコンバーター */
