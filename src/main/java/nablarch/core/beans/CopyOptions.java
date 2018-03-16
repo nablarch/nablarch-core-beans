@@ -258,11 +258,20 @@ public final class CopyOptions {
     /**
      * 他の{@link CopyOptions}をマージする。
      * 
+     * <p>
+     * マージ処理は{@code this}をベースにして差分を{@code other}から持ってくる。
+     * 例えば同一のプロパティに紐づいた{@link Converter}が{@code this}と{@code other}の両方にあった場合、
+     * マージ後の{@link CopyOptions}には{@code this}が持つ{@link Converter}が残る。
+     * </p>
+     * 
      * @param other 他の{@link CopyOptions}インスタンス
      * @return マージされたインスタンス
      */
     public CopyOptions merge(CopyOptions other) {
-        if (this == EMPTY && EMPTY.excludesNull == other.excludesNull) {
+        //this と other のどちらか片方が EMPTY の場合、マージは不要。
+        //ただし this の性質を優先してマージする仕様のため excludesNull を比較している。
+        //(excludesNull が異なる場合、単純に other を返せない)
+        if (this == EMPTY && excludesNull == other.excludesNull) {
             return other;
         } else if (other == EMPTY) {
             return this;
@@ -285,6 +294,7 @@ public final class CopyOptions {
      * @return マージされた{@link Map}
      */
     private static <K, V> Map<K, V> merge(Map<K, V> main, Map<K, V> sub) {
+        //this と other のどちらか片方が empty の場合、マージは不要。
         if (main.isEmpty()) {
             return sub;
         } else if (sub.isEmpty()) {
@@ -304,6 +314,7 @@ public final class CopyOptions {
      * @return マージされた{@link Collection}
      */
     private static Collection<String> merge(Collection<String> main, Collection<String> sub) {
+        //this と other のどちらか片方が empty の場合、マージは不要。
         if (main.isEmpty()) {
             return sub;
         } else if (sub.isEmpty()) {
