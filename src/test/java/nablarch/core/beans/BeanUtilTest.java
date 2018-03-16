@@ -46,6 +46,8 @@ public class BeanUtilTest {
         // デフォルト設定で動作させるよう、リポジトリをクリアする。
         SystemRepository.clear();
         OnMemoryLogWriter.clear();
+        //BeanDescriptorのキャッシュをクリアしておく
+        BeanUtil.clearCache();
     }
 
     public static class UserDto {

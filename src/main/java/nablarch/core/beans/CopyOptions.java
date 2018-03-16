@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.WeakHashMap;
 
 import nablarch.core.beans.converter.BigDecimalConverter;
 import nablarch.core.beans.converter.DateConverter;
@@ -74,7 +75,7 @@ import nablarch.core.util.annotation.Published;
  * <p>
  * 同じクラスに対して{@link Builder#converter(Class, Converter) converter}メソッドが複数回呼び出されると、
  * 先に登録されたものが有効となる。
- * つまり次のコードで{@link java.util.Date}に対するフォーマットは{@link yyyy/MM/dd}が有効となり、
+ * つまり次のコードで{@link java.util.Date}に対するフォーマットは{@code yyyy/MM/dd}が有効となり、
  * {@code CustomDateConverter}は無視される。
  * </p>
  * 
@@ -90,6 +91,8 @@ import nablarch.core.util.annotation.Published;
  */
 public final class CopyOptions {
 
+    /** {@link CopyOption}アノテーションから構築される{@link CopyOptions}のキャッシュ */
+    private static final WeakHashMap<Class<?>, CopyOptions> FROM_ANNOTATION_CACHE = new WeakHashMap<Class<?>, CopyOptions>();
     /** 空の{@link CopyOptions} */
     private static final CopyOptions EMPTY = options().build();
     /** クラスに紐づいたコンバーター */
@@ -205,6 +208,12 @@ public final class CopyOptions {
      * @return {@link CopyOption}アノテーションを読み取って構築された{@link CopyOptions}
      */
     public static CopyOptions fromAnnotation(Class<?> clazz) {
+        synchronized (FROM_ANNOTATION_CACHE) {
+            CopyOptions maybeCached = FROM_ANNOTATION_CACHE.get(clazz);
+            if (maybeCached != null) {
+                return maybeCached;
+            }
+        }
         CopyOptions.Builder builder = CopyOptions.options();
         try {
             Map<String, Field> fields = new HashMap<String, Field>();
@@ -239,16 +248,34 @@ public final class CopyOptions {
         } catch (IntrospectionException e) {
             throw new BeansException(e);
         }
-        return builder.build();
+        CopyOptions copyOptions = builder.build();
+        synchronized (FROM_ANNOTATION_CACHE) {
+            FROM_ANNOTATION_CACHE.put(clazz, copyOptions);
+        }
+        return copyOptions;
     }
 
     /**
      * 他の{@link CopyOptions}をマージする。
      * 
+     * <p>
+     * マージ処理は{@code this}をベースにして差分を{@code other}から持ってくる。
+     * 例えば同一のプロパティに紐づいた{@link Converter}が{@code this}と{@code other}の両方にあった場合、
+     * マージ後の{@link CopyOptions}には{@code this}が持つ{@link Converter}が残る。
+     * </p>
+     * 
      * @param other 他の{@link CopyOptions}インスタンス
      * @return マージされたインスタンス
      */
     public CopyOptions merge(CopyOptions other) {
+        //this と other のどちらか片方が EMPTY の場合、マージは不要。
+        //ただし this の性質を優先してマージする仕様のため excludesNull を比較している。
+        //(excludesNull が異なる場合、単純に other を返せない)
+        if (this == EMPTY && excludesNull == other.excludesNull) {
+            return other;
+        } else if (other == EMPTY) {
+            return this;
+        }
         return new CopyOptions(
                 merge(typedConverters, other.typedConverters),
                 merge(namedConverters, other.namedConverters),
@@ -267,24 +294,33 @@ public final class CopyOptions {
      * @return マージされた{@link Map}
      */
     private static <K, V> Map<K, V> merge(Map<K, V> main, Map<K, V> sub) {
-        HashMap<K, V> merged = new HashMap<K, V>(main);
-        for (K key : sub.keySet()) {
-            if (merged.containsKey(key) == false) {
-                merged.put(key, sub.get(key));
-            }
+        //this と other のどちらか片方が empty の場合、マージは不要。
+        if (main.isEmpty()) {
+            return sub;
+        } else if (sub.isEmpty()) {
+            return main;
         }
+        HashMap<K, V> merged = new HashMap<K, V>(main.size() + sub.size());
+        merged.putAll(sub);
+        merged.putAll(main);
         return merged;
     }
 
     /**
-     * ふたつの{@link Collection}をマージして作られた新しい{@link Map}を返す。
+     * ふたつの{@link Collection}をマージして作られた新しい{@link Collection}を返す。
      * 
      * @param main ベースとなる{@link Collection}
      * @param sub マージされる{@link Collection}
      * @return マージされた{@link Collection}
      */
     private static Collection<String> merge(Collection<String> main, Collection<String> sub) {
-        HashSet<String> merged = new HashSet<String>();
+        //this と other のどちらか片方が empty の場合、マージは不要。
+        if (main.isEmpty()) {
+            return sub;
+        } else if (sub.isEmpty()) {
+            return main;
+        }
+        HashSet<String> merged = new HashSet<String>(main.size() + sub.size());
         merged.addAll(main);
         merged.addAll(sub);
         return merged;
