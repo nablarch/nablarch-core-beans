@@ -455,7 +455,16 @@ public final class BeanUtil {
         if (map == null) {
             return bean;
         }
+        copy(beanClass, bean, map, copyOptions);
+        return bean;
+    }
 
+    public static <T> void copy(Class<? extends T> beanClass, final T bean, final Map<String, ?> map) {
+        copy(beanClass, bean, map, CopyOptions.empty());
+    }
+
+    public static <T> void copy(Class<? extends T> beanClass, final T bean, final Map<String, ?> map,
+            final CopyOptions copyOptions) {
         final CopyOptions mergedCopyOptions = copyOptions
                 .merge(CopyOptions.fromAnnotation(beanClass));
         final Map<String, PropertyDescriptor> pdMap = PropertyDescriptors.get(beanClass).map;
@@ -478,7 +487,6 @@ public final class BeanUtil {
                         "An error occurred while writing to the property :" + entry.getKey());
             }
         }
-        return bean;
     }
 
     /**
