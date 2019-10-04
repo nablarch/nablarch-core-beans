@@ -16,7 +16,7 @@
   <parent>
     <groupId>com.nablarch</groupId>
     <artifactId>nablarch-parent</artifactId>
-    <version>5u15-SNAPSHOT</version>
+    <version>5u16-SNAPSHOT</version>
   </parent>
   
   <dependencies>
