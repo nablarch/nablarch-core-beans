@@ -459,10 +459,35 @@ public final class BeanUtil {
         return bean;
     }
 
+    /**
+     * {@link Map}からBeanインスタンスへコピーを行う。
+     * <p>
+     * 内部的には空の{@link CopyOptions}を渡して{@link #copy(Class, Object, Map, CopyOptions)}を呼び出している。
+     * </p>
+     * 
+     * @param beanClass 移送先BeanのClass
+     * @param bean 移送先Beanインスタンス
+     * @param map 移送元のMap
+     *            JavaBeansのプロパティ名をエントリーのキー
+     *            プロパティの値をエントリーの値とするMap
+     * @param <T> 型引数
+     */
     public static <T> void copy(Class<? extends T> beanClass, final T bean, final Map<String, ?> map) {
         copy(beanClass, bean, map, CopyOptions.empty());
     }
 
+    /**
+     * {@link Map}からBeanインスタンスへコピーを行う。
+     * 生成済みのインスタンスにコピーを行う点以外は、{@link #createAndCopy(Class, Map, CopyOptions)}と同じ動作である。
+     *
+     * @param beanClass 移送先BeanのClass
+     * @param bean 移送先Beanインスタンス
+     * @param map 移送元のMap
+     *            JavaBeansのプロパティ名をエントリーのキー
+     *            プロパティの値をエントリーの値とするMap
+     * @param copyOptions コピーの設定
+     * @param <T> 型引数
+     */
     public static <T> void copy(Class<? extends T> beanClass, final T bean, final Map<String, ?> map,
             final CopyOptions copyOptions) {
         final CopyOptions mergedCopyOptions = copyOptions
