@@ -455,7 +455,24 @@ public final class BeanUtil {
         if (map == null) {
             return bean;
         }
+        copy(beanClass, bean, map, copyOptions);
+        return bean;
+    }
 
+    /**
+     * {@link Map}からBeanインスタンスへコピーを行う。
+     * 生成済みのインスタンスにコピーを行う点以外は、{@link #createAndCopy(Class, Map, CopyOptions)}と同じ動作である。
+     *
+     * @param beanClass 移送先BeanのClass
+     * @param bean 移送先Beanインスタンス
+     * @param map 移送元のMap
+     *            JavaBeansのプロパティ名をエントリーのキー
+     *            プロパティの値をエントリーの値とするMap
+     * @param copyOptions コピーの設定
+     * @param <T> 型引数
+     */
+    public static <T> void copy(Class<? extends T> beanClass, final T bean, final Map<String, ?> map,
+            final CopyOptions copyOptions) {
         final CopyOptions mergedCopyOptions = copyOptions
                 .merge(CopyOptions.fromAnnotation(beanClass));
         final Map<String, PropertyDescriptor> pdMap = PropertyDescriptors.get(beanClass).map;
@@ -478,7 +495,6 @@ public final class BeanUtil {
                         "An error occurred while writing to the property :" + entry.getKey());
             }
         }
-        return bean;
     }
 
     /**
