@@ -1,69 +1,76 @@
 package nablarch.core.beans;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class BeanUtilWithTypeParameterTest {
 
-    public interface IMeisaiRowForm extends Serializable {
+    public static class ItemsForm<D extends Serializable> {
+        private List<D> items;
+        public List<D> getItems() {
+            return items;
+        }
+        public void setItems(List<D> items) {
+            this.items = items;
+        }
     }
 
-    public interface IMeisaiForm<D extends IMeisaiRowForm> extends Serializable {
-        List<D> getDetails();
-        void setDetails(List<D> details);
+    public static class Item implements Serializable {
+        private String name;
+        public String getName() {
+            return name;
+        }
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 
-    public static class AbstractMeisaiForm<D extends IMeisaiRowForm> implements IMeisaiForm<D> {
-        private List<D> details;
+    public static class BadSampleForm extends ItemsForm<Item> {
+    }
+
+    public static class GoodSampleForm extends ItemsForm<Item> {
         @Override
-        public List<D> getDetails() {
-            return details;
-        }
-        @Override
-        public void setDetails(List<D> details) {
-            this.details = details;
-        }
-    }
-    public static class MeisaiRowForm implements IMeisaiRowForm {
-        private String value;
-        public String getValue() {
-            return value;
-        }
-        public void setValue(String value) {
-            this.value = value;
-        }
-    }
-
-    public static class BadMeisaiForm extends AbstractMeisaiForm<MeisaiRowForm> {
-        public BadMeisaiForm() {
-            setDetails(new ArrayList<MeisaiRowForm>());
-        }
-    }
-
-    public static class GoodMeisaiForm extends AbstractMeisaiForm<MeisaiRowForm> {
-        public GoodMeisaiForm() {
-            setDetails(new ArrayList<MeisaiRowForm>());
-        }
-        @Override
-        public List<MeisaiRowForm> getDetails() {
-            return super.getDetails();
+        public List<Item> getItems() {
+            return super.getItems();
         }
     }
 
     @Test
-    public void testCreateAndCopy() {
-        Map<String, Object> paramMap = new HashMap<String, Object>() {
+    public void testCreateAndCopyForBad() {
+        Map<String, Object> map = new HashMap<String, Object>() {
             {
-                put("details[0].value", "1");
-                put("details[1].value", "2");
+                put("items[0].name", "aaa");
+                put("items[1].name", "bbb");
             }
         };
-        GoodMeisaiForm goodForm = BeanUtil.createAndCopy(GoodMeisaiForm.class, paramMap);
-        BadMeisaiForm badForm = BeanUtil.createAndCopy(BadMeisaiForm.class, paramMap);
+        try {
+            BeanUtil.createAndCopy(BadSampleForm.class, map);
+            fail("IllegalStateExceptionがスローされるはず");
+        } catch (IllegalStateException e) {
+            assertThat(e.getMessage(), is(
+                    "BeanUtil does not support type parameter for List type, so the getter method in the concrete class must be overridden. "
+            + "getter method = [nablarch.core.beans.BeanUtilWithTypeParameterTest$BadSampleForm#getItems]"));
+        }
+    }
+
+    @Test
+    public void testCreateAndCopyForGood() {
+        Map<String, Object> map = new HashMap<String, Object>() {
+            {
+                put("items[0].name", "aaa");
+                put("items[1].name", "bbb");
+            }
+        };
+        GoodSampleForm form = BeanUtil.createAndCopy(GoodSampleForm.class, map);
+        assertThat(form.getItems().size(), is(2));
+        assertThat(form.getItems().get(0).getName(), is("aaa"));
+        assertThat(form.getItems().get(1).getName(), is("bbb"));
     }
 }
