@@ -4,11 +4,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -309,9 +305,13 @@ public final class BeanUtil {
                     + bean.getClass() + " property: " + propertyName);
         }
         ParameterizedType genericTypeParameter = (ParameterizedType) type;
-        Class<?> genericType = null;
-        genericType = (Class<?>) genericTypeParameter.getActualTypeArguments()[0];
-        return genericType;
+        Object genericType = genericTypeParameter.getActualTypeArguments()[0];
+        if (genericType instanceof TypeVariable<?>) {
+            throw new IllegalStateException(
+                    "BeanUtil does not support type parameter for List type, so the getter method in the concrete class must be overridden. "
+                            + "getter method = [" + bean.getClass().getName() + "#" + getter.getName() + "]");
+        }
+        return (Class<?>) genericType;
     }
 
     /**
