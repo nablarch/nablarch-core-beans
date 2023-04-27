@@ -1,12 +1,16 @@
 package nablarch.core.beans;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.Matchers.arrayContaining;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.collection.IsMapContaining.hasKey;
-import static org.junit.Assert.*;
+import nablarch.core.repository.SystemRepository;
+import nablarch.core.util.StringUtil;
+import nablarch.test.support.log.app.OnMemoryLogWriter;
+import org.hamcrest.Matcher;
+import org.hamcrest.collection.IsMapContaining;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -18,20 +22,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nablarch.test.support.log.app.OnMemoryLogWriter;
-import org.hamcrest.Matcher;
-import org.hamcrest.collection.IsMapContaining;
-
-import nablarch.core.repository.SystemRepository;
-import nablarch.core.util.StringUtil;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import mockit.Expectations;
-import mockit.Mocked;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.collection.IsMapContaining.hasKey;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Iwauo Tajima
@@ -1176,21 +1185,21 @@ public class BeanUtilTest {
     }
 
     @Test(expected = BeansException.class)
-    public void testGetPropertyDescriptorsForException(@Mocked final Introspector intro) throws IntrospectionException {
+    public void testGetPropertyDescriptorsForException() throws IntrospectionException {
         // PropertyDescriptor取得時に例外が発生するケース
-        new Expectations() {{
-            Introspector.getBeanInfo(UserEntity.class); result = new IntrospectionException("test");
-        }};
-        BeanUtil.getPropertyDescriptors(UserEntity.class);
+        try (final MockedStatic<Introspector> mocked = Mockito.mockStatic(Introspector.class)) {
+            mocked.when(() -> Introspector.getBeanInfo(UserEntity.class)).thenThrow(new IntrospectionException("test"));
+            BeanUtil.getPropertyDescriptors(UserEntity.class);
+        }
     }
 
     @Test(expected = BeansException.class)
-    public void testGetPropertyDescriptorForException(@Mocked final Introspector intro) throws IntrospectionException {
+    public void testGetPropertyDescriptorForException() throws IntrospectionException {
         // PropertyDescriptor取得時に例外が発生するケース
-        new Expectations() {{
-            Introspector.getBeanInfo(UserEntity.class); result = new IntrospectionException("test");
-        }};
-        BeanUtil.getPropertyDescriptor(UserEntity.class, "age");
+        try (final MockedStatic<Introspector> mocked = Mockito.mockStatic(Introspector.class)) {
+            mocked.when(() -> Introspector.getBeanInfo(UserEntity.class)).thenThrow(new IntrospectionException("test"));
+            BeanUtil.getPropertyDescriptor(UserEntity.class, "age");
+        }
     }
 
     /** ネストしたプロパティにコピーできること。*/
