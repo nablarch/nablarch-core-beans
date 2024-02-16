@@ -4,7 +4,12 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -132,7 +137,6 @@ public final class BeanUtil {
      * @param propertyValue プロパティに登録する値
      * @throws BeansException インスタンス生成に失敗した場合
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     private static void setProperty(Object bean, PropertyExpression expression, Object propertyValue) {
         if (expression.isSimpleProperty() && expression.isNode()) {
             setPropertyValue(bean, expression.getRoot(), propertyValue);
@@ -220,7 +224,7 @@ public final class BeanUtil {
 
         Class<?> componentType = pd.getPropertyType().getComponentType();
         String propertyName = expression.getListPropertyName();
-        Object array = (Object) getProperty(bean, propertyName);
+        Object array = getProperty(bean, propertyName);
         if (array == null) {
             // 初期作成
             array = Array.newInstance(componentType, expression.getListIndex() + 1);
@@ -299,12 +303,11 @@ public final class BeanUtil {
     private static Class<?> getGenericType(Object bean, String propertyName, PropertyDescriptor pd) {
         Method getter = pd.getReadMethod();
         Type type = getter.getGenericReturnType();
-        if (!(type instanceof ParameterizedType)) {
+        if (!(type instanceof ParameterizedType genericTypeParameter)) {
             // Generics でない場合。
             throw new BeansException("must set generics type for property. class: "
                     + bean.getClass() + " property: " + propertyName);
         }
-        ParameterizedType genericTypeParameter = (ParameterizedType) type;
         Object genericType = genericTypeParameter.getActualTypeArguments()[0];
         if (genericType instanceof TypeVariable<?>) {
             throw new IllegalStateException(
@@ -479,7 +482,7 @@ public final class BeanUtil {
 
         for (Map.Entry<String, ?> entry : map.entrySet()) {
             final String propertyName = entry.getKey();
-            if (mergedCopyOptions.isTargetProperty(propertyName) == false) {
+            if (!mergedCopyOptions.isTargetProperty(propertyName)) {
                 continue;
             }
             PropertyDescriptor pd = pdMap.get(propertyName);
@@ -664,7 +667,7 @@ public final class BeanUtil {
      * @param <DEST> コピー先のBeanの型
      * @return コピー先のBeanオブジェクト
      */
-    protected static <SRC, DEST> DEST copyInner(final SRC srcBean, final DEST destBean, final CopyOptions copyOptions) {
+    private static <SRC, DEST> DEST copyInner(final SRC srcBean, final DEST destBean, final CopyOptions copyOptions) {
 
         CopyOptions copyOptionsFromSrc = CopyOptions.fromAnnotation(srcBean.getClass());
         CopyOptions copyOptionsFromDest = CopyOptions.fromAnnotation(destBean.getClass());
@@ -675,7 +678,7 @@ public final class BeanUtil {
 
         for (PropertyDescriptor pd : srcPds) {
             final String propertyName = pd.getName();
-            if (mergedCopyOptions.isTargetProperty(propertyName) == false) {
+            if (!mergedCopyOptions.isTargetProperty(propertyName)) {
                 continue;
             }
 
@@ -927,10 +930,10 @@ public final class BeanUtil {
     private static <SRC> Map<String, Object> createMapInner(
             final SRC srcBean, final String prefix, final CopyOptions copyOptions) {
 
-        final Map<String, Object> result = new HashMap<String, Object>();
+        final Map<String, Object> result = new HashMap<>();
         for (PropertyDescriptor descriptor : getPropertyDescriptors(srcBean.getClass())) {
             final String propertyName = descriptor.getName();
-            if (copyOptions.isTargetProperty(propertyName) == false) {
+            if (!copyOptions.isTargetProperty(propertyName)) {
                 continue;
             }
             final String key = StringUtil.hasValue(prefix) ? prefix + '.' + propertyName : propertyName;
@@ -965,13 +968,7 @@ public final class BeanUtil {
     private static <T> T createInstance(Class<T> clazz) {
         try {
             return clazz.getConstructor().newInstance();
-        } catch (InstantiationException e) {
-            throw new BeansException(e);
-        } catch (IllegalAccessException e) {
-            throw new BeansException(e);
-        } catch (NoSuchMethodException e) {
-            throw new BeansException(e);
-        } catch (InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new BeansException(e);
         }
     }
@@ -994,7 +991,7 @@ public final class BeanUtil {
     private static final class PropertyDescriptors {
 
         /** キャッシュ本体 */
-        private static final WeakHashMap<Class<?>, PropertyDescriptors> CACHE = new WeakHashMap<Class<?>, PropertyDescriptors>();
+        private static final WeakHashMap<Class<?>, PropertyDescriptors> CACHE = new WeakHashMap<>();
         /** {@link PropertyDescriptor}の配列表現 */
         final PropertyDescriptor[] array;
         /** {@link PropertyDescriptor}の{@link Map}表現 */
@@ -1014,13 +1011,13 @@ public final class BeanUtil {
         PropertyDescriptors(Class<?> beanClass) throws IntrospectionException {
             final BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
             PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
-            map = new LinkedHashMap<String, PropertyDescriptor>(pds.length - 1);
+            map = new LinkedHashMap<>(pds.length - 1);
             for (PropertyDescriptor pd : pds) {
                 if (!pd.getName().equals("class")) {
                     map.put(pd.getName(), pd);
                 }
             }
-            array = map.values().toArray(new PropertyDescriptor[map.size()]);
+            array = map.values().toArray(new PropertyDescriptor[0]);
         }
 
         /**
