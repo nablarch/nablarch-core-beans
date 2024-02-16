@@ -8,6 +8,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.WeakHashMap;
 
 import nablarch.core.log.Logger;
@@ -58,6 +60,30 @@ public final class BeanUtil {
      */
     public static PropertyDescriptor getPropertyDescriptor(final Class<?> beanClass, final String propertyName) {
         return PropertyDescriptors.get(beanClass).getPropertyDescriptor(propertyName);
+    }
+
+    /**
+     * 指定したレコードに属する全てのプロパティの {@link RecordComponent} を取得する。
+     * ただし、classプロパティは取得対象外となる。
+     *
+     * @param beanClass プロパティを取得したいクラス
+     * @return RecordComponent[] 全てのプロパティの {@link RecordComponent}
+     * @throws BeansException プロパティの取得に失敗した場合。
+     */
+    public static RecordComponent[] getRecordComponents(final Class<?> beanClass) {
+        return RecordComponents.get(beanClass).array;
+    }
+
+    /**
+     * 指定したクラスから、特定のプロパティの{@link RecordComponent} を取得する。<br/>
+     *
+     * @param beanClass プロパティを取得したいクラス
+     * @param propertyName 取得したいプロパティ名
+     * @return RecordComponent 取得したプロパティ
+     * @throws BeansException {@code propertyName} に対応するプロパティが定義されていない場合。
+     */
+    public static RecordComponent getRecordComponent(final Class<?> beanClass, final String propertyName) {
+        return RecordComponents.get(beanClass).getRecordComponent(propertyName);
     }
 
     /**
@@ -454,6 +480,11 @@ public final class BeanUtil {
      */
     public static <T> T createAndCopy(final Class<T> beanClass, final Map<String, ?> map,
             final CopyOptions copyOptions) {
+
+        if(beanClass.isRecord()) {
+            return createRecord(beanClass, map, copyOptions);
+        }
+
         final T bean = createInstance(beanClass);
         if (map == null) {
             return bean;
@@ -499,6 +530,76 @@ public final class BeanUtil {
             }
         }
     }
+
+    /**
+     * {@link Map}からBeanインスタンスへコピーを行う。
+     * 生成済みのインスタンスにコピーを行う点以外は、{@link #createAndCopy(Class, Map, CopyOptions)}と同じ動作である。
+     *
+     * @param beanClass 移送先BeanのClass
+     * @param map 移送元のMap
+     *            JavaBeansのプロパティ名をエントリーのキー
+     *            プロパティの値をエントリーの値とするMap
+     * @param copyOptions コピーの設定
+     * @param <T> 型引数
+     */
+     private static <T> T createRecord(Class<? extends T> beanClass, final Map<String, ?> map,
+                                     final CopyOptions copyOptions) {
+        final CopyOptions mergedCopyOptions = copyOptions
+                .merge(CopyOptions.fromAnnotation(beanClass));
+        final RecordComponent[] recordComponents = beanClass.getRecordComponents();
+        final Class<?>[] parameterTypes = new Class<?>[recordComponents.length];
+        final Object[] args = new Object[recordComponents.length];
+
+        for(int i=0; i<recordComponents.length; i++) {
+            parameterTypes[i] = recordComponents[i].getType();
+            String propertyName = recordComponents[i].getName();
+            if (!mergedCopyOptions.isTargetProperty(propertyName) || Objects.isNull(map) || !map.containsKey(propertyName)) {
+                if (parameterTypes[i].isPrimitive()) {
+                    args[i] = PRIM_DEFAULT_VALUES.get(parameterTypes[i]);
+                }
+                continue;
+            }
+            args[i] = map.get(propertyName);
+        }
+
+        T recordInstance;
+        try {
+            recordInstance = beanClass.getConstructor(parameterTypes).newInstance(args);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new BeansException(e);
+        }
+
+        return recordInstance;
+    }
+//
+//    private static Map<String, Class<?>> getRootPropertyName(RecordComponent[] components, final Map<String, ?> propertyMap) {
+//        Set<String> rootPropertyNames = new HashSet<>();
+//        for (String key : propertyMap.keySet()) {
+//            String propertyRoot = new PropertyExpression(key).getRoot();
+//
+//
+//        }
+//        return rootPropertyNames;
+//    }
+//
+//
+//
+
+
+    private static final Map<Class<?>, Object> PRIM_DEFAULT_VALUES = new HashMap<>() {
+        {
+            put(boolean.class, false);
+            put(byte.class, (byte) 0);
+            put(short.class, (short) 0);
+            put(int.class, 0);
+            put(long.class, 0L);
+            put(float.class, 0.0f);
+            put(double.class, 0.0d);
+            put(char.class, '\u0000');
+        }
+    };
+
+
 
     /**
      * {@link Map}からBeanを生成する。
@@ -1067,6 +1168,92 @@ public final class BeanUtil {
             } catch (IntrospectionException e) {
                 throw new BeansException(e);
             }
+            CACHE.put(beanClass, beanDescCache);
+            return beanDescCache;
+        }
+    }
+
+
+    /**
+     * レコードの{@link RecordComponent}をまとめたもの。
+     * ただしプロパティ名が{@literal class}のものは除かれている。
+     *
+     * @author Takayuki Uchida
+     *
+     */
+    private static final class RecordComponents {
+
+        /** キャッシュ本体 */
+        private static final WeakHashMap<Class<?>, RecordComponents> CACHE = new WeakHashMap<>();
+        /** {@link PropertyDescriptor}の配列表現 */
+        final RecordComponent[] array;
+        /** {@link PropertyDescriptor}の{@link Map}表現 */
+        final Map<String, RecordComponent> map;
+
+        /**
+         * コンストラクタ。
+         *
+         * <p>
+         * クラスの{@link RecordComponent}を取得して配列表現と{@link Map}表現を構築する。
+         * なお、プロパティ名が{@literal class}となる{@link RecordComponent}は無視する。
+         * </p>
+         *
+         * @param beanClass クラス
+         */
+        RecordComponents(Class<?> beanClass) {
+            RecordComponent[] rcs = beanClass.getRecordComponents();
+            map = new LinkedHashMap<>(rcs.length - 1);
+            for (RecordComponent rc : rcs) {
+                if (!rc.getName().equals("class")) {
+                    map.put(rc.getName(), rc);
+                }
+            }
+            array = map.values().toArray(new RecordComponent[0]);
+        }
+
+        /**
+         * キャッシュをクリアする。
+         *
+         * <p>
+         * 主にテストコードからの利用を想定している。
+         * </p>
+         */
+        static synchronized void clearCache() {
+            CACHE.clear();
+        }
+
+        /**
+         * 指定したプロパティ名の{@link RecordComponent}を取得する。
+         *
+         * @param propertyName プロパティ名
+         * @return 指定したプロパティ名の{@link PropertyDescriptor}
+         * @throws BeansException {@code propertyName} に対応する{@link RecordComponent}が見つからない場合。
+         */
+        RecordComponent getRecordComponent(String propertyName) {
+            RecordComponent rc = map.get(propertyName);
+            if (rc != null) {
+                return rc;
+            }
+            throw new BeansException("Unknown property: " + propertyName);
+        }
+
+        /**
+         * クラスに対応する{@link RecordComponents}を取得する。
+         *
+         * <p>
+         * {@link RecordComponents}はキャッシュされる。
+         * </p>
+         *
+         * @param beanClass クラス
+         * @return キャッシュ
+         */
+        static synchronized RecordComponents get(final Class<?> beanClass) {
+            RecordComponents beanDescCache = CACHE.get(beanClass);
+            if (beanDescCache != null) {
+                return beanDescCache;
+            }
+
+            beanDescCache = new RecordComponents(beanClass);
             CACHE.put(beanClass, beanDescCache);
             return beanDescCache;
         }

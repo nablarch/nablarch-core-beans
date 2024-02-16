@@ -326,6 +326,23 @@ public class BeanUtilTest {
         }
     }
 
+    public record DestRecord(Integer sample,
+                             List<String> strList,
+                             List<Address> addressList,
+                             String[] strArray,
+                             Address[] addressArray) {
+    }
+
+    public record DestPrimRecord(int vint,
+                                 long vlong,
+                                 float vfloat,
+                                 double vdouble,
+                                 boolean vboolean,
+                                 char vchar,
+                                 byte vbyte,
+                                 short vshort) {
+    }
+
     @Test
     public void testThatItCanRetrievePropertyDescriptorsOfAClass() {
         PropertyDescriptor[] pds = BeanUtil.getPropertyDescriptors(UserDto.class);
@@ -616,6 +633,7 @@ public class BeanUtilTest {
     public void testCreateAndCopyWhenNullSrc() {
         assertNotNull(BeanUtil.createAndCopy(Object.class, null));
         assertNotNull(BeanUtil.createAndCopy(Object.class, (Object) null));
+        assertNotNull(BeanUtil.createAndCopy(DestRecord.class, null));
     }
 
     @Test
@@ -1175,6 +1193,60 @@ public class BeanUtilTest {
 
         assertThat(dest.firstName, is("😁"));
         assertThat(dest.lastName, is("😁"));
+    }
+
+    @Test
+    public void testCreateRecord() throws Exception {
+        Map<String, Object> srcMap = new HashMap<>() {{
+            put("sample", 10);
+//            put("strList", new ArrayList<String>(){{add("1"); add("2");}});
+            put("strList[0]", "1");
+            put("strList[1]", "2");
+            put("addressList", new ArrayList<Address>(){{add(new Address("111-2222", "東京都新宿区")); add(new Address("333-4444", "兵庫県神戸市"));}});
+            put("strArray", new String[]{"3", "4"});
+            put("addressArray",  new Address[]{new Address("555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")});
+
+        }};
+
+        DestRecord dest = BeanUtil.createAndCopy(DestRecord.class, srcMap, CopyOptions.empty());
+
+        assertThat(dest.sample, is(10));
+        assertThat(dest.strList.get(0), is("1"));
+        assertThat(dest.strList.get(1), is("2"));
+        assertThat(dest.addressList.get(0).postCode, is("111-2222"));
+        assertThat(dest.addressList.get(0).addr, is("東京都新宿区"));
+        assertThat(dest.addressList.get(1).postCode, is("333-4444"));
+        assertThat(dest.addressList.get(1).addr, is("兵庫県神戸市"));
+        assertThat(dest.strArray[0], is("3"));
+        assertThat(dest.strArray[1], is("4"));
+        assertThat(dest.addressArray[0].postCode, is("555-6666"));
+        assertThat(dest.addressArray[0].addr, is("大阪府大阪市"));
+        assertThat(dest.addressArray[1].postCode, is("777-8888"));
+        assertThat(dest.addressArray[1].addr, is("福岡県福岡市"));
+    }
+
+    @Test
+    public void testCreateRecordWithNullSrc() {
+        DestRecord dest = BeanUtil.createAndCopy(DestRecord.class, null, CopyOptions.empty());
+        assertThat(dest.sample, is(0));
+        assertThat(dest.strList, is(nullValue()));
+        assertThat(dest.addressList, is(nullValue()));
+        assertThat(dest.strArray, is(nullValue()));
+        assertThat(dest.addressArray, is(nullValue()));
+    }
+
+
+    @Test
+    public void testCreateRecordWithPrimitiveDefaults() {
+        DestPrimRecord dest = BeanUtil.createAndCopy(DestPrimRecord.class, new HashMap<>(), CopyOptions.empty());
+        assertThat(dest.vint, is(0));
+        assertThat(dest.vlong, is(0L));
+        assertThat(dest.vfloat, is(0.0f));
+        assertThat(dest.vdouble, is(0.0));
+        assertThat(dest.vboolean, is(false));
+        assertThat(dest.vchar, is('\u0000'));
+        assertThat(dest.vbyte, is((byte) 0));
+        assertThat(dest.vshort, is((short) 0));
     }
 
     @SuppressWarnings("RedundantThrows")
