@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 import nablarch.core.beans.converter.BigDecimalConverter;
 import nablarch.core.beans.converter.DateConverter;
@@ -254,6 +255,19 @@ public final class CopyOptions {
         }
         return copyOptions;
     }
+
+
+    CopyOptions reduce(String propertyName) {
+        Collection<String> tmpIncludeProperties = includesProperties.stream().map(pn -> pn.replace(propertyName + ".", "")).collect(Collectors.toCollection(HashSet::new));
+        Collection<String> tmpExcludeProperties = excludesProperties.stream().map(pn -> pn.replace(propertyName + ".", "")).collect(Collectors.toCollection(HashSet::new));
+        return new CopyOptions(
+                typedConverters,
+                namedConverters,
+                excludesNull,
+                tmpExcludeProperties,
+                tmpIncludeProperties);
+    }
+
 
     /**
      * 他の{@link CopyOptions}をマージする。

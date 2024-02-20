@@ -5,6 +5,7 @@ import nablarch.core.util.StringUtil;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,6 +25,8 @@ class PropertyExpression {
     /** リストまたは配列型プロパティのプロパティ名、要素番号を抽出するためのパターン. */
     private static final Pattern PATTERN = Pattern.compile("(.*)\\[(\\d+)\\]$");
 
+    private final String rawKey;
+
     /**
      * コンストラクタ。
      *
@@ -35,6 +38,11 @@ class PropertyExpression {
         }
         this.nestedProperties = nestedProperties;
         this.listPropertyInfo = createListPropertyInfo();
+        StringJoiner sj = new StringJoiner(".");
+        for(String np : nestedProperties) {
+            sj.add(np);
+        }
+        this.rawKey = sj.toString();
     }
 
     /**
@@ -48,6 +56,7 @@ class PropertyExpression {
         }
         this.nestedProperties = new LinkedList<String>(Arrays.asList(expression.split("\\.")));
         this.listPropertyInfo = createListPropertyInfo();
+        this.rawKey = expression;
     }
 
     /**
@@ -140,6 +149,10 @@ class PropertyExpression {
      */
     String getListPropertyName() {
         return listPropertyInfo.getListPropertyName();
+    }
+
+    String getRawKey() {
+        return rawKey;
     }
 
     /**
