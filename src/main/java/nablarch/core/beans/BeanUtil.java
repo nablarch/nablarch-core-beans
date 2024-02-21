@@ -99,6 +99,14 @@ public final class BeanUtil {
         return getPropertyDescriptor(beanClass, propertyName).getPropertyType();
     }
 
+    public static Method getAccessor(final Class<?> beanClass, final String propertyName) {
+        if (beanClass.isRecord()) {
+            return getRecordComponent(beanClass, propertyName).getAccessor();
+        }
+        return getPropertyDescriptor(beanClass, propertyName).getReadMethod();
+    }
+
+
 
     /**
      * 指定したオブジェクトから、特定のプロパティの値を取得する。
@@ -215,7 +223,7 @@ public final class BeanUtil {
         } else {
             if (nested == null) {
                 nested = createInstance(getPropertyType(bean.getClass(), propertyName));
-                setPropertyValue(bean, getPropertyDescriptor(bean.getClass(), propertyName), nested, CopyOptions.empty());
+                setPropertyValue(bean, propertyName, nested, CopyOptions.empty());
             }
 
             setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(propertyName));
@@ -326,26 +334,25 @@ public final class BeanUtil {
      * @param propertyValue プロパティに設定する値
      */
     private static void setPropertyValue(final Object bean, final String propertyName, final Object propertyValue) {
-        setPropertyValue(bean, getPropertyDescriptor(bean.getClass(), propertyName), propertyValue, CopyOptions.empty());
+        setPropertyValue(bean, propertyName, propertyValue, CopyOptions.empty());
     }
 
     /**
      * プロパティに値を設定する。
      * @param bean Beanオブジェクト
-     * @param pd 値を設定するプロパティのプロパティディスクリプタ
+     * @param propertyName 値を設定するプロパティ名
      * @param propertyValue プロパティに設定する値
      * @param copyOptions コピーの設定
      */
-    private static void setPropertyValue(final Object bean, final PropertyDescriptor pd,
+    private static void setPropertyValue(final Object bean, final String propertyName,
             final Object propertyValue, final CopyOptions copyOptions) {
         try {
-            final Method setter = pd.getWriteMethod();
+            final Method setter = getPropertyDescriptor(bean.getClass(), propertyName).getWriteMethod();
             if (setter == null) {
                 return;
             }
             final Object value;
-            Class<?> clazz = pd.getPropertyType();
-            String propertyName = pd.getName();
+            Class<?> clazz = getPropertyType(bean.getClass(), propertyName);
             if (copyOptions.hasNamedConverter(propertyName, clazz)) {
                 value = copyOptions.convertByName(propertyName, clazz, propertyValue);
             } else if (copyOptions.hasTypedConverter(clazz)) {
@@ -611,8 +618,8 @@ public final class BeanUtil {
             PropertyDescriptor pd = pdMap.get(propertyName);
             try {
                 final Object value = entry.getValue();
-                if (pd != null && hasConverter(pd, mergedCopyOptions)) {
-                    setPropertyValue(bean, pd, value, mergedCopyOptions);
+                if (pd != null && hasConverter(beanClass, propertyName, mergedCopyOptions)) {
+                    setPropertyValue(bean, propertyName, value, mergedCopyOptions);
                 } else {
                     setProperty(bean, propertyName, map, mergedCopyOptions);
                 }
@@ -622,6 +629,69 @@ public final class BeanUtil {
             }
         }
     }
+
+
+    private static <T> T createRecord(Class<? extends T> beanClass, final Object srcBean, final CopyOptions copyOptions) {
+        if (!beanClass.isRecord()) {
+            throw new BeansException("beanClass must not be record.");
+        }
+
+        CopyOptions copyOptionsFromSrc = CopyOptions.fromAnnotation(srcBean.getClass());
+        CopyOptions mergedCopyOptions = copyOptions.merge(copyOptionsFromSrc);
+
+        final RecordComponent[] destRcs = getRecordComponents(beanClass);
+        final Class<?>[] parameterTypes = new Class<?>[destRcs.length];
+        final Object[] args = new Object[destRcs.length];
+
+        for (int i = 0; i < destRcs.length; i++) {
+            final String propertyName = destRcs[i].getName();
+            parameterTypes[i] = destRcs[i].getType();
+
+            if (!mergedCopyOptions.isTargetProperty(propertyName)) {
+                continue;
+            }
+
+            final Method accessor = getAccessor(srcBean.getClass(), propertyName);
+            if (accessor == null) {
+                if (parameterTypes[i].isPrimitive()) {
+                    args[i] = PRIM_DEFAULT_VALUES.get(parameterTypes[i]);
+                }
+                continue;
+            }
+
+            try {
+                Object val = accessor.invoke(srcBean);
+                if (hasConverter(beanClass, propertyName, mergedCopyOptions)) {
+                    args[i] = createPropertyValue(beanClass, propertyName, val, mergedCopyOptions);
+                } else {
+                    CopyOptions.Builder builder = CopyOptions.options();
+                    if (mergedCopyOptions.isExcludesNull()) {
+                        builder.excludesNull();
+                    }
+                    if (parameterTypes[i].isRecord()) {
+                        args[i] = createRecord(parameterTypes[i], val, builder.build());
+                    } else {
+                        args[i] = copyInner(val, createInstance(parameterTypes[i]), builder.build());
+                    }
+                }
+            } catch (BeansException bex) {
+                LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
+            } catch (InvocationTargetException | IllegalAccessException e) {
+                throw new BeansException(e);
+            }
+
+        }
+
+        T recordInstance;
+        try {
+            recordInstance = beanClass.getConstructor(parameterTypes).newInstance(args);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new BeansException(e);
+        }
+
+        return recordInstance;
+    }
+
 
     /**
      * {@link Map}からレコードを生成する。
@@ -716,21 +786,24 @@ public final class BeanUtil {
             if (!mergedCopyOptions.isTargetProperty(propertyName)) {
                 continue;
             }
-
-            if(expression.isSimpleProperty() && expression.isNode()) {
-                String propertyRoot = expression.getRoot();
-                propertyMap.put(propertyRoot, createPropertyValue(beanClass, propertyRoot, propertyValue, copyOptions));
-            } else if(expression.isListOrArray()) {
-                Class<?> propertyType = getPropertyType(beanClass, expression.getListPropertyName());
-                if (propertyType.isArray()){
-                    setArrayPropertyToMap(beanClass, expression, propertyMap, map, copyOptions);
-                } else if (List.class.isAssignableFrom(propertyType)) {
-                    setListPropertyToMap(beanClass, expression, propertyMap, map, copyOptions);
+            try {
+                if (expression.isSimpleProperty() && expression.isNode()) {
+                    String propertyRoot = expression.getRoot();
+                    propertyMap.put(propertyRoot, createPropertyValue(beanClass, propertyRoot, propertyValue, copyOptions));
+                } else if (expression.isListOrArray()) {
+                    Class<?> propertyType = getPropertyType(beanClass, expression.getListPropertyName());
+                    if (propertyType.isArray()) {
+                        setArrayPropertyToMap(beanClass, expression, propertyMap, map, copyOptions);
+                    } else if (List.class.isAssignableFrom(propertyType)) {
+                        setListPropertyToMap(beanClass, expression, propertyMap, map, copyOptions);
+                    } else {
+                        throw new BeansException("property type must be List or Array.");
+                    }
                 } else {
-                    throw new BeansException("property type must be List or Array.");
+                    setObjectPropertyToMap(beanClass, expression, propertyMap, map, copyOptions);
                 }
-            } else {
-                setObjectPropertyToMap(beanClass, expression, propertyMap, map, copyOptions);
+            } catch (BeansException bex) {
+                LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
             }
         }
 
@@ -1020,6 +1093,11 @@ public final class BeanUtil {
      */
     public static <T> T createAndCopy(final Class<T> beanClass, final Object srcBean, final CopyOptions copyOptions) {
         final T bean = createInstance(beanClass);
+
+        if(beanClass.isRecord()) {
+            return createRecord(beanClass, srcBean, copyOptions);
+        }
+
         if (srcBean == null) {
             return bean;
         }
@@ -1094,7 +1172,7 @@ public final class BeanUtil {
                 continue;
             }
 
-            final Method getter = pd.getReadMethod();
+            final Method getter = getAccessor(srcBean.getClass(), propertyName);
             if (getter == null) {
                 continue;
             }
@@ -1102,24 +1180,30 @@ public final class BeanUtil {
             try {
                 final Object val = getter.invoke(srcBean);
                 if (!(mergedCopyOptions.isExcludesNull() && val == null)) {
-                    final PropertyDescriptor destPd = destPds.get(propertyName);
-                    if (destPd == null) {
+                    if (!destPds.containsKey(propertyName)) {
                         LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
                         continue;
                     }
-                    if (hasConverter(destPd, mergedCopyOptions)) {
-                        setPropertyValue(destBean, destPd, val, mergedCopyOptions);
+                    if (hasConverter(destBean.getClass(), propertyName, mergedCopyOptions)) {
+                        setPropertyValue(destBean, propertyName, val, mergedCopyOptions);
                     } else {
                         if (val != null) {
-                            Object innerDestBean = getProperty(destBean, destPd);
-                            if (innerDestBean == null) {
-                                innerDestBean = createInstance(destPd.getPropertyType());
-                            }
+                            Class<?> propertyType = getPropertyType(destBean.getClass(), propertyName);
                             CopyOptions.Builder builder = CopyOptions.options();
                             if (mergedCopyOptions.isExcludesNull()) {
                                 builder.excludesNull();
                             }
-                            setPropertyValue(destBean, destPd, copyInner(val, innerDestBean, builder.build()), CopyOptions.empty());
+
+                            if (propertyType.isRecord()) {
+                                setPropertyValue(destBean, propertyName, createRecord(propertyType, val, builder.build()), CopyOptions.empty());
+
+                            } else {
+                                Object innerDestBean = getProperty(destBean, propertyName);
+                                if (innerDestBean == null) {
+                                    innerDestBean = createInstance(getPropertyType(destBean.getClass(), propertyName));
+                                }
+                                setPropertyValue(destBean, propertyName, copyInner(val, innerDestBean, builder.build()), CopyOptions.empty());
+                            }
                         }
                     }
                 }
@@ -1135,33 +1219,16 @@ public final class BeanUtil {
     /**
      * 指定されたプロパティの情報をもとに有効な{@link Converter}または{@link ExtensionConverter}が存在するか判定する。
      * 
-     * @param pd プロパティの情報
+     * @param beanClass コピー先のbeanクラス
+     * @param propertyName コピー先のプロパティ名
      * @param copyOptions コピーの設定
      * @return 有効な{@link Converter}または{@link ExtensionConverter}が存在する場合は{@code true}
      */
-    private static boolean hasConverter(PropertyDescriptor pd, CopyOptions copyOptions) {
-        String propertyName = pd.getName();
-        Class<?> clazz = pd.getPropertyType();
+    private static boolean hasConverter(Class<?> beanClass, String propertyName, CopyOptions copyOptions) {
+        Class<?> clazz = getPropertyType(beanClass, propertyName);
         return copyOptions.hasNamedConverter(propertyName, clazz)
                 || copyOptions.hasTypedConverter(clazz)
                 || ConversionUtil.hasConverter(clazz);
-    }
-
-    /**
-     * 指定したオブジェクトのプロパティの値を取得する。
-     *
-     * @param bean プロパティの値を取得したいBeanオブジェクト
-     * @param pd 取得したいプロパティのプロパティディスクリプタ
-     * @return オブジェクトから取得したプロパティの値
-     * @throws BeansException 取得したいプロパティにgetterが存在しない場合
-     */
-    private static Object getProperty(final Object bean, final PropertyDescriptor pd) {
-        try {
-            final Method getter = pd.getReadMethod();
-            return getter.invoke(bean);
-        } catch (Exception e) {
-            throw new BeansException(e);
-        }
     }
 
     /**
