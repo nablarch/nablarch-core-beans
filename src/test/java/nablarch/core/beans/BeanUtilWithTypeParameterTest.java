@@ -42,6 +42,8 @@ public class BeanUtilWithTypeParameterTest {
         }
     }
 
+    public record ItemRecord<D extends Serializable>(List<D> items){}
+
     @Test
     public void testCreateAndCopyForBad() {
         Map<String, Object> map = new HashMap<String, Object>() {
@@ -73,4 +75,24 @@ public class BeanUtilWithTypeParameterTest {
         assertThat(form.getItems().get(0).getName(), is("aaa"));
         assertThat(form.getItems().get(1).getName(), is("bbb"));
     }
+
+
+    @Test
+    public void testCreateAndCopyForBadRecord() {
+        Map<String, Object> map = new HashMap<String, Object>() {
+            {
+                put("items[0].name", "aaa");
+                put("items[1].name", "bbb");
+            }
+        };
+        try {
+            BeanUtil.createAndCopy(ItemRecord.class, map);
+            fail("IllegalStateExceptionがスローされるはず");
+        } catch (IllegalStateException e) {
+            assertThat(e.getMessage(), is(
+                    "BeanUtil does not support type parameter for List type, so the accessor in the concrete class must be overridden. "
+                            + "getter method = [nablarch.core.beans.BeanUtilWithTypeParameterTest$ItemRecord#items]"));
+        }
+    }
+
 }

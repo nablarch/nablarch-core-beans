@@ -12,11 +12,14 @@ import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 import nablarch.core.log.Logger;
 import nablarch.core.log.LoggerManager;
@@ -84,6 +87,20 @@ public final class BeanUtil {
     public static RecordComponent getRecordComponent(final Class<?> recordClass, final String propertyName) {
         return RecordComponents.get(recordClass).getRecordComponent(propertyName);
     }
+
+    /**
+     * 指定したクラスに属する全てのプロパティの名前を取得する。
+     *
+     * @param beanClass プロパティ名を取得したいクラス
+     * @return Set<String> 全てのプロパティの名前
+     */
+    public static Set<String> getPropertyNames(final Class<?> beanClass) {
+        if (beanClass.isRecord()) {
+            return RecordComponents.get(beanClass).properties;
+        }
+        return PropertyDescriptors.get(beanClass).properties;
+    }
+
 
     /**
      * 指定したクラス空、特定プロパティの型を取得する。<br/>
@@ -222,7 +239,7 @@ public final class BeanUtil {
             setPropertyValue(bean, propertyName, createRecord(propertyType, getReducedMap(propertyName, map), copyOptions.reduce(propertyName)));
         } else {
             if (nested == null) {
-                nested = createInstance(getPropertyType(bean.getClass(), propertyName));
+                nested = createInstance(propertyType);
                 setPropertyValue(bean, propertyName, nested, CopyOptions.empty());
             }
 
@@ -400,18 +417,8 @@ public final class BeanUtil {
      * @param propertyName プロパティ名
      * @return リスト、配列の要素の型
      */
-    private static Class<?> getGenericTypeFromRecord(Class<?> beanClass, String propertyName) {
-        Type type;
-        String errorMessage;
-
-        if (!beanClass.isRecord()) {
-            throw new BeansException("beanClass must be record class.");
-        }
-
-        type = getRecordComponent(beanClass, propertyName).getGenericType();
-        errorMessage = "BeanUtil does not support type parameter for List type, so the getter method in the concrete class must be overridden. "
-                + "getter method = [" + beanClass.getName() + "#" + propertyName + "]";
-
+    private static Class<?> getGenericTypeForRecord(Class<?> beanClass, String propertyName) {
+        Type type = getRecordComponent(beanClass, propertyName).getGenericType();
 
         if (!(type instanceof ParameterizedType genericTypeParameter)) {
             // Generics でない場合。
@@ -420,7 +427,8 @@ public final class BeanUtil {
         }
         Object genericType = genericTypeParameter.getActualTypeArguments()[0];
         if (genericType instanceof TypeVariable<?>) {
-            throw new IllegalStateException(errorMessage);
+            throw new IllegalStateException("BeanUtil does not support type parameter for List type, so the accessor in the concrete class must be overridden. "
+                    + "getter method = [" + beanClass.getName() + "#" + propertyName + "]");
         }
         return (Class<?>) genericType;
     }
@@ -602,10 +610,6 @@ public final class BeanUtil {
     public static <T> void copy(Class<? extends T> beanClass, final T bean, final Map<String, ?> map,
             final CopyOptions copyOptions) {
 
-        if(beanClass.isRecord()) {
-            throw new BeansException("beanClass must not be record.");
-        }
-
         final CopyOptions mergedCopyOptions = copyOptions
                 .merge(CopyOptions.fromAnnotation(beanClass));
         final Map<String, PropertyDescriptor> pdMap = PropertyDescriptors.get(beanClass).map;
@@ -632,10 +636,6 @@ public final class BeanUtil {
 
 
     private static <T> T createRecord(Class<? extends T> beanClass, final Object srcBean, final CopyOptions copyOptions) {
-        if (!beanClass.isRecord()) {
-            throw new BeansException("beanClass must not be record.");
-        }
-
         CopyOptions copyOptionsFromSrc = CopyOptions.fromAnnotation(srcBean.getClass());
         CopyOptions mergedCopyOptions = copyOptions.merge(copyOptionsFromSrc);
 
@@ -651,8 +651,17 @@ public final class BeanUtil {
                 continue;
             }
 
-            final Method accessor = getAccessor(srcBean.getClass(), propertyName);
-            if (accessor == null) {
+            // srcBeanに対応するプロパティが存在しないか、アクセサが存在しない場合はスキップ
+            final Method accessor;
+            try {
+            accessor = getAccessor(srcBean.getClass(), propertyName);
+                if (accessor == null) {
+                    if (parameterTypes[i].isPrimitive()) {
+                        args[i] = PRIM_DEFAULT_VALUES.get(parameterTypes[i]);
+                    }
+                    continue;
+                }
+            } catch (BeansException bex) {
                 if (parameterTypes[i].isPrimitive()) {
                     args[i] = PRIM_DEFAULT_VALUES.get(parameterTypes[i]);
                 }
@@ -664,22 +673,28 @@ public final class BeanUtil {
                 if (hasConverter(beanClass, propertyName, mergedCopyOptions)) {
                     args[i] = createPropertyValue(beanClass, propertyName, val, mergedCopyOptions);
                 } else {
-                    CopyOptions.Builder builder = CopyOptions.options();
-                    if (mergedCopyOptions.isExcludesNull()) {
-                        builder.excludesNull();
-                    }
                     if (parameterTypes[i].isRecord()) {
-                        args[i] = createRecord(parameterTypes[i], val, builder.build());
+                        args[i] = createRecord(parameterTypes[i], val, CopyOptions.empty());
                     } else {
-                        args[i] = copyInner(val, createInstance(parameterTypes[i]), builder.build());
+                        args[i] = copyInner(val, createInstance(parameterTypes[i]), CopyOptions.empty());
                     }
                 }
             } catch (BeansException bex) {
-                LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
+                LOGGER.logDebug("An error occurred while copying the property: " + propertyName);
             } catch (InvocationTargetException | IllegalAccessException e) {
                 throw new BeansException(e);
             }
+        }
 
+        // コピー対象であり、かつコピー元に存在してコピー先に存在しないプロパティのログ出力
+        if(LOGGER.isDebugEnabled()) {
+            Set<String> srcLeftProperties = getPropertyNames(srcBean.getClass());
+            srcLeftProperties.removeAll(getPropertyNames(beanClass));
+            for (String propertyName : srcLeftProperties) {
+                if (mergedCopyOptions.isTargetProperty(propertyName)) {
+                    LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
+                }
+            }
         }
 
         T recordInstance;
@@ -705,10 +720,6 @@ public final class BeanUtil {
      */
     private static <T> T createRecord(Class<? extends T> beanClass, final Map<String, ?> map,
                                      final CopyOptions copyOptions) {
-        if(!beanClass.isRecord()) {
-            throw new BeansException("beanClass must not be record.");
-        }
-
         Map<String, ?> propertyMap = createPropertyMap(beanClass, map, copyOptions);
 
         final RecordComponent[] recordComponents = getRecordComponents(beanClass);
@@ -916,7 +927,7 @@ public final class BeanUtil {
             }
         }
 
-        Class<?> genericType = getGenericTypeFromRecord(beanClass, listPropertyName);
+        Class<?> genericType = getGenericTypeForRecord(beanClass, listPropertyName);
         Object propertyValue = map.get(expression.getRawKey());
         if (expression.isNode()) {
             // プリミティブ型の場合
@@ -953,18 +964,21 @@ public final class BeanUtil {
      */
     private static Object createPropertyValue(Class<?> beanClass, String propertyName, Object propertyValue, CopyOptions copyOptions) {
 
-        Class<?> clazz = getPropertyType(beanClass, propertyName);
+        try {
+            Class<?> clazz = getPropertyType(beanClass, propertyName);
 
-        if (copyOptions.hasNamedConverter(propertyName, clazz)) {
-            return copyOptions.convertByName(propertyName, clazz, propertyValue);
+            if (copyOptions.hasNamedConverter(propertyName, clazz)) {
+                return copyOptions.convertByName(propertyName, clazz, propertyValue);
+            }
+
+            if (copyOptions.hasTypedConverter(clazz)) {
+                return copyOptions.convertByType(clazz, propertyValue);
+            }
+
+            return ConversionUtil.convert(clazz, propertyValue);
+        } catch (Exception e) {
+            throw new BeansException(e);
         }
-
-        if (copyOptions.hasTypedConverter(clazz)) {
-            return copyOptions.convertByType(clazz, propertyValue);
-        }
-
-        return ConversionUtil.convert(clazz, propertyValue);
-
     }
 
     /**
@@ -1092,12 +1106,12 @@ public final class BeanUtil {
      *   {@code beanClass}のコンストラクタの実行中に問題が発生した場合。
      */
     public static <T> T createAndCopy(final Class<T> beanClass, final Object srcBean, final CopyOptions copyOptions) {
-        final T bean = createInstance(beanClass);
 
         if(beanClass.isRecord()) {
             return createRecord(beanClass, srcBean, copyOptions);
         }
 
+        final T bean = createInstance(beanClass);
         if (srcBean == null) {
             return bean;
         }
@@ -1163,32 +1177,33 @@ public final class BeanUtil {
         CopyOptions copyOptionsFromDest = CopyOptions.fromAnnotation(destBean.getClass());
         CopyOptions mergedCopyOptions = copyOptions.merge(copyOptionsFromSrc).merge(copyOptionsFromDest);
 
-        final PropertyDescriptor[] srcPds = getPropertyDescriptors(srcBean.getClass());
-        final Map<String, PropertyDescriptor> destPds = PropertyDescriptors.get(destBean.getClass()).map;
+        final PropertyDescriptor[] destPds = getPropertyDescriptors(destBean.getClass());
 
-        for (PropertyDescriptor pd : srcPds) {
+        for (PropertyDescriptor pd : destPds) {
             final String propertyName = pd.getName();
             if (!mergedCopyOptions.isTargetProperty(propertyName)) {
                 continue;
             }
 
-            final Method getter = getAccessor(srcBean.getClass(), propertyName);
-            if (getter == null) {
+            // srcBeanに対応するプロパティが存在しないか、getterが存在しない場合はスキップ
+            final Method getter;
+            try {
+                getter = getAccessor(srcBean.getClass(), propertyName);
+                if (getter == null) {
+                    continue;
+                }
+            } catch (BeansException bex) {
                 continue;
             }
 
             try {
                 final Object val = getter.invoke(srcBean);
                 if (!(mergedCopyOptions.isExcludesNull() && val == null)) {
-                    if (!destPds.containsKey(propertyName)) {
-                        LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
-                        continue;
-                    }
                     if (hasConverter(destBean.getClass(), propertyName, mergedCopyOptions)) {
                         setPropertyValue(destBean, propertyName, val, mergedCopyOptions);
                     } else {
                         if (val != null) {
-                            Class<?> propertyType = getPropertyType(destBean.getClass(), propertyName);
+                            Class<?> propertyType = pd.getPropertyType();
                             CopyOptions.Builder builder = CopyOptions.options();
                             if (mergedCopyOptions.isExcludesNull()) {
                                 builder.excludesNull();
@@ -1200,7 +1215,7 @@ public final class BeanUtil {
                             } else {
                                 Object innerDestBean = getProperty(destBean, propertyName);
                                 if (innerDestBean == null) {
-                                    innerDestBean = createInstance(getPropertyType(destBean.getClass(), propertyName));
+                                    innerDestBean = createInstance(propertyType);
                                 }
                                 setPropertyValue(destBean, propertyName, copyInner(val, innerDestBean, builder.build()), CopyOptions.empty());
                             }
@@ -1213,6 +1228,18 @@ public final class BeanUtil {
                 throw new BeansException(e);
             }
         }
+
+        // コピー対象であり、かつコピー元に存在してコピー先に存在しないプロパティのログ出力
+        if(LOGGER.isDebugEnabled()) {
+            Set<String> srcLeftProperties = getPropertyNames(srcBean.getClass());
+            srcLeftProperties.removeAll(getPropertyNames(destBean.getClass()));
+            for (String propertyName : srcLeftProperties) {
+                if (mergedCopyOptions.isTargetProperty(propertyName)) {
+                    LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
+                }
+            }
+        }
+
         return destBean;
     }
 
@@ -1476,12 +1503,14 @@ public final class BeanUtil {
         final PropertyDescriptor[] array;
         /** {@link PropertyDescriptor}の{@link Map}表現 */
         final Map<String, PropertyDescriptor> map;
+        /** プロパティ名のSet */
+        final Set<String> properties;
 
         /**
          * コンストラクタ。
          * 
          * <p>
-         * クラスの{@link PropertyDescriptor}を取得して配列表現と{@link Map}表現を構築する。
+         * クラスの{@link PropertyDescriptor}を取得して配列表現と{@link Map}表現、プロパティ名のSetを構築する。
          * なお、プロパティ名が{@literal class}となる{@link PropertyDescriptor}は無視する。
          * </p>
          * 
@@ -1498,6 +1527,7 @@ public final class BeanUtil {
                 }
             }
             array = map.values().toArray(new PropertyDescriptor[0]);
+            properties = Arrays.stream(array).map(PropertyDescriptor::getName).collect(Collectors.toSet());
         }
 
         /**
@@ -1567,12 +1597,14 @@ public final class BeanUtil {
         final RecordComponent[] array;
         /** {@link PropertyDescriptor}の{@link Map}表現 */
         final Map<String, RecordComponent> map;
+        /** プロパティ名のSet */
+        final Set<String> properties;
 
         /**
          * コンストラクタ。
          *
          * <p>
-         * クラスの{@link RecordComponent}を取得して配列表現と{@link Map}表現を構築する。
+         * クラスの{@link RecordComponent}を取得して配列表現と{@link Map}表現、プロパティ名のSetを構築する。
          * </p>
          *
          * @param beanClass クラス
@@ -1584,6 +1616,7 @@ public final class BeanUtil {
                 map.put(rc.getName(), rc);
             }
             array = map.values().toArray(new RecordComponent[0]);
+            properties = Arrays.stream(array).map(RecordComponent::getName).collect(Collectors.toSet());
         }
 
         /**
