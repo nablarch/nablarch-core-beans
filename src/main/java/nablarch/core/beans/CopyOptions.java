@@ -257,6 +257,13 @@ public final class CopyOptions {
     }
 
 
+    /**
+     * {@link CopyOptions#includesProperties}および{@link CopyOptions#excludesProperties}で、
+     * 指定した親プロパティ名を持つプロパティから親プロパティ名を削除した新しい{@link CopyOptions}を返す。
+     *
+     * @param propertyName 親プロパティ名
+     * @return 新しい {@link CopyOptions}
+     */
     CopyOptions reduce(String propertyName) {
         Collection<String> tmpIncludeProperties = includesProperties.stream().map(pn -> pn.replace(propertyName + ".", "")).collect(Collectors.toCollection(HashSet::new));
         Collection<String> tmpExcludeProperties = excludesProperties.stream().map(pn -> pn.replace(propertyName + ".", "")).collect(Collectors.toCollection(HashSet::new));

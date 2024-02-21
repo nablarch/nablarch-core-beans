@@ -25,6 +25,7 @@ class PropertyExpression {
     /** リストまたは配列型プロパティのプロパティ名、要素番号を抽出するためのパターン. */
     private static final Pattern PATTERN = Pattern.compile("(.*)\\[(\\d+)\\]$");
 
+    /** ネストしたプロパティの文字列表現（ドット区切り） */
     private final String rawKey;
 
     /**
@@ -151,6 +152,11 @@ class PropertyExpression {
         return listPropertyInfo.getListPropertyName();
     }
 
+    /**
+     * {@link PropertyExpression#rawKey}を返却する。
+     *
+     * @return rawKey
+     */
     String getRawKey() {
         return rawKey;
     }

@@ -85,6 +85,13 @@ public final class BeanUtil {
         return RecordComponents.get(recordClass).getRecordComponent(propertyName);
     }
 
+    /**
+     * 指定したクラス空、特定プロパティの型を取得する。<br/>
+     *
+     * @param beanClass プロパティの型を取得したいクラス
+     * @param propertyName 取得したいプロパティ名
+     * @return Class<?> プロパティの型
+     */
     public static Class<?> getPropertyType(final Class<?> beanClass, final String propertyName) {
         if (beanClass.isRecord()) {
             return getRecordComponent(beanClass, propertyName).getType();
@@ -167,12 +174,11 @@ public final class BeanUtil {
      *
      * @param bean Beanオブジェクト
      * @param expression プロパティを表すオブジェクト
-     * @param propertyValue プロパティに登録する値
      * @throws BeansException インスタンス生成に失敗した場合
      */
-    private static void setProperty(Object bean, PropertyExpression expression, Map<String, ?> map, Object propertyValue, CopyOptions copyOptions) {
+    private static void setProperty(Object bean, PropertyExpression expression, Map<String, ?> map, CopyOptions copyOptions) {
         if (expression.isSimpleProperty() && expression.isNode()) {
-            setPropertyValue(bean, expression.getRoot(), propertyValue);
+            setPropertyValue(bean, expression.getRoot(), map.get(expression.getRawKey()));
         } else if(expression.isListOrArray()) {
             Class<?> propertyType = getPropertyType(bean.getClass(), expression.getListPropertyName());
             if (propertyType.isArray()) {
@@ -194,6 +200,7 @@ public final class BeanUtil {
      * @param map 移送元のMap
      *            JavaBeansのプロパティ名をエントリーのキー
      *            プロパティの値をエントリーの値とするMap
+     * @param copyOptions コピーの設定
      */
     private static void setObjectProperty(Object bean, PropertyExpression expression, Map<String, ?> map, CopyOptions copyOptions) {
         String propertyName = expression.getRoot();
@@ -211,8 +218,7 @@ public final class BeanUtil {
                 setPropertyValue(bean, getPropertyDescriptor(bean.getClass(), propertyName), nested, CopyOptions.empty());
             }
 
-            Object propertyValue = map.get(expression.getRawKey());
-            setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), propertyValue, copyOptions.reduce(propertyName));
+            setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(propertyName));
         }
     }
 
@@ -223,7 +229,9 @@ public final class BeanUtil {
      * @param map 移送元のMap
      *            JavaBeansのプロパティ名をエントリーのキー
      *            プロパティの値をエントリーの値とするMap
+     * @param copyOptions コピーの設定
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private static void setListProperty(Object bean, PropertyExpression expression, Map<String, ?> map, CopyOptions copyOptions) {
 
         String propertyName = expression.getListPropertyName();
@@ -242,9 +250,9 @@ public final class BeanUtil {
         }
 
         Class<?> genericType = getGenericType(bean, propertyName);
-        Object propertyValue = map.get(expression.getRawKey());
         if (expression.isNode()) {
             // プリミティブ型の場合
+            Object propertyValue = map.get(expression.getRawKey());
             list.set(index, ConversionUtil.convert(genericType, propertyValue));
         } else {
             // オブジェクト型の場合
@@ -256,7 +264,7 @@ public final class BeanUtil {
                 if (obj == null) {
                     obj = createInstance(genericType);
                 }
-                setProperty(obj, expression.rest(), getReducedMap(expression.getRoot(), map), propertyValue, copyOptions.reduce(expression.getRoot()));
+                setProperty(obj, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot()));
                 list.set(index, obj);
             }
         }
@@ -271,7 +279,9 @@ public final class BeanUtil {
      * @param map 移送元のMap
      *            JavaBeansのプロパティ名をエントリーのキー
      *            プロパティの値をエントリーの値とするMap
+     * @param copyOptions コピーの設定
      */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     private static void setArrayProperty(Object bean, PropertyExpression expression, Map<String, ?> map, CopyOptions copyOptions) {
 
         Class<?> componentType = getPropertyType(bean.getClass(), expression.getListPropertyName()).getComponentType();
@@ -288,9 +298,9 @@ public final class BeanUtil {
         }
 
         int index = expression.getListIndex();
-        Object propertyValue = map.get(expression.getRawKey());
         if (expression.isNode()) {
             // プリミティブ型の場合
+            Object propertyValue = map.get(expression.getRawKey());
             Array.set(array, index, ConversionUtil.convert(componentType, propertyValue));
         } else {
             // オブジェクト型の場合
@@ -301,7 +311,7 @@ public final class BeanUtil {
                 if (nested == null) {
                     nested = createInstance(componentType);
                 }
-                setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), propertyValue, copyOptions.reduce(expression.getRoot()));
+                setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot()));
                 Array.set(array, index, nested);
             }
         }
@@ -377,7 +387,7 @@ public final class BeanUtil {
 
 
     /**
-     * リスト、配列の要素の型を取得する.
+     * レコードのコンポーネントから、リストの要素の型を取得する.
      *
      * @param beanClass Beanオブジェクト
      * @param propertyName プロパティ名
@@ -471,11 +481,19 @@ public final class BeanUtil {
      *   </ul>
      */
     public static void setProperty(final Object bean, final String propertyName, final Object propertyValue) {
-        setProperty(bean, propertyName, new HashMap<>(){{put(propertyName, propertyValue);}}, propertyValue, CopyOptions.empty());
+        setProperty(bean, propertyName, new HashMap<>(){{put(propertyName, propertyValue);}}, CopyOptions.empty());
     }
 
-    public static void setProperty(final Object bean, final String propertyName, final Map<String, ?> map, final Object propertyValue, CopyOptions copyOptions) {
-        setProperty(bean, new PropertyExpression(propertyName), map, propertyValue, copyOptions);
+    /**
+     * プロパティに値を設定する。
+     *
+     * @param bean Beanオブジェクト
+     * @param propertyName 値を設定するプロパティ名
+     * @param map 移送元のMap
+     * @param copyOptions コピーの設定
+     */
+    private static void setProperty(final Object bean, final String propertyName, final Map<String, ?> map, CopyOptions copyOptions) {
+        setProperty(bean, new PropertyExpression(propertyName), map, copyOptions);
     }
 
     /**
@@ -596,7 +614,7 @@ public final class BeanUtil {
                 if (pd != null && hasConverter(pd, mergedCopyOptions)) {
                     setPropertyValue(bean, pd, value, mergedCopyOptions);
                 } else {
-                    setProperty(bean, propertyName, map, value, mergedCopyOptions);
+                    setProperty(bean, propertyName, map, mergedCopyOptions);
                 }
             } catch (BeansException bex) {
                 LOGGER.logDebug(
@@ -606,10 +624,9 @@ public final class BeanUtil {
     }
 
     /**
-     * {@link Map}からBeanインスタンスへコピーを行う。
-     * 生成済みのインスタンスにコピーを行う点以外は、{@link #createAndCopy(Class, Map, CopyOptions)}と同じ動作である。
+     * {@link Map}からレコードを生成する。
      *
-     * @param beanClass 移送先BeanのClass
+     * @param beanClass レコードのClass
      * @param map 移送元のMap
      *            JavaBeansのプロパティ名をエントリーのキー
      *            プロパティの値をエントリーの値とするMap
@@ -622,10 +639,8 @@ public final class BeanUtil {
             throw new BeansException("beanClass must not be record.");
         }
 
-        Map<String, ?> propertyMap = createProperty(beanClass, map, copyOptions);
+        Map<String, ?> propertyMap = createPropertyMap(beanClass, map, copyOptions);
 
-        final CopyOptions mergedCopyOptions = copyOptions
-                .merge(CopyOptions.fromAnnotation(beanClass));
         final RecordComponent[] recordComponents = getRecordComponents(beanClass);
         final Class<?>[] parameterTypes = new Class<?>[recordComponents.length];
         final Object[] args = new Object[recordComponents.length];
@@ -654,6 +669,13 @@ public final class BeanUtil {
     }
 
 
+    /**
+     * 移送元のパラメータマップから、指定した親プロパティ名を持つエントリのみを抽出し、子パラメータのマップを生成する。
+     *
+     * @param rootProperty 親プロパティ名
+     * @param map 移送元のMap
+     * @return 子パラメータのマップ
+     */
     private static Map<String, Object> getReducedMap(String rootProperty, Map<String, ?> map) {
         Map<String, Object> result = new HashMap<>();
         for(Map.Entry<String, ?> entry : map.entrySet()) {
@@ -667,7 +689,15 @@ public final class BeanUtil {
     }
 
 
-    private static Map<String, ?> createProperty(Class<?> beanClass, Map<String, ?> map, CopyOptions copyOptions) {
+    /**
+     * レコードを生成するためのプロパティ値を格納したマップを生成する。
+     *
+     * @param beanClass レコードのClass
+     * @param map 移送元のMap
+     * @param copyOptions コピーの設定
+     * @return レコードを生成するためのプロパティ値を格納したマップ
+     */
+    private static Map<String, ?> createPropertyMap(Class<?> beanClass, Map<String, ?> map, CopyOptions copyOptions) {
 
         Map<String, Object> propertyMap = new HashMap<>();
 
@@ -679,17 +709,17 @@ public final class BeanUtil {
                 .merge(CopyOptions.fromAnnotation(beanClass));
 
         for(Map.Entry<String, ?> entry : map.entrySet()) {
-            PropertyExpression expression = new PropertyExpression(entry.getKey());
+            String propertyName = entry.getKey();
             Object propertyValue = entry.getValue();
+            PropertyExpression expression = new PropertyExpression(propertyName);
 
-            final String propertyName = entry.getKey();
             if (!mergedCopyOptions.isTargetProperty(propertyName)) {
                 continue;
             }
 
             if(expression.isSimpleProperty() && expression.isNode()) {
-                // シンプルなプロパティの設定
-                propertyMap.put(expression.getRoot(), createPropertyValue(beanClass, expression.getRoot(), propertyValue, copyOptions));
+                String propertyRoot = expression.getRoot();
+                propertyMap.put(propertyRoot, createPropertyValue(beanClass, propertyRoot, propertyValue, copyOptions));
             } else if(expression.isListOrArray()) {
                 Class<?> propertyType = getPropertyType(beanClass, expression.getListPropertyName());
                 if (propertyType.isArray()){
@@ -707,6 +737,15 @@ public final class BeanUtil {
         return propertyMap;
     }
 
+    /**
+     * プロパティ値を格納したマップにオブジェクト値を設定する。
+     *
+     * @param beanClass レコードのClass
+     * @param expression 設定するオブジェクトを表すPropertyExpression
+     * @param propertyMap プロパティ値を格納したマップ
+     * @param map 移送元のMap
+     * @param copyOptions コピーの設定
+     */
     private static void setObjectPropertyToMap(Class<?> beanClass, PropertyExpression expression, Map<String, Object> propertyMap, Map<String, ?> map, CopyOptions copyOptions) {
         String propertyName = expression.getRoot();
         Class<?> propertyType = getPropertyType(beanClass, propertyName);
@@ -722,12 +761,21 @@ public final class BeanUtil {
                     = propertyMap.containsKey(propertyName)
                     ? propertyMap.get(propertyName)
                     : createInstance(propertyType);
-            Object propertyValue = map.get(expression.getRawKey());
-            setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), propertyValue, copyOptions.reduce(propertyName));
+            setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(propertyName));
             propertyMap.put(propertyName, nested);
         }
     }
 
+    /**
+     * プロパティ値を格納したマップに配列の値を設定する。
+     *
+     * @param beanClass レコードのClass
+     * @param expression 設定する配列を表すPropertyExpression
+     * @param propertyMap プロパティ値を格納したマップ
+     * @param map 移送元のMap
+     * @param copyOptions コピーの設定
+     */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     private static void setArrayPropertyToMap(Class<?> beanClass, PropertyExpression expression, Map<String, Object> propertyMap, Map<String, ?> map, CopyOptions copyOptions) {
         String listPropertyName = expression.getListPropertyName();
         Class<?> propertyType = getPropertyType(beanClass, listPropertyName);
@@ -746,9 +794,9 @@ public final class BeanUtil {
             System.arraycopy(old, 0, array, 0, Array.getLength(old));
         }
 
-        Object propertyValue = map.get(expression.getRawKey());
         if (expression.isNode()) {
             // プリミティブ型の場合
+            Object propertyValue = map.get(expression.getRawKey());
             Array.set(array, index, ConversionUtil.convert(componentType, propertyValue));
         } else {
             // オブジェクト型の場合
@@ -760,7 +808,7 @@ public final class BeanUtil {
                 if (nested == null) {
                     nested = createInstance(componentType);
                 }
-                setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), propertyValue, copyOptions.reduce(expression.getRoot()));
+                setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot()));
                 Array.set(array, index, nested);
             }
         }
@@ -769,6 +817,16 @@ public final class BeanUtil {
 
     }
 
+    /**
+     * プロパティ値を格納したマップにリストの値を設定する。
+     *
+     * @param beanClass レコードのClass
+     * @param expression 設定するリストを表すPropertyExpression
+     * @param propertyMap プロパティ値を格納したマップ
+     * @param map 移送元のMap
+     * @param copyOptions コピーの設定
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private static void setListPropertyToMap(Class<?> beanClass, PropertyExpression expression, Map<String, Object> propertyMap, Map<String, ?> map, CopyOptions copyOptions) {
         String listPropertyName = expression.getListPropertyName();
 
@@ -800,7 +858,7 @@ public final class BeanUtil {
                 if (nested == null) {
                     nested = createInstance(genericType);
                 }
-                setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), propertyValue, copyOptions.reduce(expression.getRoot()));
+                setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot()));
                 list.set(index, nested);
 
             }
@@ -811,7 +869,15 @@ public final class BeanUtil {
     }
 
 
-
+    /**
+     * プロパティ値を変換して生成する。
+     *
+     * @param beanClass レコードのClass
+     * @param propertyName プロパティ名
+     * @param propertyValue プロパティ値
+     * @param copyOptions コピーの設定
+     * @return 変換済みのプロパティ値
+     */
     private static Object createPropertyValue(Class<?> beanClass, String propertyName, Object propertyValue, CopyOptions copyOptions) {
 
         Class<?> clazz = getPropertyType(beanClass, propertyName);
@@ -828,6 +894,9 @@ public final class BeanUtil {
 
     }
 
+    /**
+     * プリミティブ型に対応するデフォルト値
+     */
     private static final Map<Class<?>, Object> PRIM_DEFAULT_VALUES = new HashMap<>() {
         {
             put(boolean.class, false);
@@ -1357,7 +1426,7 @@ public final class BeanUtil {
             PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
             map = new LinkedHashMap<>(pds.length - 1);
             for (PropertyDescriptor pd : pds) {
-                if (!pd.getName().equals("class")) {
+                if (!"class".equals(pd.getName())) {
                     map.put(pd.getName(), pd);
                 }
             }
@@ -1419,7 +1488,6 @@ public final class BeanUtil {
 
     /**
      * レコードの{@link RecordComponent}をまとめたもの。
-     * ただしプロパティ名が{@literal class}のものは除かれている。
      *
      * @author Takayuki Uchida
      *
@@ -1438,7 +1506,6 @@ public final class BeanUtil {
          *
          * <p>
          * クラスの{@link RecordComponent}を取得して配列表現と{@link Map}表現を構築する。
-         * なお、プロパティ名が{@literal class}となる{@link RecordComponent}は無視する。
          * </p>
          *
          * @param beanClass クラス
@@ -1447,9 +1514,7 @@ public final class BeanUtil {
             RecordComponent[] rcs = beanClass.getRecordComponents();
             map = new LinkedHashMap<>(rcs.length - 1);
             for (RecordComponent rc : rcs) {
-                if (!rc.getName().equals("class")) {
-                    map.put(rc.getName(), rc);
-                }
+                map.put(rc.getName(), rc);
             }
             array = map.values().toArray(new RecordComponent[0]);
         }
