@@ -11,14 +11,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import nablarch.core.log.Logger;
@@ -688,7 +681,7 @@ public final class BeanUtil {
 
         // コピー対象であり、かつコピー元に存在してコピー先に存在しないプロパティのログ出力
         if(LOGGER.isDebugEnabled()) {
-            Set<String> srcLeftProperties = getPropertyNames(srcBean.getClass());
+            Set<String> srcLeftProperties = new HashSet<>(getPropertyNames(srcBean.getClass()));
             srcLeftProperties.removeAll(getPropertyNames(beanClass));
             for (String propertyName : srcLeftProperties) {
                 if (mergedCopyOptions.isTargetProperty(propertyName)) {
@@ -1231,7 +1224,7 @@ public final class BeanUtil {
 
         // コピー対象であり、かつコピー元に存在してコピー先に存在しないプロパティのログ出力
         if(LOGGER.isDebugEnabled()) {
-            Set<String> srcLeftProperties = getPropertyNames(srcBean.getClass());
+            Set<String> srcLeftProperties = new HashSet<>(getPropertyNames(srcBean.getClass()));
             srcLeftProperties.removeAll(getPropertyNames(destBean.getClass()));
             for (String propertyName : srcLeftProperties) {
                 if (mergedCopyOptions.isTargetProperty(propertyName)) {
@@ -1425,7 +1418,7 @@ public final class BeanUtil {
     }
 
     /**
-     * Mapを作成しBeanのプロパティ値をコピーする。
+     * Mapを作成しBeanもしくはレコードのプロパティ値をコピーする。
      *
      * @param srcBean コピー元のBean
      * @param prefix プロパティ名のプレフィックス
@@ -1437,13 +1430,12 @@ public final class BeanUtil {
             final SRC srcBean, final String prefix, final CopyOptions copyOptions) {
 
         final Map<String, Object> result = new HashMap<>();
-        for (PropertyDescriptor descriptor : getPropertyDescriptors(srcBean.getClass())) {
-            final String propertyName = descriptor.getName();
+        for (String propertyName : getPropertyNames(srcBean.getClass())) {
             if (!copyOptions.isTargetProperty(propertyName)) {
                 continue;
             }
             final String key = StringUtil.hasValue(prefix) ? prefix + '.' + propertyName : propertyName;
-            final Method readMethod = descriptor.getReadMethod();
+            final Method readMethod = getAccessor(srcBean.getClass(), propertyName);
             if (readMethod == null) {
                 continue;
             }
@@ -1453,7 +1445,7 @@ public final class BeanUtil {
             } catch (Exception e) {
                 throw new BeansException(e);
             }
-            if (ConversionUtil.hasConverter(descriptor.getPropertyType())) {
+            if (ConversionUtil.hasConverter(getPropertyType(srcBean.getClass(), propertyName))) {
                 result.put(key, propertyValue);
             } else {
                 if (propertyValue == null) {

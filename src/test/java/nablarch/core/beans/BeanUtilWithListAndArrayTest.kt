@@ -281,6 +281,7 @@ internal class BeanUtilWithListAndArrayTest {
             LinkedList(listOf(Obj("a"), Obj("aa"))))
 
         val actual = BeanUtil.createMapAndCopy(src)
+        System.out.println(actual)
         assertThat(actual, `is`(
             mapOf(
                 "name" to "なまえ",

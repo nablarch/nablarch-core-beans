@@ -33,6 +33,7 @@ public class BeanUtilForRecordTest {
         BeanUtil.clearCache();
     }
 
+    @SuppressWarnings("unused")
     public static class Address {
         private String postCode;
         private String addr;
@@ -90,6 +91,7 @@ public class BeanUtilForRecordTest {
     ) {
     }
 
+    @SuppressWarnings("unused")
     public static class TestBean {
         private Integer sample;
         private String onlyInTestBean;
@@ -183,6 +185,7 @@ public class BeanUtilForRecordTest {
         }
     }
 
+    @SuppressWarnings("unused")
     public static class SourceBean {
         private Integer sample;
         private String onlyInSourceBean;
@@ -282,6 +285,7 @@ public class BeanUtilForRecordTest {
                                  short vshort) {
     }
 
+    @SuppressWarnings("unused")
     public static class SourcePrimRecord {
 
 
@@ -491,17 +495,11 @@ public class BeanUtilForRecordTest {
         assertThat(dest.innerRecordArray[0].id, is(nullValue()));
         assertThat(dest.innerRecordArray[0].name, is("神田幹太"));
 
-        assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
-            String tmp = dest.strArray[1];
-        });
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> System.out.println(dest.strArray[1]));
 
-        assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
-            Address tmp = dest.addressArray[1];
-        });
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> System.out.println(dest.addressArray[1]));
 
-        assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
-            InnerRecord tmp = dest.innerRecordArray[1];
-        });
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> System.out.println(dest.innerRecordArray[1]));
     }
 
     @Test
@@ -618,9 +616,7 @@ public class BeanUtilForRecordTest {
         assertThat(dest.innerRecordArray[1].id, is(10005));
         assertThat(dest.innerRecordArray[1].name, is("森川瑛太"));
 
-        assertThrows(IndexOutOfBoundsException.class, () -> {
-            String tmp = dest.strList.get(1);
-        });
+        assertThrows(IndexOutOfBoundsException.class, () -> System.out.println(dest.strList.get(1)));
 
     }
 
@@ -703,19 +699,6 @@ public class BeanUtilForRecordTest {
         assertThat(dest.strArray, is(nullValue()));
         assertThat(dest.addressArray, is(nullValue()));
         assertThat(dest.innerRecordArray, is(nullValue()));
-    }
-
-    @Test
-    public void プリミティブ型のコンポーネントに対応するパラメタが存在しない場合_デフォルト値で置換されること() {
-        TestPrimRecord dest = BeanUtil.createAndCopy(TestPrimRecord.class, new HashMap<>(), CopyOptions.empty());
-        assertThat(dest.vint, is(0));
-        assertThat(dest.vlong, is(0L));
-        assertThat(dest.vfloat, is(0.0f));
-        assertThat(dest.vdouble, is(0.0));
-        assertThat(dest.vboolean, is(false));
-        assertThat(dest.vchar, is('\u0000'));
-        assertThat(dest.vbyte, is((byte) 0));
-        assertThat(dest.vshort, is((short) 0));
     }
 
     @Test
@@ -908,17 +891,11 @@ public class BeanUtilForRecordTest {
         assertThat(dest.innerRecordArray[0].id, is(nullValue()));
         assertThat(dest.innerRecordArray[0].name, is("神田幹太"));
 
-        assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
-            String tmp = dest.strArray[1];
-        });
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> System.out.println(dest.strArray[1]));
 
-        assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
-            Address tmp = dest.addressArray[1];
-        });
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> System.out.println(dest.addressArray[1]));
 
-        assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
-            InnerRecord tmp = dest.innerRecordArray[1];
-        });
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> System.out.println(dest.innerRecordArray[1]));
     }
 
     @Test
@@ -1035,9 +1012,7 @@ public class BeanUtilForRecordTest {
         assertThat(dest.innerRecordArray[1].id, is(10005));
         assertThat(dest.innerRecordArray[1].name, is("森川瑛太"));
 
-        assertThrows(IndexOutOfBoundsException.class, () -> {
-            String tmp = dest.strList.get(1);
-        });
+        assertThrows(IndexOutOfBoundsException.class, () -> System.out.println(dest.strList.get(1)));
 
     }
 
@@ -1341,6 +1316,19 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
+    public void Map内にプリミティブ型のコンポーネントに対応するパラメタが存在しない場合_デフォルト値で置換されること() {
+        TestPrimRecord dest = BeanUtil.createAndCopy(TestPrimRecord.class, new HashMap<>(), CopyOptions.empty());
+        assertThat(dest.vint, is(0));
+        assertThat(dest.vlong, is(0L));
+        assertThat(dest.vfloat, is(0.0f));
+        assertThat(dest.vdouble, is(0.0));
+        assertThat(dest.vboolean, is(false));
+        assertThat(dest.vchar, is('\u0000'));
+        assertThat(dest.vbyte, is((byte) 0));
+        assertThat(dest.vshort, is((short) 0));
+    }
+
+    @Test
     public void Bean内にプリミティブ型のコンポーネントに対応するパラメタもしくはgetterが存在しない場合_デフォルト値で置換されること() {
         TestPrimRecord dest = BeanUtil.createAndCopy(TestPrimRecord.class, new SourcePrimRecord(), CopyOptions.empty());
         assertThat(dest.vint, is(0));
@@ -1352,4 +1340,57 @@ public class BeanUtilForRecordTest {
         assertThat(dest.vbyte, is((byte) 0));
         assertThat(dest.vshort, is((short) 0));
     }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void レコードからMapを生成できること() {
+
+        SourceRecord srcRecord = new SourceRecord(
+                10,
+                "test",
+                new Address("111-2222", "東京都江東区"),
+                new InnerRecord(10001, "中田昇"),
+                List.of("1", "2"),
+                List.of(new Address("111-2222", "東京都新宿区"), new Address("333-4444", "兵庫県神戸市")),
+                List.of(new InnerRecord(10002, "武藤菊夜"), new InnerRecord(10003, "猪野麻天")),
+                new String[]{"3", "4"},
+                new Address[]{new Address("555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")},
+                new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")}
+        );
+
+        Map<String, Object> dest = BeanUtil.createMapAndCopy(srcRecord, CopyOptions.empty());
+
+        assertThat(dest.get("sample"), is(10));
+        assertThat(dest.get("onlyInSourceRecord"), is("test"));
+        assertThat(dest.get("address.postCode"), is("111-2222"));
+        assertThat(dest.get("address.addr"), is("東京都江東区"));
+        assertThat(dest.get("innerRecord.id"), is(10001));
+        assertThat(dest.get("innerRecord.name"), is("中田昇"));
+        assertThat(((List<String>)dest.get("strList")).get(0), is("1"));
+        assertThat(((List<String>)dest.get("strList")).get(1), is("2"));
+        assertThat(((List<Address>)dest.get("addressList")).get(0).postCode, is("111-2222"));
+        assertThat(((List<Address>)dest.get("addressList")).get(0).addr, is("東京都新宿区"));
+        assertThat(((List<Address>)dest.get("addressList")).get(1).postCode, is("333-4444"));
+        assertThat(((List<Address>)dest.get("addressList")).get(1).addr, is("兵庫県神戸市"));
+        assertThat(((List<InnerRecord>)dest.get("innerRecordList")).get(0).id, is(10002));
+        assertThat(((List<InnerRecord>)dest.get("innerRecordList")).get(0).name, is("武藤菊夜"));
+        assertThat(((List<InnerRecord>)dest.get("innerRecordList")).get(1).id, is(10003));
+        assertThat(((List<InnerRecord>)dest.get("innerRecordList")).get(1).name, is("猪野麻天"));
+        assertThat(((String[])dest.get("strArray"))[0], is("3"));
+        assertThat(((String[])dest.get("strArray"))[1], is("4"));
+        assertThat(((Address[])dest.get("addressArray"))[0].postCode, is("555-6666"));
+        assertThat(((Address[])dest.get("addressArray"))[0].addr, is("大阪府大阪市"));
+        assertThat(((Address[])dest.get("addressArray"))[1].postCode, is("777-8888"));
+        assertThat(((Address[])dest.get("addressArray"))[1].addr, is("福岡県福岡市"));
+        assertThat(((InnerRecord[])dest.get("innerRecordArray"))[0].id, is(10004));
+        assertThat(((InnerRecord[])dest.get("innerRecordArray"))[0].name, is("神田幹太"));
+        assertThat(((InnerRecord[])dest.get("innerRecordArray"))[1].id, is(10005));
+        assertThat(((InnerRecord[])dest.get("innerRecordArray"))[1].name, is("森川瑛太"));
+
+
+
+
+
+    }
+
 }
