@@ -2,7 +2,7 @@ package nablarch.core.beans;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import org.junit.Test;
 
@@ -51,14 +51,13 @@ public class BeanUtilWithTypeParameterTest {
         Map<String, Object> map = Map.of(
                 "items[0].name", "aaa",
                 "items[1].name", "bbb");
-        try {
+
+        IllegalStateException result = assertThrows(IllegalStateException.class, () -> {
             BeanUtil.createAndCopy(BadSampleForm.class, map);
-            fail("IllegalStateExceptionがスローされるはず");
-        } catch (IllegalStateException e) {
-            assertThat(e.getMessage(), is(
-                    "BeanUtil does not support type parameter for List type, so the getter method in the concrete class must be overridden. "
-            + "getter method = [nablarch.core.beans.BeanUtilWithTypeParameterTest$BadSampleForm#getItems]"));
-        }
+        });
+        assertThat(result.getMessage(), is(
+                "BeanUtil does not support type parameter for List type, so the getter method in the concrete class must be overridden. "
+                        + "getter method = [nablarch.core.beans.BeanUtilWithTypeParameterTest$BadSampleForm#getItems]"));
     }
 
     @Test
@@ -80,14 +79,12 @@ public class BeanUtilWithTypeParameterTest {
                 "items[0].name", "aaa",
                 "items[1].name", "bbb");
 
-        try {
+        IllegalStateException result = assertThrows(IllegalStateException.class, () -> {
             BeanUtil.createAndCopy(ItemRecord.class, map);
-            fail("IllegalStateExceptionがスローされるはず");
-        } catch (IllegalStateException e) {
-            assertThat(e.getMessage(), is(
-                    "BeanUtil does not support type parameter for List type, so the accessor in the concrete class must be overridden. "
-                            + "getter method = [nablarch.core.beans.BeanUtilWithTypeParameterTest$ItemRecord#items]"));
-        }
+        });
+        assertThat(result.getMessage(), is(
+                "BeanUtil does not support type parameter for List type, so the accessor in the concrete class must be overridden. "
+                        + "getter method = [nablarch.core.beans.BeanUtilWithTypeParameterTest$ItemRecord#items]"));
     }
 
 }
