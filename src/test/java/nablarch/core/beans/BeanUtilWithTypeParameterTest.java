@@ -12,23 +12,23 @@ import java.util.Map;
 
 public class BeanUtilWithTypeParameterTest {
 
-    @SuppressWarnings("unused")
     public static class ItemsForm<D extends Serializable> {
         private List<D> items;
         public List<D> getItems() {
             return items;
         }
+        @SuppressWarnings("unused")
         public void setItems(List<D> items) {
             this.items = items;
         }
     }
 
-    @SuppressWarnings("unused")
     public static class Item implements Serializable {
         private String name;
         public String getName() {
             return name;
         }
+        @SuppressWarnings("unused")
         public void setName(String name) {
             this.name = name;
         }
