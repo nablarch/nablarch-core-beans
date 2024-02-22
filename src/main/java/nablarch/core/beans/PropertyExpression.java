@@ -39,11 +39,7 @@ class PropertyExpression {
         }
         this.nestedProperties = nestedProperties;
         this.listPropertyInfo = createListPropertyInfo();
-        StringJoiner sj = new StringJoiner(".");
-        for(String np : nestedProperties) {
-            sj.add(np);
-        }
-        this.rawKey = sj.toString();
+        this.rawKey = String.join(".", nestedProperties);
     }
 
     /**
