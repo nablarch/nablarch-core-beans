@@ -265,8 +265,12 @@ public final class CopyOptions {
      * @return 新しい {@link CopyOptions}
      */
     CopyOptions reduce(String propertyName) {
-        Collection<String> tmpIncludeProperties = includesProperties.stream().map(pn -> pn.replace(propertyName + ".", "")).collect(Collectors.toCollection(HashSet::new));
-        Collection<String> tmpExcludeProperties = excludesProperties.stream().map(pn -> pn.replace(propertyName + ".", "")).collect(Collectors.toCollection(HashSet::new));
+        Collection<String> tmpIncludeProperties = includesProperties.stream()
+                .map(pn -> pn.replace(propertyName + ".", ""))
+                .collect(Collectors.toCollection(HashSet::new));
+        Collection<String> tmpExcludeProperties = excludesProperties.stream()
+                .map(pn -> pn.replace(propertyName + ".", ""))
+                .collect(Collectors.toCollection(HashSet::new));
         return new CopyOptions(
                 typedConverters,
                 namedConverters,
