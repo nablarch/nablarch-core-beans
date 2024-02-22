@@ -1483,4 +1483,39 @@ public class BeanUtilForRecordTest {
 
     }
 
+    @Test
+    public void 移送元をオブジェクトとするcopyメソッドの引数に_destBeanとしてレコードを指定した場合_実行時例外が発生すること() {
+        SourceRecord srcRecord = new SourceRecord(null, null, null, null, null, null, null, null, null, null);
+        TestRecord destRecord = new TestRecord(null, null, null, null, null, null, null, null, null, null);
+        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> {
+            BeanUtil.copy(srcRecord, destRecord, CopyOptions.empty());
+        });
+
+        assertThat(result.getMessage(), is("The destination bean must not be a record."));
+
+    }
+
+    @Test
+    public void 移送元をMapとするcopyメソッドの引数に_destBeanとしてレコードを指定した場合_実行時例外が発生すること() {
+        Map<String, ?> srcMap = new HashMap<>();
+        TestRecord destRecord = new TestRecord(null, null, null, null, null, null, null, null, null, null);
+        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> {
+            BeanUtil.copy(TestRecord.class, destRecord, srcMap, CopyOptions.empty());
+        });
+
+        assertThat(result.getMessage(), is("The target bean class must not be a record class."));
+
+    }
+
+    @Test
+    public void setPropertyメソッドの引数に_destBeanとしてレコードを指定した場合_実行時例外が発生すること() {
+        TestRecord destRecord = new TestRecord(null, null, null, null, null, null, null, null, null, null);
+        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> {
+            BeanUtil.setProperty(destRecord, "sample", 10);
+        });
+
+        assertThat(result.getMessage(), is("The target bean must not be a record."));
+
+    }
+
 }

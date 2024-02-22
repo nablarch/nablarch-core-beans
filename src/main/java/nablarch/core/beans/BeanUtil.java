@@ -490,8 +490,14 @@ public final class BeanUtil {
      *       <li>List型・配列型以外のプロパティに、"プロパティ名[インデックス]"という形式で指定した場合</li>
      *       <li>ネストの親となるプロパティのインスタンス生成に失敗した場合</li>
      *   </ul>
+     * @throws IllegalArgumentException 引数の{@code bean}がレコードの場合
      */
     public static void setProperty(final Object bean, final String propertyName, final Object propertyValue) {
+
+        if (bean.getClass().isRecord()) {
+            throw new IllegalArgumentException("The target bean must not be a record.");
+        }
+
         setProperty(bean, propertyName, new HashMap<>(){{put(propertyName, propertyValue);}}, CopyOptions.empty());
     }
 
@@ -602,9 +608,14 @@ public final class BeanUtil {
      *            プロパティの値をエントリーの値とするMap
      * @param copyOptions コピーの設定
      * @param <T> 型引数
+     * @throws IllegalArgumentException 引数の{@code beanClass}がレコードクラスの場合
      */
     public static <T> void copy(Class<? extends T> beanClass, final T bean, final Map<String, ?> map,
             final CopyOptions copyOptions) {
+
+        if (beanClass.isRecord()) {
+            throw new IllegalArgumentException("The target bean class must not be a record class.");
+        }
 
         final CopyOptions mergedCopyOptions = copyOptions
                 .merge(CopyOptions.fromAnnotation(beanClass));
@@ -1284,8 +1295,14 @@ public final class BeanUtil {
      * @param <DEST> コピー先のBeanの型
      * @return コピー先のBeanオブジェクト
      * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
+     * @throws IllegalArgumentException 引数の{@code bean}がレコードの場合
      */
     public static <SRC, DEST> DEST copy(final SRC srcBean, final DEST destBean, final CopyOptions copyOptions) {
+
+        if (destBean.getClass().isRecord()) {
+            throw new IllegalArgumentException("The destination bean must not be a record.");
+        }
+
         return copyInner(srcBean, destBean, copyOptions);
     }
 
