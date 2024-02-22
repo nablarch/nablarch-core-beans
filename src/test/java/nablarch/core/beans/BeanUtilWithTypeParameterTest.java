@@ -7,7 +7,6 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,12 +48,9 @@ public class BeanUtilWithTypeParameterTest {
 
     @Test
     public void testCreateAndCopyForBad() {
-        Map<String, Object> map = new HashMap<>() {
-            {
-                put("items[0].name", "aaa");
-                put("items[1].name", "bbb");
-            }
-        };
+        Map<String, Object> map = Map.of(
+                "items[0].name", "aaa",
+                "items[1].name", "bbb");
         try {
             BeanUtil.createAndCopy(BadSampleForm.class, map);
             fail("IllegalStateExceptionがスローされるはず");
@@ -67,12 +63,10 @@ public class BeanUtilWithTypeParameterTest {
 
     @Test
     public void testCreateAndCopyForGood() {
-        Map<String, Object> map = new HashMap<>() {
-            {
-                put("items[0].name", "aaa");
-                put("items[1].name", "bbb");
-            }
-        };
+        Map<String, Object> map = Map.of(
+                "items[0].name", "aaa",
+                "items[1].name", "bbb");
+
         GoodSampleForm form = BeanUtil.createAndCopy(GoodSampleForm.class, map);
         assertThat(form.getItems().size(), is(2));
         assertThat(form.getItems().get(0).getName(), is("aaa"));
@@ -82,12 +76,10 @@ public class BeanUtilWithTypeParameterTest {
 
     @Test
     public void testCreateAndCopyForBadRecord() {
-        Map<String, Object> map = new HashMap<>() {
-            {
-                put("items[0].name", "aaa");
-                put("items[1].name", "bbb");
-            }
-        };
+        Map<String, Object> map = Map.of(
+                "items[0].name", "aaa",
+                "items[1].name", "bbb");
+
         try {
             BeanUtil.createAndCopy(ItemRecord.class, map);
             fail("IllegalStateExceptionがスローされるはず");

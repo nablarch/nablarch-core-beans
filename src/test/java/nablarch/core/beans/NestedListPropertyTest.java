@@ -100,28 +100,26 @@ public class NestedListPropertyTest {
      */
     @Test
     public void testCreateAndCopy() {
-        Map<String, String[]> request = new HashMap<>();
-        request.put("children[0].name", new String[]{"a0-1"});
-        request.put("children[0].grandChild.str", new String[]{"a0-2"});
-        request.put("children[1].name", new String[]{"a1-1"});
-        request.put("children[1].grandChild.str", new String[]{"a1-2"});
-        request.put("children[3].name", new String[]{"a3-1"});
-        request.put("children[3].grandChild.str", new String[]{"a3-2"});
-
-        request.put("stringListProp[0]", new String[]{"s0"});
-        request.put("stringListProp[1]", new String[]{"s1"});
-        request.put("stringListProp[3]", new String[]{"s3"});
-
-        request.put("array[0].name", new String[]{"b0-1"});
-        request.put("array[0].grandChild.str", new String[]{"b0-2"});
-        request.put("array[1].name", new String[]{"b1-1"});
-        request.put("array[1].grandChild.str", new String[]{"b1-2"});
-        request.put("array[3].name", new String[]{"b3-1"});
-        request.put("array[3].grandChild.str", new String[]{"b3-2"});
-
-        request.put("stringArray[0]", new String[]{"sa0"});
-        request.put("stringArray[1]", new String[]{"sa1"});
-        request.put("stringArray[3]", new String[]{"sa3"});
+        Map<String, String[]> request = Map.ofEntries(
+                Map.entry("children[0].name", new String[]{"a0-1"}),
+                Map.entry("children[0].grandChild.str", new String[]{"a0-2"}),
+                Map.entry("children[1].name", new String[]{"a1-1"}),
+                Map.entry("children[1].grandChild.str", new String[]{"a1-2"}),
+                Map.entry("children[3].name", new String[]{"a3-1"}),
+                Map.entry("children[3].grandChild.str", new String[]{"a3-2"}),
+                Map.entry("stringListProp[0]", new String[]{"s0"}),
+                Map.entry("stringListProp[1]", new String[]{"s1"}),
+                Map.entry("stringListProp[3]", new String[]{"s3"}),
+                Map.entry("array[0].name", new String[]{"b0-1"}),
+                Map.entry("array[0].grandChild.str", new String[]{"b0-2"}),
+                Map.entry("array[1].name", new String[]{"b1-1"}),
+                Map.entry("array[1].grandChild.str", new String[]{"b1-2"}),
+                Map.entry("array[3].name", new String[]{"b3-1"}),
+                Map.entry("array[3].grandChild.str", new String[]{"b3-2"}),
+                Map.entry("stringArray[0]", new String[]{"sa0"}),
+                Map.entry("stringArray[1]", new String[]{"sa1"}),
+                Map.entry("stringArray[3]", new String[]{"sa3"})
+        );
 
         NestedBean bean = BeanUtil.createAndCopy(NestedBean.class, request);
 
@@ -303,9 +301,7 @@ public class NestedListPropertyTest {
     @Ignore("if文は通るが、エラーが握りつぶされるので、テストが通らない")
     public void testCreateAndCopyRecordNotListAndArray() {
         try {
-            BeanUtil.createAndCopy(InvalidNestedRecord.class, new HashMap<>(){{
-                put("children[0].name", new String[]{"aaa"});
-            }});
+            BeanUtil.createAndCopy(InvalidNestedRecord.class, Map.of("children[0].name", new String[]{"aaa"}));
             fail();
         } catch (BeansException e) {
             assertThat(e.getMessage(), is("property type must be List or Array."));
@@ -320,8 +316,7 @@ public class NestedListPropertyTest {
      */
     @Test
     public void testCreateAndCopyInvalidListPropertyNameToListOrArray() {
-        Map<String, String[]> request = new HashMap<>();
-        request.put("invalid[0].name", new String[]{"a0-1"});
+        Map<String, String[]> request = Map.of("invalid[0].name", new String[]{"a0-1"});
         NestedBean bean = null;
         try {
             bean = BeanUtil.createAndCopy(NestedBean.class, request);
@@ -342,9 +337,7 @@ public class NestedListPropertyTest {
      */
     @Test
     public void testCreateAndCopyInvalidPropertyNameToList() {
-        Map<String, String[]> request = new HashMap<>();
-        request.put("children[0].invalid", new String[]{"value"});
-
+        Map<String, String[]> request = Map.of("children[0].invalid", new String[]{"value"});
         NestedBean bean = null;
         try {
             bean = BeanUtil.createAndCopy(NestedBean.class, request);
@@ -365,9 +358,10 @@ public class NestedListPropertyTest {
      */
     @Test
     public void testCreateAndCopyInvalidAndValidPropertyNameToList() {
-        Map<String, String[]> request = new HashMap<>();
-        request.put("children[0].invalid", new String[]{"value"});
-        request.put("children[0].name", new String[]{"john"});
+        Map<String, String[]> request = Map.of(
+                "children[0].invalid", new String[]{"value"},
+                "children[0].name", new String[]{"john"}
+        );
 
         NestedBean bean = null;
         try {
@@ -416,9 +410,10 @@ public class NestedListPropertyTest {
      */
     @Test
     public void testCreateAndCopyNullValueAndNotNullValueToList() {
-        Map<String, String[]> request = new HashMap<>();
-        request.put("children[0].name", new String[]{null});
-        request.put("children[0].address", new String[]{"tokyo"});
+        Map<String, String[]> request = Map.of(
+                "children[0].name", new String[]{null},
+                "children[0].address", new String[]{"tokyo"}
+        );
 
         NestedBean bean = null;
         try {
@@ -435,8 +430,7 @@ public class NestedListPropertyTest {
      */
     @Test
     public void testCreateAndCopyEmptyValueToList() {
-        Map<String, String[]> request = new HashMap<>();
-        request.put("children[0].name", new String[]{""});
+        Map<String, String[]> request = Map.of("children[0].name", new String[]{""});
 
         NestedBean bean = null;
         try {
@@ -458,8 +452,7 @@ public class NestedListPropertyTest {
      */
     @Test
     public void testCreateAndCopyInvalidPropertyNameToArray() {
-        Map<String, String[]> request = new HashMap<>();
-        request.put("array[0].invalid", new String[]{"value"});
+        Map<String, String[]> request = Map.of("array[0].invalid", new String[]{"value"});
 
         NestedBean bean = null;
         try {
@@ -481,9 +474,9 @@ public class NestedListPropertyTest {
      */
     @Test
     public void testCreateAndCopyInvalidAndValidPropertyNameToArray() {
-        Map<String, String[]> request = new HashMap<>();
-        request.put("array[0].invalid", new String[]{"value"});
-        request.put("array[0].name", new String[]{"john"});
+        Map<String, String[]> request = Map.of(
+                "array[0].invalid", new String[]{"value"},
+                "array[0].name", new String[]{"john"});
 
         NestedBean bean = null;
         try {
@@ -532,9 +525,9 @@ public class NestedListPropertyTest {
      */
     @Test
     public void testCreateAndCopyNullValueAndNotNullValueToArray() {
-        Map<String, String[]> request = new HashMap<>();
-        request.put("array[0].name", new String[]{null});
-        request.put("array[0].address", new String[]{"tokyo"});
+        Map<String, String[]> request = Map.of(
+                "array[0].name", new String[]{null},
+                "array[0].address", new String[]{"tokyo"});
 
         NestedBean bean = null;
         try {
@@ -551,8 +544,7 @@ public class NestedListPropertyTest {
      */
     @Test
     public void testCreateAndCopyEmptyValueToArray() {
-        Map<String, String[]> request = new HashMap<>();
-        request.put("array[0].name", new String[]{""});
+        Map<String, String[]> request = Map.of("array[0].name", new String[]{""});
 
         NestedBean bean = null;
         try {

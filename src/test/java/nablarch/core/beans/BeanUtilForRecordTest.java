@@ -5,7 +5,6 @@ import nablarch.test.support.log.app.OnMemoryLogWriter;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -313,33 +312,33 @@ public class BeanUtilForRecordTest {
     @Test
     public void Mapからレコードに値を設定できること() {
 
-        Map<String, Object> srcMap = new HashMap<>() {{
-            put("sample", "10"); // StringからIntegerへ変換できることも合わせて確認する
-            put("address.postCode", "111-2222");
-            put("address.addr", "東京都江東区");
-            put("innerRecord.id", 10001);
-            put("innerRecord.name", "中田昇");
-            put("strList[0]", "1");
-            put("strList[1]", "2");
-            put("addressList[0].postCode", "111-2222");
-            put("addressList[0].addr", "東京都新宿区");
-            put("addressList[1].postCode", "333-4444");
-            put("addressList[1].addr", "兵庫県神戸市");
-            put("innerRecordList[0].id", 10002);
-            put("innerRecordList[0].name", "武藤菊夜");
-            put("innerRecordList[1].id", 10003);
-            put("innerRecordList[1].name", "猪野麻天");
-            put("strArray[0]", "3");
-            put("strArray[1]", "4");
-            put("addressArray[0].postCode", "555-6666");
-            put("addressArray[0].addr", "大阪府大阪市");
-            put("addressArray[1].postCode", "777-8888");
-            put("addressArray[1].addr", "福岡県福岡市");
-            put("innerRecordArray[0].id", 10004);
-            put("innerRecordArray[0].name", "神田幹太");
-            put("innerRecordArray[1].id", 10005);
-            put("innerRecordArray[1].name", "森川瑛太");
-        }};
+        Map<String, Object> srcMap = Map.ofEntries(
+                Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
+                Map.entry("address.postCode", "111-2222"),
+                Map.entry("address.addr", "東京都江東区"),
+                Map.entry("innerRecord.id", 10001),
+                Map.entry("innerRecord.name", "中田昇"),
+                Map.entry("strList[0]", "1"),
+                Map.entry("strList[1]", "2"),
+                Map.entry("addressList[0].postCode", "111-2222"),
+                Map.entry("addressList[0].addr", "東京都新宿区"),
+                Map.entry("addressList[1].postCode", "333-4444"),
+                Map.entry("addressList[1].addr", "兵庫県神戸市"),
+                Map.entry("innerRecordList[0].id", 10002),
+                Map.entry("innerRecordList[0].name", "武藤菊夜"),
+                Map.entry("innerRecordList[1].id", 10003),
+                Map.entry("innerRecordList[1].name", "猪野麻天"),
+                Map.entry("strArray[0]", "3"),
+                Map.entry("strArray[1]", "4"),
+                Map.entry("addressArray[0].postCode", "555-6666"),
+                Map.entry("addressArray[0].addr", "大阪府大阪市"),
+                Map.entry("addressArray[1].postCode", "777-8888"),
+                Map.entry("addressArray[1].addr", "福岡県福岡市"),
+                Map.entry("innerRecordArray[0].id", 10004),
+                Map.entry("innerRecordArray[0].name", "神田幹太"),
+                Map.entry("innerRecordArray[1].id", 10005),
+                Map.entry("innerRecordArray[1].name", "森川瑛太")
+        );
 
         TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, srcMap, CopyOptions.empty());
 
@@ -437,33 +436,33 @@ public class BeanUtilForRecordTest {
     @Test
     public void 指定したパラメータのみ使用してレコードを生成できること() {
 
-        Map<String, Object> srcMap = new HashMap<>() {{
-            put("sample", "10"); // StringからIntegerへ変換できることも合わせて確認する
-            put("address.postCode", "111-2222");
-            put("address.addr", "東京都江東区");
-            put("innerRecord.id", 10001);
-            put("innerRecord.name", "中田昇");
-            put("strList[0]", "1");
-            put("strList[1]", "2");
-            put("addressList[0].postCode", "111-2222");
-            put("addressList[0].addr", "東京都新宿区");
-            put("addressList[1].postCode", "333-4444");
-            put("addressList[1].addr", "兵庫県神戸市");
-            put("innerRecordList[0].id", 10002);
-            put("innerRecordList[0].name", "武藤菊夜");
-            put("innerRecordList[1].id", 10003);
-            put("innerRecordList[1].name", "猪野麻天");
-            put("strArray[0]", "3");
-            put("strArray[1]", "4");
-            put("addressArray[0].postCode", "555-6666");
-            put("addressArray[0].addr", "大阪府大阪市");
-            put("addressArray[1].postCode", "777-8888");
-            put("addressArray[1].addr", "福岡県福岡市");
-            put("innerRecordArray[0].id", 10004);
-            put("innerRecordArray[0].name", "神田幹太");
-            put("innerRecordArray[1].id", 10005);
-            put("innerRecordArray[1].name", "森川瑛太");
-        }};
+        Map<String, Object> srcMap = Map.ofEntries(
+                Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
+                Map.entry("address.postCode", "111-2222"),
+                Map.entry("address.addr", "東京都江東区"),
+                Map.entry("innerRecord.id", 10001),
+                Map.entry("innerRecord.name", "中田昇"),
+                Map.entry("strList[0]", "1"),
+                Map.entry("strList[1]", "2"),
+                Map.entry("addressList[0].postCode", "111-2222"),
+                Map.entry("addressList[0].addr", "東京都新宿区"),
+                Map.entry("addressList[1].postCode", "333-4444"),
+                Map.entry("addressList[1].addr", "兵庫県神戸市"),
+                Map.entry("innerRecordList[0].id", 10002),
+                Map.entry("innerRecordList[0].name", "武藤菊夜"),
+                Map.entry("innerRecordList[1].id", 10003),
+                Map.entry("innerRecordList[1].name", "猪野麻天"),
+                Map.entry("strArray[0]", "3"),
+                Map.entry("strArray[1]", "4"),
+                Map.entry("addressArray[0].postCode", "555-6666"),
+                Map.entry("addressArray[0].addr", "大阪府大阪市"),
+                Map.entry("addressArray[1].postCode", "777-8888"),
+                Map.entry("addressArray[1].addr", "福岡県福岡市"),
+                Map.entry("innerRecordArray[0].id", 10004),
+                Map.entry("innerRecordArray[0].name", "神田幹太"),
+                Map.entry("innerRecordArray[1].id", 10005),
+                Map.entry("innerRecordArray[1].name", "森川瑛太")
+        );
 
         String[] includeParamList = new String[] {
                 "sample",
@@ -510,17 +509,17 @@ public class BeanUtilForRecordTest {
     @Test
     public void 指定したトップレベル要素のみ使用してレコードを生成できること() {
 
-        Map<String, Object> srcMap = new HashMap<>() {{
-            put("sample", "10"); // StringからIntegerへ変換できることも合わせて確認する
-            put("address", new Address("111-2222", "東京都江東区") );
-            put("innerRecord", new InnerRecord(10001, "中田昇"));
-            put("strList", List.of("1", "2"));
-            put("addressList", List.of(new Address("111-2222", "東京都新宿区"), new Address("333-4444", "兵庫県神戸市")));
-            put("innerRecordList", List.of(new InnerRecord(10002, "武藤菊夜"), new InnerRecord(10003, "猪野麻天")));
-            put("strArray", new String[]{"3", "4"});
-            put("addressArray", new Address[]{new Address("555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")});
-            put("innerRecordArray", new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")});
-        }};
+        Map<String, Object> srcMap = Map.of(
+                "sample", 10, // StringからIntegerへ変換できることも合わせて確認する
+                "address", new Address("111-2222", "東京都江東区"),
+                "innerRecord", new InnerRecord(10001, "中田昇"),
+                "strList", List.of("1", "2"),
+                "addressList", List.of(new Address("111-2222", "東京都新宿区"), new Address("333-4444", "兵庫県神戸市")),
+                "innerRecordList", List.of(new InnerRecord(10002, "武藤菊夜"), new InnerRecord(10003, "猪野麻天")),
+                "strArray", new String[]{"3", "4"},
+                "addressArray", new Address[]{new Address("555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")},
+                "innerRecordArray", new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")}
+        );
 
         String[] includeParamList = new String[] {
                 "sample",
@@ -554,34 +553,33 @@ public class BeanUtilForRecordTest {
     @Test
     public void 指定したパラメータを除外してレコードを生成できること() {
 
-        Map<String, Object> srcMap = new HashMap<>() {{
-            put("sample", 10);
-            put("address.postCode", "111-2222");
-            put("address.addr", "東京都江東区");
-            put("innerRecord.id", 10001);
-            put("innerRecord.name", "中田昇");
-            put("strList[0]", "1");
-            put("strList[1]", "2");
-            put("addressList[0].postCode", "111-2222");
-            put("addressList[0].addr", "東京都新宿区");
-            put("addressList[1].postCode", "333-4444");
-            put("addressList[1].addr", "兵庫県神戸市");
-            put("innerRecordList[0].id", 10002);
-            put("innerRecordList[0].name", "武藤菊夜");
-            put("innerRecordList[1].id", 10003);
-            put("innerRecordList[1].name", "猪野麻天");
-            put("strArray[0]", "3");
-            put("strArray[1]", "4");
-            put("addressArray[0].postCode", "555-6666");
-            put("addressArray[0].addr", "大阪府大阪市");
-            put("addressArray[1].postCode", "777-8888");
-            put("addressArray[1].addr", "福岡県福岡市");
-            put("innerRecordArray[0].id", 10004);
-            put("innerRecordArray[0].name", "神田幹太");
-            put("innerRecordArray[1].id", 10005);
-            put("innerRecordArray[1].name", "森川瑛太");
-        }};
-
+        Map<String, Object> srcMap = Map.ofEntries(
+                Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
+                Map.entry("address.postCode", "111-2222"),
+                Map.entry("address.addr", "東京都江東区"),
+                Map.entry("innerRecord.id", 10001),
+                Map.entry("innerRecord.name", "中田昇"),
+                Map.entry("strList[0]", "1"),
+                Map.entry("strList[1]", "2"),
+                Map.entry("addressList[0].postCode", "111-2222"),
+                Map.entry("addressList[0].addr", "東京都新宿区"),
+                Map.entry("addressList[1].postCode", "333-4444"),
+                Map.entry("addressList[1].addr", "兵庫県神戸市"),
+                Map.entry("innerRecordList[0].id", 10002),
+                Map.entry("innerRecordList[0].name", "武藤菊夜"),
+                Map.entry("innerRecordList[1].id", 10003),
+                Map.entry("innerRecordList[1].name", "猪野麻天"),
+                Map.entry("strArray[0]", "3"),
+                Map.entry("strArray[1]", "4"),
+                Map.entry("addressArray[0].postCode", "555-6666"),
+                Map.entry("addressArray[0].addr", "大阪府大阪市"),
+                Map.entry("addressArray[1].postCode", "777-8888"),
+                Map.entry("addressArray[1].addr", "福岡県福岡市"),
+                Map.entry("innerRecordArray[0].id", 10004),
+                Map.entry("innerRecordArray[0].name", "神田幹太"),
+                Map.entry("innerRecordArray[1].id", 10005),
+                Map.entry("innerRecordArray[1].name", "森川瑛太")
+        );
         String[] includeParamList = new String[] {
                 "sample",
                 "address.postCode",
@@ -628,17 +626,17 @@ public class BeanUtilForRecordTest {
     @Test
     public void 指定したトップレベル要素を除外してレコードを生成できること() {
 
-        Map<String, Object> srcMap = new HashMap<>() {{
-            put("sample", "10");
-            put("address", new Address("111-2222", "東京都江東区") );
-            put("innerRecord", new InnerRecord(10001, "中田昇"));
-            put("strList", List.of("1", "2"));
-            put("addressList", List.of(new Address("111-2222", "東京都新宿区"), new Address("333-4444", "兵庫県神戸市")));
-            put("innerRecordList", List.of(new InnerRecord(10002, "武藤菊夜"), new InnerRecord(10003, "猪野麻天")));
-            put("strArray", new String[]{"3", "4"});
-            put("addressArray", new Address[]{new Address("555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")});
-            put("innerRecordArray", new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")});
-        }};
+        Map<String, Object> srcMap = Map.of(
+                "sample", 10, // StringからIntegerへ変換できることも合わせて確認する
+                "address", new Address("111-2222", "東京都江東区"),
+                "innerRecord", new InnerRecord(10001, "中田昇"),
+                "strList", List.of("1", "2"),
+                "addressList", List.of(new Address("111-2222", "東京都新宿区"), new Address("333-4444", "兵庫県神戸市")),
+                "innerRecordList", List.of(new InnerRecord(10002, "武藤菊夜"), new InnerRecord(10003, "猪野麻天")),
+                "strArray", new String[]{"3", "4"},
+                "addressArray", new Address[]{new Address("555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")},
+                "innerRecordArray", new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")}
+        );
 
         String[] includeParamList = new String[] {
                 "sample",
@@ -673,7 +671,7 @@ public class BeanUtilForRecordTest {
     @Test
     public void 空のMapからレコードを生成できること() {
 
-        Map<String, Object> srcMap = new HashMap<>();
+        Map<String, Object> srcMap = Map.of();
 
         TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, srcMap, CopyOptions.empty());
 
@@ -709,33 +707,33 @@ public class BeanUtilForRecordTest {
     @Test
     public void MapからBeanに値を設定できること() {
 
-        Map<String, Object> srcMap = new HashMap<>() {{
-            put("sample", "10"); // StringからIntegerへ変換できることも合わせて確認する
-            put("address.postCode", "111-2222");
-            put("address.addr", "東京都江東区");
-            put("innerRecord.id", 10001);
-            put("innerRecord.name", "中田昇");
-            put("strList[0]", "1");
-            put("strList[1]", "2");
-            put("addressList[0].postCode", "111-2222");
-            put("addressList[0].addr", "東京都新宿区");
-            put("addressList[1].postCode", "333-4444");
-            put("addressList[1].addr", "兵庫県神戸市");
-            put("innerRecordList[0].id", 10002);
-            put("innerRecordList[0].name", "武藤菊夜");
-            put("innerRecordList[1].id", 10003);
-            put("innerRecordList[1].name", "猪野麻天");
-            put("strArray[0]", "3");
-            put("strArray[1]", "4");
-            put("addressArray[0].postCode", "555-6666");
-            put("addressArray[0].addr", "大阪府大阪市");
-            put("addressArray[1].postCode", "777-8888");
-            put("addressArray[1].addr", "福岡県福岡市");
-            put("innerRecordArray[0].id", 10004);
-            put("innerRecordArray[0].name", "神田幹太");
-            put("innerRecordArray[1].id", 10005);
-            put("innerRecordArray[1].name", "森川瑛太");
-        }};
+        Map<String, Object> srcMap = Map.ofEntries(
+                Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
+                Map.entry("address.postCode", "111-2222"),
+                Map.entry("address.addr", "東京都江東区"),
+                Map.entry("innerRecord.id", 10001),
+                Map.entry("innerRecord.name", "中田昇"),
+                Map.entry("strList[0]", "1"),
+                Map.entry("strList[1]", "2"),
+                Map.entry("addressList[0].postCode", "111-2222"),
+                Map.entry("addressList[0].addr", "東京都新宿区"),
+                Map.entry("addressList[1].postCode", "333-4444"),
+                Map.entry("addressList[1].addr", "兵庫県神戸市"),
+                Map.entry("innerRecordList[0].id", 10002),
+                Map.entry("innerRecordList[0].name", "武藤菊夜"),
+                Map.entry("innerRecordList[1].id", 10003),
+                Map.entry("innerRecordList[1].name", "猪野麻天"),
+                Map.entry("strArray[0]", "3"),
+                Map.entry("strArray[1]", "4"),
+                Map.entry("addressArray[0].postCode", "555-6666"),
+                Map.entry("addressArray[0].addr", "大阪府大阪市"),
+                Map.entry("addressArray[1].postCode", "777-8888"),
+                Map.entry("addressArray[1].addr", "福岡県福岡市"),
+                Map.entry("innerRecordArray[0].id", 10004),
+                Map.entry("innerRecordArray[0].name", "神田幹太"),
+                Map.entry("innerRecordArray[1].id", 10005),
+                Map.entry("innerRecordArray[1].name", "森川瑛太")
+        );
 
         TestBean dest = BeanUtil.createAndCopy(TestBean.class, srcMap, CopyOptions.empty());
 
@@ -833,33 +831,33 @@ public class BeanUtilForRecordTest {
     @Test
     public void 指定したパラメータのみ使用してBeanを生成できること() {
 
-        Map<String, Object> srcMap = new HashMap<>() {{
-            put("sample", "10"); // StringからIntegerへ変換できることも合わせて確認する
-            put("address.postCode", "111-2222");
-            put("address.addr", "東京都江東区");
-            put("innerRecord.id", 10001);
-            put("innerRecord.name", "中田昇");
-            put("strList[0]", "1");
-            put("strList[1]", "2");
-            put("addressList[0].postCode", "111-2222");
-            put("addressList[0].addr", "東京都新宿区");
-            put("addressList[1].postCode", "333-4444");
-            put("addressList[1].addr", "兵庫県神戸市");
-            put("innerRecordList[0].id", 10002);
-            put("innerRecordList[0].name", "武藤菊夜");
-            put("innerRecordList[1].id", 10003);
-            put("innerRecordList[1].name", "猪野麻天");
-            put("strArray[0]", "3");
-            put("strArray[1]", "4");
-            put("addressArray[0].postCode", "555-6666");
-            put("addressArray[0].addr", "大阪府大阪市");
-            put("addressArray[1].postCode", "777-8888");
-            put("addressArray[1].addr", "福岡県福岡市");
-            put("innerRecordArray[0].id", 10004);
-            put("innerRecordArray[0].name", "神田幹太");
-            put("innerRecordArray[1].id", 10005);
-            put("innerRecordArray[1].name", "森川瑛太");
-        }};
+        Map<String, Object> srcMap = Map.ofEntries(
+                Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
+                Map.entry("address.postCode", "111-2222"),
+                Map.entry("address.addr", "東京都江東区"),
+                Map.entry("innerRecord.id", 10001),
+                Map.entry("innerRecord.name", "中田昇"),
+                Map.entry("strList[0]", "1"),
+                Map.entry("strList[1]", "2"),
+                Map.entry("addressList[0].postCode", "111-2222"),
+                Map.entry("addressList[0].addr", "東京都新宿区"),
+                Map.entry("addressList[1].postCode", "333-4444"),
+                Map.entry("addressList[1].addr", "兵庫県神戸市"),
+                Map.entry("innerRecordList[0].id", 10002),
+                Map.entry("innerRecordList[0].name", "武藤菊夜"),
+                Map.entry("innerRecordList[1].id", 10003),
+                Map.entry("innerRecordList[1].name", "猪野麻天"),
+                Map.entry("strArray[0]", "3"),
+                Map.entry("strArray[1]", "4"),
+                Map.entry("addressArray[0].postCode", "555-6666"),
+                Map.entry("addressArray[0].addr", "大阪府大阪市"),
+                Map.entry("addressArray[1].postCode", "777-8888"),
+                Map.entry("addressArray[1].addr", "福岡県福岡市"),
+                Map.entry("innerRecordArray[0].id", 10004),
+                Map.entry("innerRecordArray[0].name", "神田幹太"),
+                Map.entry("innerRecordArray[1].id", 10005),
+                Map.entry("innerRecordArray[1].name", "森川瑛太")
+        );
 
         String[] includeParamList = new String[] {
                 "sample",
@@ -906,17 +904,17 @@ public class BeanUtilForRecordTest {
     @Test
     public void 指定したトップレベルパラメータのみ使用してBeanを生成できること() {
 
-        Map<String, Object> srcMap = new HashMap<>() {{
-            put("sample", "10"); // StringからIntegerへ変換できることも合わせて確認する
-            put("address", new Address("111-2222", "東京都江東区") );
-            put("innerRecord", new InnerRecord(10001, "中田昇"));
-            put("strList", List.of("1", "2"));
-            put("addressList", List.of(new Address("111-2222", "東京都新宿区"), new Address("333-4444", "兵庫県神戸市")));
-            put("innerRecordList", List.of(new InnerRecord(10002, "武藤菊夜"), new InnerRecord(10003, "猪野麻天")));
-            put("strArray", new String[]{"3", "4"});
-            put("addressArray", new Address[]{new Address("555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")});
-            put("innerRecordArray", new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")});
-        }};
+        Map<String, Object> srcMap = Map.of(
+                "sample", 10, // StringからIntegerへ変換できることも合わせて確認する
+                "address", new Address("111-2222", "東京都江東区"),
+                "innerRecord", new InnerRecord(10001, "中田昇"),
+                "strList", List.of("1", "2"),
+                "addressList", List.of(new Address("111-2222", "東京都新宿区"), new Address("333-4444", "兵庫県神戸市")),
+                "innerRecordList", List.of(new InnerRecord(10002, "武藤菊夜"), new InnerRecord(10003, "猪野麻天")),
+                "strArray", new String[]{"3", "4"},
+                "addressArray", new Address[]{new Address("555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")},
+                "innerRecordArray", new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")}
+        );
 
         String[] includeParamList = new String[] {
                 "sample",
@@ -950,33 +948,33 @@ public class BeanUtilForRecordTest {
     @Test
     public void 指定したパラメータを除外してBeanを生成できること() {
 
-        Map<String, Object> srcMap = new HashMap<>() {{
-            put("sample", 10);
-            put("address.postCode", "111-2222");
-            put("address.addr", "東京都江東区");
-            put("innerRecord.id", 10001);
-            put("innerRecord.name", "中田昇");
-            put("strList[0]", "1");
-            put("strList[1]", "2");
-            put("addressList[0].postCode", "111-2222");
-            put("addressList[0].addr", "東京都新宿区");
-            put("addressList[1].postCode", "333-4444");
-            put("addressList[1].addr", "兵庫県神戸市");
-            put("innerRecordList[0].id", 10002);
-            put("innerRecordList[0].name", "武藤菊夜");
-            put("innerRecordList[1].id", 10003);
-            put("innerRecordList[1].name", "猪野麻天");
-            put("strArray[0]", "3");
-            put("strArray[1]", "4");
-            put("addressArray[0].postCode", "555-6666");
-            put("addressArray[0].addr", "大阪府大阪市");
-            put("addressArray[1].postCode", "777-8888");
-            put("addressArray[1].addr", "福岡県福岡市");
-            put("innerRecordArray[0].id", 10004);
-            put("innerRecordArray[0].name", "神田幹太");
-            put("innerRecordArray[1].id", 10005);
-            put("innerRecordArray[1].name", "森川瑛太");
-        }};
+        Map<String, Object> srcMap = Map.ofEntries(
+                Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
+                Map.entry("address.postCode", "111-2222"),
+                Map.entry("address.addr", "東京都江東区"),
+                Map.entry("innerRecord.id", 10001),
+                Map.entry("innerRecord.name", "中田昇"),
+                Map.entry("strList[0]", "1"),
+                Map.entry("strList[1]", "2"),
+                Map.entry("addressList[0].postCode", "111-2222"),
+                Map.entry("addressList[0].addr", "東京都新宿区"),
+                Map.entry("addressList[1].postCode", "333-4444"),
+                Map.entry("addressList[1].addr", "兵庫県神戸市"),
+                Map.entry("innerRecordList[0].id", 10002),
+                Map.entry("innerRecordList[0].name", "武藤菊夜"),
+                Map.entry("innerRecordList[1].id", 10003),
+                Map.entry("innerRecordList[1].name", "猪野麻天"),
+                Map.entry("strArray[0]", "3"),
+                Map.entry("strArray[1]", "4"),
+                Map.entry("addressArray[0].postCode", "555-6666"),
+                Map.entry("addressArray[0].addr", "大阪府大阪市"),
+                Map.entry("addressArray[1].postCode", "777-8888"),
+                Map.entry("addressArray[1].addr", "福岡県福岡市"),
+                Map.entry("innerRecordArray[0].id", 10004),
+                Map.entry("innerRecordArray[0].name", "神田幹太"),
+                Map.entry("innerRecordArray[1].id", 10005),
+                Map.entry("innerRecordArray[1].name", "森川瑛太")
+        );
 
         String[] includeParamList = new String[] {
                 "sample",
@@ -1024,17 +1022,17 @@ public class BeanUtilForRecordTest {
     @Test
     public void 指定したトップレベルパラメータを除外してBeanを生成できること() {
 
-        Map<String, Object> srcMap = new HashMap<>() {{
-            put("sample", "10");
-            put("address", new Address("111-2222", "東京都江東区") );
-            put("innerRecord", new InnerRecord(10001, "中田昇"));
-            put("strList", List.of("1", "2"));
-            put("addressList", List.of(new Address("111-2222", "東京都新宿区"), new Address("333-4444", "兵庫県神戸市")));
-            put("innerRecordList", List.of(new InnerRecord(10002, "武藤菊夜"), new InnerRecord(10003, "猪野麻天")));
-            put("strArray", new String[]{"3", "4"});
-            put("addressArray", new Address[]{new Address("555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")});
-            put("innerRecordArray", new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")});
-        }};
+        Map<String, Object> srcMap = Map.of(
+                "sample", 10, // StringからIntegerへ変換できることも合わせて確認する
+                "address", new Address("111-2222", "東京都江東区"),
+                "innerRecord", new InnerRecord(10001, "中田昇"),
+                "strList", List.of("1", "2"),
+                "addressList", List.of(new Address("111-2222", "東京都新宿区"), new Address("333-4444", "兵庫県神戸市")),
+                "innerRecordList", List.of(new InnerRecord(10002, "武藤菊夜"), new InnerRecord(10003, "猪野麻天")),
+                "strArray", new String[]{"3", "4"},
+                "addressArray", new Address[]{new Address("555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")},
+                "innerRecordArray", new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")}
+        );
 
         String[] includeParamList = new String[] {
                 "sample",
@@ -1069,7 +1067,7 @@ public class BeanUtilForRecordTest {
     @Test
     public void 空のMapからBeanを生成できること() {
 
-        Map<String, Object> srcMap = new HashMap<>();
+        Map<String, Object> srcMap = Map.of();
 
         TestBean dest = BeanUtil.createAndCopy(TestBean.class, srcMap, CopyOptions.empty());
 
@@ -1322,7 +1320,7 @@ public class BeanUtilForRecordTest {
 
     @Test
     public void Map内にプリミティブ型のコンポーネントに対応するパラメタが存在しない場合_デフォルト値で置換されること() {
-        TestPrimRecord dest = BeanUtil.createAndCopy(TestPrimRecord.class, new HashMap<>(), CopyOptions.empty());
+        TestPrimRecord dest = BeanUtil.createAndCopy(TestPrimRecord.class, Map.of(), CopyOptions.empty());
         assertThat(dest.vint, is(0));
         assertThat(dest.vlong, is(0L));
         assertThat(dest.vfloat, is(0.0f));
@@ -1487,9 +1485,7 @@ public class BeanUtilForRecordTest {
     public void 移送元をオブジェクトとするcopyメソッドの引数に_destBeanとしてレコードを指定した場合_実行時例外が発生すること() {
         SourceRecord srcRecord = new SourceRecord(null, null, null, null, null, null, null, null, null, null);
         TestRecord destRecord = new TestRecord(null, null, null, null, null, null, null, null, null, null);
-        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> {
-            BeanUtil.copy(srcRecord, destRecord, CopyOptions.empty());
-        });
+        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> BeanUtil.copy(srcRecord, destRecord, CopyOptions.empty()));
 
         assertThat(result.getMessage(), is("The destination bean must not be a record."));
 
@@ -1497,11 +1493,9 @@ public class BeanUtilForRecordTest {
 
     @Test
     public void 移送元をMapとするcopyメソッドの引数に_destBeanとしてレコードを指定した場合_実行時例外が発生すること() {
-        Map<String, ?> srcMap = new HashMap<>();
+        Map<String, ?> srcMap = Map.of();
         TestRecord destRecord = new TestRecord(null, null, null, null, null, null, null, null, null, null);
-        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> {
-            BeanUtil.copy(TestRecord.class, destRecord, srcMap, CopyOptions.empty());
-        });
+        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> BeanUtil.copy(TestRecord.class, destRecord, srcMap, CopyOptions.empty()));
 
         assertThat(result.getMessage(), is("The target bean class must not be a record class."));
 
@@ -1510,9 +1504,7 @@ public class BeanUtilForRecordTest {
     @Test
     public void setPropertyメソッドの引数に_destBeanとしてレコードを指定した場合_実行時例外が発生すること() {
         TestRecord destRecord = new TestRecord(null, null, null, null, null, null, null, null, null, null);
-        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> {
-            BeanUtil.setProperty(destRecord, "sample", 10);
-        });
+        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> BeanUtil.setProperty(destRecord, "sample", 10));
 
         assertThat(result.getMessage(), is("The target bean must not be a record."));
 
