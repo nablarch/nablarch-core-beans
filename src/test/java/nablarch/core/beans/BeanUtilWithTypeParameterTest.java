@@ -1,7 +1,8 @@
 package nablarch.core.beans;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -12,6 +13,7 @@ import java.util.Map;
 
 public class BeanUtilWithTypeParameterTest {
 
+    @SuppressWarnings("unused")
     public static class ItemsForm<D extends Serializable> {
         private List<D> items;
         public List<D> getItems() {
@@ -22,6 +24,7 @@ public class BeanUtilWithTypeParameterTest {
         }
     }
 
+    @SuppressWarnings("unused")
     public static class Item implements Serializable {
         private String name;
         public String getName() {
@@ -46,7 +49,7 @@ public class BeanUtilWithTypeParameterTest {
 
     @Test
     public void testCreateAndCopyForBad() {
-        Map<String, Object> map = new HashMap<String, Object>() {
+        Map<String, Object> map = new HashMap<>() {
             {
                 put("items[0].name", "aaa");
                 put("items[1].name", "bbb");
@@ -64,7 +67,7 @@ public class BeanUtilWithTypeParameterTest {
 
     @Test
     public void testCreateAndCopyForGood() {
-        Map<String, Object> map = new HashMap<String, Object>() {
+        Map<String, Object> map = new HashMap<>() {
             {
                 put("items[0].name", "aaa");
                 put("items[1].name", "bbb");
@@ -79,7 +82,7 @@ public class BeanUtilWithTypeParameterTest {
 
     @Test
     public void testCreateAndCopyForBadRecord() {
-        Map<String, Object> map = new HashMap<String, Object>() {
+        Map<String, Object> map = new HashMap<>() {
             {
                 put("items[0].name", "aaa");
                 put("items[1].name", "bbb");
