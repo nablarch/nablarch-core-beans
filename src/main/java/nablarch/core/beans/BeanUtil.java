@@ -94,9 +94,8 @@ public final class BeanUtil {
         return PropertyDescriptors.get(beanClass).properties;
     }
 
-
     /**
-     * 指定したクラス空、特定プロパティの型を取得する。<br/>
+     * 指定したクラスから、特定プロパティの型を取得する。<br/>
      *
      * @param beanClass プロパティの型を取得したいクラス
      * @param propertyName 取得したいプロパティ名
@@ -109,14 +108,19 @@ public final class BeanUtil {
         return getPropertyDescriptor(beanClass, propertyName).getPropertyType();
     }
 
-    public static Method getAccessor(final Class<?> beanClass, final String propertyName) {
+    /**
+     * 指定したクラスから、特定プロパティの読み取りメソッドを取得する。<br/>
+     *
+     * @param beanClass プロパティの読み取りメソッドを取得したいクラス
+     * @param propertyName 取得したいプロパティ名
+     * @return Method プロパティの読み取りメソッド
+     */
+    public static Method getReadMethod(final Class<?> beanClass, final String propertyName) {
         if (beanClass.isRecord()) {
             return getRecordComponent(beanClass, propertyName).getAccessor();
         }
         return getPropertyDescriptor(beanClass, propertyName).getReadMethod();
     }
-
-
 
     /**
      * 指定したオブジェクトから、特定のプロパティの値を取得する。
@@ -175,8 +179,7 @@ public final class BeanUtil {
      */
     public static Object getProperty(final Object bean, final String propertyName, final Class<?> type) {
         try {
-            final PropertyDescriptor pd = getPropertyDescriptor(bean.getClass(), propertyName);
-            final Method getter = pd.getReadMethod();
+            final Method getter = getReadMethod(bean.getClass(), propertyName);
             Object value = getter.invoke(bean);
             if (type != null) {
                 value = ConversionUtil.convert(type, value);
@@ -384,7 +387,7 @@ public final class BeanUtil {
      * @return リスト、配列の要素の型
      */
     private static Class<?> getGenericType(Object bean, String propertyName) {
-        Method getter = getPropertyDescriptor(bean.getClass(), propertyName).getReadMethod();
+        Method getter = getReadMethod(bean.getClass(), propertyName);
         Type type = getter.getGenericReturnType();
 
         if (!(type instanceof ParameterizedType genericTypeParameter)) {
@@ -647,7 +650,7 @@ public final class BeanUtil {
             // srcBeanに対応するプロパティが存在しないか、アクセサが存在しない場合はスキップ
             final Method accessor;
             try {
-            accessor = getAccessor(srcBean.getClass(), propertyName);
+            accessor = getReadMethod(srcBean.getClass(), propertyName);
                 if (accessor == null) {
                     if (parameterTypes[i].isPrimitive()) {
                         args[i] = PRIM_DEFAULT_VALUES.get(parameterTypes[i]);
@@ -1181,7 +1184,7 @@ public final class BeanUtil {
             // srcBeanに対応するプロパティが存在しないか、getterが存在しない場合はスキップ
             final Method getter;
             try {
-                getter = getAccessor(srcBean.getClass(), propertyName);
+                getter = getReadMethod(srcBean.getClass(), propertyName);
                 if (getter == null) {
                     continue;
                 }
@@ -1435,7 +1438,7 @@ public final class BeanUtil {
                 continue;
             }
             final String key = StringUtil.hasValue(prefix) ? prefix + '.' + propertyName : propertyName;
-            final Method readMethod = getAccessor(srcBean.getClass(), propertyName);
+            final Method readMethod = getReadMethod(srcBean.getClass(), propertyName);
             if (readMethod == null) {
                 continue;
             }

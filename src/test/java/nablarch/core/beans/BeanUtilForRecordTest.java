@@ -306,6 +306,10 @@ public class BeanUtilForRecordTest {
         }
     }
 
+    public record TestGetPropertyRecord(String string,
+                                        String intString,
+                                        String dateString) {}
+
     @Test
     public void Mapからレコードに値を設定できること() {
 
@@ -1469,4 +1473,14 @@ public class BeanUtilForRecordTest {
         assertThat(dest.containsKey("innerRecordArray"), is(false));
 
     }
+
+    @Test
+    public void レコードからコンポーネント名を指定して値を取得できること() {
+        TestGetPropertyRecord srcRecord = new TestGetPropertyRecord("sample", "25", "20240222");
+        assertThat(BeanUtil.getProperty(srcRecord, "string"), is("sample"));
+        assertThat(BeanUtil.getProperty(srcRecord, "intString", Integer.class), is(25));
+        assertThat(BeanUtil.getProperty(srcRecord, "dateString", java.sql.Date.class), is(java.sql.Date.valueOf("2024-02-22")));
+
+    }
+
 }
