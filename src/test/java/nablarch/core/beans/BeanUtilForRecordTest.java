@@ -1138,13 +1138,13 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void getRecordComponentsメソッドの引数にレコードを指定した場合_実行時例外が発生すること() {
+    public void getRecordComponentsメソッドの引数にBeanを指定した場合_実行時例外が発生すること() {
         IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> BeanUtil.getRecordComponents(TestBean.class));
         assertThat(result.getMessage(), is("The target bean class must be a record class."));
     }
 
     @Test
-    public void getRecordComponentメソッドの引数にレコードを指定した場合_実行時例外が発生すること() {
+    public void getRecordComponentメソッドの引数にBeanを指定した場合_実行時例外が発生すること() {
         IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> BeanUtil.getRecordComponent(TestBean.class, "sample"));
         assertThat(result.getMessage(), is("The target bean class must be a record class."));
     }
