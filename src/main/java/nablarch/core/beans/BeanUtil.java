@@ -20,7 +20,10 @@ import nablarch.core.util.StringUtil;
 import nablarch.core.util.annotation.Published;
 
 /**
- * JavaBeansに関する操作をまとめたユーティリティクラス。
+ * JavaBeansおよびレコードに関する操作をまとめたユーティリティクラス。
+ * <p>
+ * レコードはJavaBeanではないものの、JavaBeansと同様に取り扱えると便利なため、
+ * 本ユーティリティにてレコードに関する操作もサポートしている。
  *
  * @author kawasima
  * @author tajima
