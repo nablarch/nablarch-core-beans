@@ -870,11 +870,7 @@ public final class BeanUtil {
         Class<?> propertyType = getPropertyType(beanClass, propertyName);
 
         if (propertyType.isRecord()) {
-            if (propertyMap.containsKey(propertyName)) {
-                // キーが存在していれば、すでにレコードは生成されているのでそのまま返却
-                return;
-            }
-            propertyMap.put(propertyName, createRecord(propertyType, getReducedMap(propertyName, map), copyOptions.reduce(propertyName)));
+            propertyMap.computeIfAbsent(propertyName, k -> createRecord(propertyType, getReducedMap(propertyName, map), copyOptions.reduce(propertyName)));
         } else {
             Object nested = propertyMap.getOrDefault(propertyName, createInstance(propertyType));
             setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(propertyName));
