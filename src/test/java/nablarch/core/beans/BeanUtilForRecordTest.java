@@ -434,7 +434,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 指定したパラメータのみ使用してレコードを生成できること() {
+    public void 指定したネストパラメータおよびリストパラメータを使用してレコードを生成できること() {
 
         Map<String, Object> srcMap = Map.ofEntries(
                 Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
@@ -465,7 +465,6 @@ public class BeanUtilForRecordTest {
         );
 
         String[] includeParamList = new String[] {
-                "sample",
                 "address.postCode",
                 "innerRecord.name",
                 "strList[1]",
@@ -480,7 +479,7 @@ public class BeanUtilForRecordTest {
 
         TestRecord dest = BeanUtil.createAndCopyIncludes(TestRecord.class, srcMap, includeParamList);
 
-        assertThat(dest.sample, is(10));
+        assertThat(dest.sample, is(nullValue()));
         assertThat(dest.address.postCode, is("111-2222"));
         assertThat(dest.address.addr, is(nullValue()));
         assertThat(dest.innerRecord.id, is(nullValue()));
@@ -507,7 +506,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 指定したトップレベル要素のみ使用してレコードを生成できること() {
+    public void 指定したパラメータのみ使用してレコードを生成できること() {
 
         Map<String, Object> srcMap = Map.of(
                 "sample", 10, // StringからIntegerへ変換できることも合わせて確認する
@@ -551,7 +550,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 指定したパラメータを除外してレコードを生成できること() {
+    public void 指定したネストパラメータおよびリストパラメータを除外してレコードを生成できること() {
 
         Map<String, Object> srcMap = Map.ofEntries(
                 Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
@@ -581,7 +580,6 @@ public class BeanUtilForRecordTest {
                 Map.entry("innerRecordArray[1].name", "森川瑛太")
         );
         String[] excludeParamList = new String[] {
-                "sample",
                 "address.postCode",
                 "innerRecord.name",
                 "strList[1]",
@@ -594,7 +592,7 @@ public class BeanUtilForRecordTest {
 
         TestRecord dest = BeanUtil.createAndCopyExcludes(TestRecord.class, srcMap, excludeParamList);
 
-        assertThat(dest.sample, is(nullValue()));
+        assertThat(dest.sample, is(10));
         assertThat(dest.address.postCode, is(nullValue()));
         assertThat(dest.address.addr, is("東京都江東区"));
         assertThat(dest.innerRecord.id, is(10001));
@@ -624,7 +622,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 指定したトップレベル要素を除外してレコードを生成できること() {
+    public void 指定したパラメータを除外してレコードを生成できること() {
 
         Map<String, Object> srcMap = Map.of(
                 "sample", 10, // StringからIntegerへ変換できることも合わせて確認する
