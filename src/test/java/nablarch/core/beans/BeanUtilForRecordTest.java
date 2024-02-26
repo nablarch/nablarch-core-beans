@@ -580,7 +580,7 @@ public class BeanUtilForRecordTest {
                 Map.entry("innerRecordArray[1].id", 10005),
                 Map.entry("innerRecordArray[1].name", "森川瑛太")
         );
-        String[] includeParamList = new String[] {
+        String[] excludeParamList = new String[] {
                 "sample",
                 "address.postCode",
                 "innerRecord.name",
@@ -592,7 +592,7 @@ public class BeanUtilForRecordTest {
                 "innerRecordArray[0].name"
         };
 
-        TestRecord dest = BeanUtil.createAndCopyExcludes(TestRecord.class, srcMap, includeParamList);
+        TestRecord dest = BeanUtil.createAndCopyExcludes(TestRecord.class, srcMap, excludeParamList);
 
         assertThat(dest.sample, is(nullValue()));
         assertThat(dest.address.postCode, is(nullValue()));
@@ -638,7 +638,7 @@ public class BeanUtilForRecordTest {
                 "innerRecordArray", new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")}
         );
 
-        String[] includeParamList = new String[] {
+        String[] excludeParamList = new String[] {
                 "sample",
                 "address",
                 "addressList",
@@ -646,7 +646,7 @@ public class BeanUtilForRecordTest {
                 "innerRecordArray"
         };
 
-        TestRecord dest = BeanUtil.createAndCopyExcludes(TestRecord.class, srcMap, includeParamList);
+        TestRecord dest = BeanUtil.createAndCopyExcludes(TestRecord.class, srcMap, excludeParamList);
 
         assertThat(dest.sample, is(nullValue()));
         assertThat(dest.address, is(nullValue()));
