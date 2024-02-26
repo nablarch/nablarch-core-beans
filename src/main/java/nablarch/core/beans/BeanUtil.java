@@ -822,12 +822,11 @@ public final class BeanUtil {
      * @return レコードを生成するためのプロパティ値を格納したマップ
      */
     private static Map<String, ?> createPropertyMap(Class<?> beanClass, Map<String, ?> map, CopyOptions copyOptions) {
+        if (map == null) {
+            return Map.of();
+        }
 
         Map<String, Object> propertyMap = new HashMap<>();
-
-        if (map == null) {
-            return propertyMap;
-        }
 
         final CopyOptions mergedCopyOptions = copyOptions
                 .merge(CopyOptions.fromAnnotation(beanClass));
