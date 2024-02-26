@@ -382,6 +382,7 @@ public final class BeanUtil {
      * @param propertyName 値を設定するプロパティ名
      * @param propertyValue プロパティに設定する値
      * @param copyOptions コピーの設定
+     * @throws BeansException プロパティの設定に失敗した場合。
      */
     private static void setPropertyValue(Object bean, String propertyName, Object propertyValue, CopyOptions copyOptions) {
         try {
@@ -409,7 +410,9 @@ public final class BeanUtil {
      *
      * @param bean Beanオブジェクト
      * @param propertyName プロパティ名
-     * @return リスト、配列の要素の型
+     * @return リストの要素の型
+     * @throws BeansException Listプロパティが原型である場合
+     * @throws IllegalStateException コンポーネントの型が型変数である場合
      */
     private static Class<?> getGenericType(Object bean, String propertyName) {
         Method getter = getReadMethod(bean.getClass(), propertyName);
@@ -436,7 +439,9 @@ public final class BeanUtil {
      *
      * @param beanClass Beanオブジェクト
      * @param propertyName プロパティ名
-     * @return リスト、配列の要素の型
+     * @return リストの要素の型
+     * @throws BeansException Listコンポーネントの型が原型である場合
+     * @throws IllegalStateException コンポーネントの型が型変数である場合
      */
     private static Class<?> getGenericTypeForRecord(Class<?> beanClass, String propertyName) {
         Type type = getRecordComponent(beanClass, propertyName).getGenericType();
@@ -673,6 +678,8 @@ public final class BeanUtil {
      * @param srcBean 生成元のJavaBeansもしくはレコード
      * @param copyOptions コピーの設定
      * @param <T> 型引数
+     * @return レコード
+     * @throws BeansException レコードの生成に失敗した場合
      */
     private static <T> T createRecord(Class<? extends T> beanClass, Object srcBean, CopyOptions copyOptions) {
         CopyOptions copyOptionsFromSrc = CopyOptions.fromAnnotation(srcBean.getClass());
@@ -754,6 +761,8 @@ public final class BeanUtil {
      * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @param copyOptions コピーの設定
      * @param <T> 型引数
+     * @return レコード
+     * @throws BeansException レコードの生成に失敗した場合
      */
     private static <T> T createRecord(Class<? extends T> beanClass, Map<String, ?> map, CopyOptions copyOptions) {
         Map<String, ?> propertyMap = createPropertyMap(beanClass, map, copyOptions);
@@ -850,7 +859,7 @@ public final class BeanUtil {
                     setObjectPropertyToMap(beanClass, expression, propertyMap, map, copyOptions);
                 }
             } catch (BeansException bex) {
-                LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
+                LOGGER.logDebug("An error occurred while copying the property :" + propertyName + " original exception: " + bex);
             }
         }
 
@@ -984,6 +993,7 @@ public final class BeanUtil {
      * @param propertyValue プロパティ値
      * @param copyOptions コピーの設定
      * @return 変換済みのプロパティ値
+     * @throws BeansException プロパティ値の変換に失敗した場合
      */
     private static Object createPropertyValue(Class<?> beanClass, String propertyName, Object propertyValue, CopyOptions copyOptions) {
 
@@ -1189,6 +1199,7 @@ public final class BeanUtil {
      * @param <SRC> コピー元のBeanの型
      * @param <DEST> コピー先のBeanの型
      * @return コピー先のBeanオブジェクト
+     * @throws BeansException Beanのコピーに失敗した場合
      */
     static <SRC, DEST> DEST copyInner(final SRC srcBean, final DEST destBean, final CopyOptions copyOptions) {
 
@@ -1457,6 +1468,7 @@ public final class BeanUtil {
      * @param copyOptions コピーの設定
      * @param <SRC> Beanの型
      * @return BeanのプロパティをコピーしたMap
+     * @throws BeansException Beanもしくはレコードのプロパティの読み取りに失敗した場合
      */
     private static <SRC> Map<String, Object> createMapInner(
             final SRC srcBean, final String prefix, final CopyOptions copyOptions) {
@@ -1495,6 +1507,7 @@ public final class BeanUtil {
      *
      * @param clazz クラス
      * @return インスタンス
+     * @throws BeansException インスタンスの生成に失敗した場合
      */
     private static <T> T createInstance(Class<T> clazz) {
         try {
@@ -1592,6 +1605,7 @@ public final class BeanUtil {
          * 
          * @param beanClass クラス
          * @return キャッシュ
+         * @throws BeansException {@link Introspector} によるBeanの解析に失敗した場合
          */
         static synchronized PropertyDescriptors get(final Class<?> beanClass) {
             PropertyDescriptors beanDescCache = CACHE.get(beanClass);
