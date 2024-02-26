@@ -49,9 +49,6 @@ public final class BeanUtil {
      * @throws IllegalArgumentException 引数の{@code beanClass}がレコードの場合
      */
     public static PropertyDescriptor[] getPropertyDescriptors(final Class<?> beanClass) {
-        if(beanClass.isRecord()) {
-            throw new IllegalArgumentException("The target bean class must not be a record class.");
-        }
         return PropertyDescriptors.get(beanClass).array;
     }
 
@@ -67,9 +64,6 @@ public final class BeanUtil {
      * @throws IllegalArgumentException 引数の{@code beanClass}がレコードの場合
      */
     public static PropertyDescriptor getPropertyDescriptor(final Class<?> beanClass, final String propertyName) {
-        if(beanClass.isRecord()) {
-            throw new IllegalArgumentException("The target bean class must not be a record class.");
-        }
         return PropertyDescriptors.get(beanClass).getPropertyDescriptor(propertyName);
     }
 
@@ -84,9 +78,6 @@ public final class BeanUtil {
      * @throws IllegalArgumentException 引数の{@code recordClass}がレコードでない場合
      */
     public static RecordComponent[] getRecordComponents(Class<?> recordClass) {
-        if(!recordClass.isRecord()) {
-            throw new IllegalArgumentException("The target bean class must be a record class.");
-        }
         return RecordComponents.get(recordClass).array;
     }
 
@@ -102,9 +93,6 @@ public final class BeanUtil {
      * @throws IllegalArgumentException 引数の{@code recordClass}がレコードでない場合
      */
     public static RecordComponent getRecordComponent(Class<?> recordClass, String propertyName) {
-        if(!recordClass.isRecord()) {
-            throw new IllegalArgumentException("The target bean class must be a record class.");
-        }
         return RecordComponents.get(recordClass).getRecordComponent(propertyName);
     }
 
@@ -150,7 +138,7 @@ public final class BeanUtil {
     }
 
     /**
-     * 指定したオブジェクトから、特定のプロパティの値を取得する。
+     * 指定したJavaBeansオブジェクトもしくはレコードから、特定のプロパティの値を取得する。
      * <p/>
      * {@code propertyName}には、{@code bean}のトップレベル要素のみ指定可能である。
      * <pre>
@@ -182,7 +170,7 @@ public final class BeanUtil {
      *     }
      * </pre>
      *
-     * @param bean プロパティの値を取得したいBeanオブジェクト
+     * @param bean プロパティの値を取得したいBeanオブジェクトもしくはレコード
      * @param propertyName 取得したいプロパティ名
      * @return Object オブジェクトから取得したプロパティの値
      * @throws BeansException {@code propertyName} に対応するプロパティが定義されていない場合。
@@ -192,13 +180,13 @@ public final class BeanUtil {
     }
 
     /**
-     * 指定したオブジェクトのプロパティの値を、指定した型に変換して取得する。
+     * 指定したJavaBeansオブジェクトもしくはレコードのプロパティの値を、指定した型に変換して取得する。
      * </p>
      * 型変換の仕様は{@link ConversionUtil}を参照。
      * <p/>
      * {@code propertyName}の指定方法については{@link #getProperty(Object, String)}を参照。
      *
-     * @param bean プロパティの値を取得したいBeanオブジェクト
+     * @param bean プロパティの値を取得したいBeanオブジェクトもしくはレコード
      * @param propertyName 取得したいプロパティの名称
      * @param type 変換したい型 (nullを指定した場合は変換を行わず、プロパティの値をそのまま返す。)
      * @return Object 取得したプロパティを{@code type}に変換したオブジェクト
@@ -219,12 +207,19 @@ public final class BeanUtil {
 
     /**
      * プロパティに値を設定する。
+     * <p>
+     * 引数の{@code bean}がレコードの場合、実行時例外が送出される。
      *
      * @param bean Beanオブジェクト
      * @param expression プロパティを表すオブジェクト
      * @throws BeansException インスタンス生成に失敗した場合
+     * @throws IllegalArgumentException 引数の{@code bean}がレコードの場合
      */
     private static void setProperty(Object bean, PropertyExpression expression, Map<String, ?> map, CopyOptions copyOptions) {
+        if (bean.getClass().isRecord()) {
+            throw new IllegalArgumentException("The target bean must not be a record.");
+        }
+
         if (expression.isSimpleProperty() && expression.isNode()) {
             setPropertyValue(bean, expression.getRoot(), map.get(expression.getRawKey()));
         } else if(expression.isListOrArray()) {
@@ -466,7 +461,7 @@ public final class BeanUtil {
     }
 
     /**
-     * 指定したオブジェクトのプロパティに値を登録する。
+     * 指定したJavaBeansオブジェクトのプロパティに値を登録する。
      * <p/>
      * 対象のプロパティにsetterが定義されていない場合はなにもしない。
      * <p/>
@@ -516,6 +511,7 @@ public final class BeanUtil {
      * }
      * </pre>
      * <p/>
+     * 引数の{@code bean}がレコードの場合、実行時例外が送出される。
      *
      * @param bean 値を登録したいBeanオブジェクト
      * @param propertyName 値を登録したいプロパティ名
@@ -529,11 +525,6 @@ public final class BeanUtil {
      * @throws IllegalArgumentException 引数の{@code bean}がレコードの場合
      */
     public static void setProperty(final Object bean, final String propertyName, final Object propertyValue) {
-
-        if (bean.getClass().isRecord()) {
-            throw new IllegalArgumentException("The target bean must not be a record.");
-        }
-
         setProperty(bean, propertyName, Map.of(propertyName, propertyValue), CopyOptions.empty());
     }
 
@@ -544,6 +535,7 @@ public final class BeanUtil {
      * @param propertyName 値を設定するプロパティ名
      * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @param copyOptions コピーの設定
+     * @throws IllegalArgumentException 引数の{@code bean}がレコードの場合
      */
     private static void setProperty(Object bean, String propertyName, Map<String, ?> map, CopyOptions copyOptions) {
         setProperty(bean, new PropertyExpression(propertyName), map, copyOptions);
@@ -1035,7 +1027,7 @@ public final class BeanUtil {
     );
 
     /**
-     * {@link Map}からBeanを生成する。
+     * {@link Map}からBeanもしくはレコードを生成する。
      * 
      * <p>
      * 内部的には空の{@link CopyOptions}を渡して{@link #createAndCopy(Class, Map, CopyOptions)}を呼び出している。
@@ -1056,18 +1048,20 @@ public final class BeanUtil {
     }
 
     /**
-     * {@link Map}から、指定したプロパティのみをコピーしたBeanを生成する。
+     * {@link Map}から、指定したプロパティのみをコピーしたBeanもしくはレコードを生成する。
      * <p/>
-     * {@code map}がnullである場合は、デフォルトコンストラクタで{@code beanClass}を生成して返却する。
+     * 生成対象がBeanであり、かつ{@code map}がnullである場合は、デフォルトコンストラクタで{@code beanClass}を生成して返却する。
+     * <p/>
+     * 生成対象がレコードであり、かつ{@code map}がnullである場合は、各コンポーネントにnullもしくはプリミティブ型のデフォルト値を設定したレコードを生成して返却する。
      * <p/>
      * {@code map}でvalueがnullであるプロパティの値はnullになる。例外の送出やログ出力は行わない。
      * <p/>
-     * 対象のプロパティにsetterが定義されていない場合はなにもしない。
+     * 生成対象がBeanで、かつ対象のプロパティにsetterが定義されていない場合はなにもしない。
      * <p/>
      * プロパティの指定方法については{@link #createAndCopy(Class, Map)}を参照。
      *
      * @param <T> 型引数
-     * @param beanClass 生成したいBeanクラス
+     * @param beanClass 生成したいBeanクラス、もしくはレコードクラス
      * @param map
      *   JavaBeansのプロパティ名をエントリーのキー
      *   プロパティの値をエントリーの値とするMap
@@ -1083,18 +1077,18 @@ public final class BeanUtil {
     }
 
     /**
-     * {@link Map}から指定されたプロパティ以外をコピーしてBeanを生成する。
+     * {@link Map}から指定されたプロパティ以外をコピーしてBeanもしくはレコードを生成する。
      * <p/>
-     * {@code map}がnullである場合は、デフォルトコンストラクタで{@code beanClass}を生成して返却する。
+     * 生成対象がBeanであり、かつ{@code map}がnullである場合は、デフォルトコンストラクタで{@code beanClass}を生成して返却する。
      * <p/>
-     * {@code map}でvalueがnullであるプロパティの値はnullになる。例外の送出やログ出力は行わない。
+     * 生成対象がレコードであり、かつ{@code map}がnullである場合は、各コンポーネントにnullもしくはプリミティブ型のデフォルト値を設定したレコードを生成して返却する。
      * <p/>
-     * 対象のプロパティにsetterが定義されていない場合はなにもしない。
+     * 生成対象がBeanで、対象のプロパティにsetterが定義されていない場合はなにもしない。
      * <p/>
      * プロパティの指定方法については{@link #createAndCopy(Class, Map)}を参照。
      *
      * @param <T> 型引数
-     * @param beanClass 生成したいBeanクラス
+     * @param beanClass 生成したいBeanクラス、もしくはレコードクラス
      * @param map
      *   JavaBeansのプロパティ名をエントリーのキー
      *   プロパティの値をエントリーの値とするMap
@@ -1110,7 +1104,7 @@ public final class BeanUtil {
     }
 
     /**
-     * Java Beansからプロパティをコピーして、別のBeanを作成する。
+     * Java Beansもしくはレコードからプロパティをコピーして、別のBeanを作成する。
      * <p/>
      * {@code srcBean}がnullである場合、デフォルトコンストラクタで{@code beanClass}を生成して返却する。
      *
@@ -1127,13 +1121,15 @@ public final class BeanUtil {
     }
 
     /**
-     * Java Beansからプロパティをコピーして、別のBeanを作成する。
+     * Java Beansもしくはレコードからプロパティをコピーして、別のBeanを作成する。
      * <p/>
-     * {@code srcBean}がnullである場合、デフォルトコンストラクタで{@code beanClass}を生成して返却する。
+     * 生成対象がBeanであり、かつ{@code srcBean}がnullである場合、デフォルトコンストラクタで{@code beanClass}を生成して返却する。
+     * <p/>
+     * 生成対象がレコードであり、かつ{@code srcBean}がnullである場合は、各コンポーネントにnullもしくはプリミティブ型のデフォルト値を設定したレコードを生成して返却する。
      *
      * @param <T> 型引数
      * @param beanClass コピー先のBeanクラス
-     * @param srcBean  コピー元のBean
+     * @param srcBean  コピー元のBeanもしくはレコード
      * @param copyOptions コピーの設定
      * @return コピーされたBeanオブジェクト
      * @throws BeansException
@@ -1154,13 +1150,15 @@ public final class BeanUtil {
     }
 
     /**
-     * Java Beansから指定されたプロパティをコピーして、別のBeanを作成する。
+     * Java Beansもしくはレコードから指定されたプロパティをコピーして、別のBeanを作成する。
      * <p/>
-     * {@code srcBean}がnullである場合、デフォルトコンストラクタで{@code beanClass}を生成して返却する。
+     * 生成対象がBeanであり、かつ{@code srcBean}がnullである場合、デフォルトコンストラクタで{@code beanClass}を生成して返却する。
+     * <p/>
+     * 生成対象がレコードであり、かつ{@code srcBean}がnullである場合は、各コンポーネントにnullもしくはプリミティブ型のデフォルト値を設定したレコードを生成して返却する。
      *
      * @param <T> 型引数
      * @param beanClass コピー先のBeanクラス
-     * @param srcBean  コピー元のBean
+     * @param srcBean  コピー元のBeanもしくはレコード
      * @param includes コピー対象のプロパティ名
      * @return コピーされたBeanオブジェクト
      * @throws BeansException
@@ -1175,14 +1173,16 @@ public final class BeanUtil {
     /**
      * Java Beansから指定されたプロパティ以外をコピーして、別のBeanを作成する。
      * <p/>
-     * {@code srcBean}がnullである場合、デフォルトコンストラクタで{@code beanClass}を生成して返却する。
+     * 生成対象がBeanであり、かつ{@code srcBean}がnullである場合、デフォルトコンストラクタで{@code beanClass}を生成して返却する。
+     * <p/>
+     * 生成対象がレコードであり、かつ{@code srcBean}がnullである場合は、各コンポーネントにnullもしくはプリミティブ型のデフォルト値を設定したレコードを生成して返却する。
      * <p/>
      * プロパティのコピーは{@code srcBean}に定義されたプロパティをベースに実行される。
      * {@code srcBean}に存在し、{@code beanClass}に存在しないプロパティはコピーされない。
      *
      * @param <T> 型引数
      * @param beanClass コピー先のBeanクラス
-     * @param srcBean  コピー元のBean
+     * @param srcBean  コピー元のBeanもしくはレコード
      * @param excludes コピー対象外のプロパティ名
      * @return プロパティに値がコピーされたBeanオブジェクト
      * @throws BeansException
@@ -1195,19 +1195,24 @@ public final class BeanUtil {
     }
 
     /**
-     * BeanからBeanに値をコピーする。
+     * BeanもしくはレコードからBeanに値をコピーする。
      * <p/>
      * 内部で共通的に使用されるメソッド。
      *
-     * @param srcBean  コピー元のBeanオブジェクト
+     * @param srcBean  コピー元のBeanオブジェクトもしくはレコード
      * @param destBean コピー先のBeanオブジェクト
      * @param copyOptions コピーの設定
-     * @param <SRC> コピー元のBeanの型
+     * @param <SRC> コピー元のBeanもしくはレコードの型
      * @param <DEST> コピー先のBeanの型
      * @return コピー先のBeanオブジェクト
      * @throws BeansException Beanのコピーに失敗した場合
+     * @throws IllegalArgumentException 引数の{@code destBean}がレコードの場合
      */
     static <SRC, DEST> DEST copyInner(final SRC srcBean, final DEST destBean, final CopyOptions copyOptions) {
+
+        if (destBean.getClass().isRecord()) {
+            throw new IllegalArgumentException("The destination bean must not be a record.");
+        }
 
         CopyOptions copyOptionsFromSrc = CopyOptions.fromAnnotation(srcBean.getClass());
         CopyOptions copyOptionsFromDest = CopyOptions.fromAnnotation(destBean.getClass());
@@ -1295,65 +1300,68 @@ public final class BeanUtil {
     }
 
     /**
-     * BeanからBeanに値をコピーする。
+     * BeanもしくはレコードからBeanに値をコピーする。
      * <p/>
      * プロパティのコピーは{@code srcBean}に定義されたプロパティをベースに実行される。
      * {@code srcBean}に存在し、{@code destBean}に存在しないプロパティはコピーされない。
+     * <p>
+     * {@code destBean}にレコードが指定された場合は、{@link IllegalArgumentException}が送出される。
      *
-     * @param srcBean  コピー元のBeanオブジェクト
+     * @param srcBean  コピー元のBeanオブジェクトもしくはレコード
      * @param destBean コピー先のBeanオブジェクト
-     * @param <SRC>  コピー元のBeanの型
+     * @param <SRC>  コピー元のBeanもしくはレコードの型
      * @param <DEST> コピー先のBeanの型
      * @return コピー先のBeanオブジェクト
      * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
+     * @throws IllegalArgumentException 引数の{@code destBean}がレコードの場合
      */
     public static <SRC, DEST> DEST copy(final SRC srcBean, final DEST destBean) {
         return copyInner(srcBean, destBean, CopyOptions.empty());
     }
 
     /**
-     * BeanからBeanに値をコピーする。
+     * BeanもしくはレコードからBeanに値をコピーする。
      * <p/>
      * プロパティのコピーは{@code srcBean}に定義されたプロパティをベースに実行される。
      * {@code srcBean}に存在し、{@code destBean}に存在しないプロパティはコピーされない。
-     * 
-     * @param srcBean  コピー元のBeanオブジェクト
+     * <p>
+     * {@code destBean}にレコードが指定された場合は、{@link IllegalArgumentException}が送出される。
+     *
+     * @param srcBean  コピー元のBeanオブジェクトもしくはレコード
      * @param destBean コピー先のBeanオブジェクト
      * @param copyOptions コピーの設定
-     * @param <SRC>  コピー元のBeanの型
+     * @param <SRC>  コピー元のBeanもしくはレコードの型
      * @param <DEST> コピー先のBeanの型
      * @return コピー先のBeanオブジェクト
      * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
-     * @throws IllegalArgumentException 引数の{@code bean}がレコードの場合
+     * @throws IllegalArgumentException 引数の{@code destBean}がレコードの場合
      */
     public static <SRC, DEST> DEST copy(final SRC srcBean, final DEST destBean, final CopyOptions copyOptions) {
-
-        if (destBean.getClass().isRecord()) {
-            throw new IllegalArgumentException("The destination bean must not be a record.");
-        }
-
         return copyInner(srcBean, destBean, copyOptions);
     }
 
     /**
-     * BeanからBeanに値をコピーする。ただしnullのプロパティはコピーしない。
+     * BeanもしくはレコードからBeanに値をコピーする。ただしnullのプロパティはコピーしない。
      * <p/>
      * プロパティのコピーは{@code srcBean}に定義されたプロパティをベースに実行される。
      * {@code srcBean}に存在し、{@code destBean}に存在しないプロパティはコピーされない。
+     * <p>
+     * {@code destBean}にレコードが指定された場合は、{@link IllegalArgumentException}が送出される。
      *
-     * @param srcBean  コピー元のBeanオブジェクト
+     * @param srcBean  コピー元のBeanオブジェクトもしくはレコード
      * @param destBean コピー先のBeanオブジェクト
-     * @param <SRC>  コピー元Beanの型
+     * @param <SRC>  コピー元Beanもしくはレコードの型
      * @param <DEST> コピー先のBeanの型
      * @return コピー先のBeanオブジェクト
      * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
+     * @throws IllegalArgumentException 引数の{@code destBean}がレコードの場合
      */
     public static <SRC, DEST> DEST copyExcludesNull(final SRC srcBean, final DEST destBean) {
         return copyInner(srcBean, destBean, CopyOptions.options().excludesNull().build());
     }
 
     /**
-     * BeanからBeanに、指定されたプロパティをコピーする。
+     * BeanもしくはレコードからBeanに、指定されたプロパティをコピーする。
      * <p/>
      * プロパティのコピーは{@code srcBean}に定義されたプロパティをベースに実行される。
      * {@code srcBean}に存在し、{@code destBean}に存在しないプロパティはコピーされない。
@@ -1366,45 +1374,51 @@ public final class BeanUtil {
      *     SampleBean copiedSampleBean = BeanUtil.createAndCopyIncludes(SampleBean.class, sampleBean, "aaa.bbb");
      *     }
      * </pre>
+     * <p>
+     * {@code destBean}にレコードが指定された場合は、{@link IllegalArgumentException}が送出される。
      *
-     * @param srcBean  コピー元のBeanオブジェクト
+     * @param srcBean  コピー元のBeanオブジェクトもしくはレコード
      * @param destBean コピー先のBeanオブジェクト
      * @param includes コピー対象のプロパティ名
-     * @param <SRC>  コピー元Beanの型
+     * @param <SRC>  コピー元Beanもしくはレコードの型
      * @param <DEST> コピー先のBeanの型
      * @return コピー先のBeanオブジェクト
      * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
+     * @throws IllegalArgumentException 引数の{@code destBean}がレコードの場合
      */
     public static <SRC, DEST> DEST copyIncludes(final SRC srcBean, final DEST destBean, final String... includes) {
         return copyInner(srcBean, destBean, CopyOptions.options().includes(includes).build());
     }
 
     /**
-     * BeanからBeanに、指定されたプロパティ以外をコピーする。
+     * BeanもしくはレコードからBeanに、指定されたプロパティ以外をコピーする。
      * <p/>
      * プロパティのコピーは{@code srcBean}に定義されたプロパティをベースに実行される。
      * {@code srcBean}に存在し、{@code destBean}に存在しないプロパティはコピーされない。
+     * <p>
+     * {@code destBean}にレコードが指定された場合は、{@link IllegalArgumentException}が送出される。
      *
-     * @param srcBean  コピー元のBeanオブジェクト
+     * @param srcBean  コピー元のBeanオブジェクトもしくはレコード
      * @param destBean コピー先のBeanオブジェクト
      * @param excludes コピー対象外のプロパティ名
-     * @param <SRC>  コピー元Beanの型
+     * @param <SRC>  コピー元Beanもしくはレコードの型
      * @param <DEST> コピー先のBeanの型
      * @return コピー先のBeanオブジェクト
      * @throws BeansException {@code destBean}のプロパティのインスタンス生成に失敗した場合
+     * @throws IllegalArgumentException 引数の{@code destBean}がレコードの場合
      */
     public static <SRC, DEST> DEST copyExcludes(final SRC srcBean, final DEST destBean, final String... excludes) {
         return copyInner(srcBean, destBean, CopyOptions.options().excludes(excludes).build());
     }
 
     /**
-     * BeanからMapにプロパティの値をコピーする。
+     * BeanもしくはレコードからMapにプロパティの値をコピーする。
      * <p>
      * Mapのキーはプロパティ名で、値はプロパティ値となる。
      * 値の型変換は行わず、Beanのプロパティの値を単純にMapの値に設定する。
      * BeanがBeanを持つ構造の場合、Mapのキー値は「.」で連結された値となる。
      *
-     * @param srcBean Bean
+     * @param srcBean Beanもしくはレコード
      * @param copyOptions コピーの設定
      * @param <SRC> Beanの型
      * @return BeanのプロパティをコピーしたMap
@@ -1414,13 +1428,13 @@ public final class BeanUtil {
     }
 
     /**
-     * BeanからMapにプロパティの値をコピーする。
+     * BeanもしくはレコードからMapにプロパティの値をコピーする。
      * 
      * <p>
      * 内部的には空の{@link CopyOptions}を渡して{@link #createMapAndCopy(Object, CopyOptions)}を呼び出している。
      * </p>
      * 
-     * @param srcBean Bean
+     * @param srcBean Beanもしくはレコード
      * @param <SRC> Beanの型
      * @return BeanのプロパティをコピーしたMap
      */
@@ -1429,7 +1443,7 @@ public final class BeanUtil {
     }
 
     /**
-     * BeanからMapにプロパティの値をコピーする。
+     * BeanもしくはレコードからMapにプロパティの値をコピーする。
      * <p>
      * Mapのキーはプロパティ名で、値はプロパティ値となる。
      * 値の型変換は行わず、Beanのプロパティの値を単純にMapの値に設定する。
@@ -1437,7 +1451,7 @@ public final class BeanUtil {
      * <p>
      * 除外対象のプロパティ名が指定された場合は、そのプロパティがコピー対象から除外される。
      *
-     * @param srcBean Bean
+     * @param srcBean Beanもしくはレコード
      * @param excludeProperties 除外対象のプロパティ名
      * @param <SRC> Beanの型
      * @return BeanのプロパティをコピーしたMap
@@ -1448,7 +1462,7 @@ public final class BeanUtil {
     }
 
     /**
-     * BeanからMapに指定されたプロパティの値をコピーする。
+     * BeanもしくはレコードからMapに指定されたプロパティの値をコピーする。
      * <p>
      * Mapのキーはプロパティ名で、値はプロパティ値となる。
      * 値の型変換は行わず、Beanのプロパティの値を単純にMapの値に設定する。
@@ -1457,7 +1471,7 @@ public final class BeanUtil {
      * コピー対象のプロパティ名として指定できるのは、トップ階層のBeanのプロパティ名となる。
      * このため、階層構造で子階層のBeanがinclude指定されていた場合、子階層のBeanのプロパティは全てコピーされる。
      *
-     * @param srcBean Bean
+     * @param srcBean Beanもしくはレコード
      * @param includesProperties コピー対象のプロパティ名のリスト
      * @param <SRC> Beanの型
      * @return BeanのプロパティをコピーしたMap
@@ -1469,7 +1483,7 @@ public final class BeanUtil {
     /**
      * Mapを作成しBeanもしくはレコードのプロパティ値をコピーする。
      *
-     * @param srcBean コピー元のBean
+     * @param srcBean コピー元のBeanもしくはレコード
      * @param prefix プロパティ名のプレフィックス
      * @param copyOptions コピーの設定
      * @param <SRC> Beanの型
@@ -1614,6 +1628,10 @@ public final class BeanUtil {
          * @throws BeansException {@link Introspector} によるBeanの解析に失敗した場合
          */
         static synchronized PropertyDescriptors get(final Class<?> beanClass) {
+            if(beanClass.isRecord()) {
+                throw new IllegalArgumentException("The target bean class must not be a record class.");
+            }
+
             PropertyDescriptors beanDescCache = CACHE.get(beanClass);
             if (beanDescCache != null) {
                 return beanDescCache;
@@ -1698,17 +1716,21 @@ public final class BeanUtil {
          * {@link RecordComponents}はキャッシュされる。
          * </p>
          *
-         * @param beanClass クラス
+         * @param recordClass クラス
          * @return キャッシュ
          */
-        static synchronized RecordComponents get(Class<?> beanClass) {
-            RecordComponents beanDescCache = CACHE.get(beanClass);
+        static synchronized RecordComponents get(Class<?> recordClass) {
+            if(!recordClass.isRecord()) {
+                throw new IllegalArgumentException("The target bean class must be a record class.");
+            }
+
+            RecordComponents beanDescCache = CACHE.get(recordClass);
             if (beanDescCache != null) {
                 return beanDescCache;
             }
 
-            beanDescCache = new RecordComponents(beanClass);
-            CACHE.put(beanClass, beanDescCache);
+            beanDescCache = new RecordComponents(recordClass);
+            CACHE.put(recordClass, beanDescCache);
             return beanDescCache;
         }
     }

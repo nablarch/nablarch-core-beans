@@ -1243,8 +1243,7 @@ public class BeanUtilForRecordTest {
                 new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")}
         );
 
-        TestBean testBean = new TestBean();
-        TestBean dest = BeanUtil.copy(srcRecord, testBean, CopyOptions.empty());
+        TestBean dest = BeanUtil.copy(srcRecord, new TestBean(), CopyOptions.empty());
 
         assertThat(dest.sample, is(10));
         assertThat(dest.onlyInTestBean, is(nullValue()));
@@ -1272,6 +1271,21 @@ public class BeanUtilForRecordTest {
         assertThat(dest.innerRecordArray[0].name, is("神田幹太"));
         assertThat(dest.innerRecordArray[1].id, is(10005));
         assertThat(dest.innerRecordArray[1].name, is("森川瑛太"));
+    }
+
+    @Test
+    public void Nullコンポーネントを除いて_レコードからBeanに値を設定できること() {
+
+        SourceRecord srcRecord = new SourceRecord(null, null, new Address("111-2222", "東京都江東区"), null, null, null, null, null, null, null);
+
+        TestBean testBean = new TestBean();
+        testBean.sample = 10;
+        testBean.address = new Address("333-4444", "東京都新宿区");
+        TestBean dest = BeanUtil.copyExcludesNull(srcRecord, testBean);
+
+        assertThat(dest.sample, is(10));
+        assertThat(dest.address.postCode, is("111-2222"));
+        assertThat(dest.address.addr, is("東京都江東区"));
     }
 
     @Test
