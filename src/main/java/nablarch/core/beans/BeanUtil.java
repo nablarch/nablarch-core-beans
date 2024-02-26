@@ -246,9 +246,7 @@ public final class BeanUtil {
      *
      * @param bean Beanオブジェクト
      * @param expression プロパティを表すオブジェクト
-     * @param map 移送元のMap
-     *            JavaBeansのプロパティ名をエントリーのキー
-     *            プロパティの値をエントリーの値とするMap
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @param copyOptions コピーの設定
      */
     private static void setObjectProperty(Object bean, PropertyExpression expression, Map<String, ?> map, CopyOptions copyOptions) {
@@ -276,9 +274,7 @@ public final class BeanUtil {
      *
      * @param bean Beanオブジェクト
      * @param expression プロパティを表すオブジェクト
-     * @param map 移送元のMap
-     *            JavaBeansのプロパティ名をエントリーのキー
-     *            プロパティの値をエントリーの値とするMap
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @param copyOptions コピーの設定
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -327,9 +323,7 @@ public final class BeanUtil {
      *
      * @param bean Beanオブジェクト
      * @param expression プロパティを表すオブジェクト
-     * @param map 移送元のMap
-     *            JavaBeansのプロパティ名をエントリーのキー
-     *            プロパティの値をエントリーの値とするMap
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @param copyOptions コピーの設定
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
@@ -537,7 +531,7 @@ public final class BeanUtil {
      *
      * @param bean Beanオブジェクト
      * @param propertyName 値を設定するプロパティ名
-     * @param map 移送元のMap
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @param copyOptions コピーの設定
      */
     private static void setProperty(Object bean, String propertyName, Map<String, ?> map, CopyOptions copyOptions) {
@@ -635,9 +629,7 @@ public final class BeanUtil {
      *
      * @param beanClass 移送先BeanのClass
      * @param bean 移送先Beanインスタンス
-     * @param map 移送元のMap
-     *            JavaBeansのプロパティ名をエントリーのキー
-     *            プロパティの値をエントリーの値とするMap
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @param copyOptions コピーの設定
      * @param <T> 型引数
      * @throws IllegalArgumentException 引数の{@code beanClass}がレコードクラスの場合
@@ -751,9 +743,7 @@ public final class BeanUtil {
      * {@link Map}からレコードを生成する。
      *
      * @param beanClass レコードのClass
-     * @param map 移送元のMap
-     *            JavaBeansのプロパティ名をエントリーのキー
-     *            プロパティの値をエントリーの値とするMap
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @param copyOptions コピーの設定
      * @param <T> 型引数
      */
@@ -792,7 +782,7 @@ public final class BeanUtil {
      * 移送元のパラメータマップから、指定した親プロパティ名を持つエントリのみを抽出し、子パラメータのマップを生成する。
      *
      * @param rootProperty 親プロパティ名
-     * @param map 移送元のMap
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @return 子パラメータのマップ
      */
     private static Map<String, Object> getReducedMap(String rootProperty, Map<String, ?> map) {
@@ -812,7 +802,7 @@ public final class BeanUtil {
      * レコードを生成するためのプロパティ値を格納したマップを生成する。
      *
      * @param beanClass レコードのClass
-     * @param map 移送元のMap
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @param copyOptions コピーの設定
      * @return レコードを生成するためのプロパティ値を格納したマップ
      */
@@ -865,7 +855,7 @@ public final class BeanUtil {
      * @param beanClass レコードのClass
      * @param expression 設定するオブジェクトを表すPropertyExpression
      * @param propertyMap プロパティ値を格納したマップ
-     * @param map 移送元のMap
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @param copyOptions コピーの設定
      */
     private static void setObjectPropertyToMap(Class<?> beanClass, PropertyExpression expression, Map<String, Object> propertyMap, Map<String, ?> map, CopyOptions copyOptions) {
@@ -887,7 +877,7 @@ public final class BeanUtil {
      * @param beanClass レコードのClass
      * @param expression 設定する配列を表すPropertyExpression
      * @param propertyMap プロパティ値を格納したマップ
-     * @param map 移送元のMap
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @param copyOptions コピーの設定
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
@@ -935,7 +925,7 @@ public final class BeanUtil {
      * @param beanClass レコードのClass
      * @param expression 設定するリストを表すPropertyExpression
      * @param propertyMap プロパティ値を格納したマップ
-     * @param map 移送元のMap
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @param copyOptions コピーの設定
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
