@@ -1561,14 +1561,14 @@ public final class BeanUtil {
         final PropertyDescriptor[] array;
         /** {@link PropertyDescriptor}の{@link Map}表現 */
         final Map<String, PropertyDescriptor> map;
-        /** プロパティ名のSet */
+        /** プロパティ名の {@link Set} */
         final Set<String> properties;
 
         /**
          * コンストラクタ。
          * 
          * <p>
-         * クラスの{@link PropertyDescriptor}を取得して配列表現と{@link Map}表現、プロパティ名のSetを構築する。
+         * クラスの{@link PropertyDescriptor}を取得して配列表現と{@link Map}表現、プロパティ名の{@link Set}を構築する。
          * なお、プロパティ名が{@literal class}となる{@link PropertyDescriptor}は無視する。
          * </p>
          * 
@@ -1656,18 +1656,18 @@ public final class BeanUtil {
 
         /** キャッシュ本体 */
         private static final WeakHashMap<Class<?>, RecordComponents> CACHE = new WeakHashMap<>();
-        /** {@link PropertyDescriptor}の配列表現 */
+        /** {@link RecordComponent}の配列表現 */
         final RecordComponent[] array;
-        /** {@link PropertyDescriptor}の{@link Map}表現 */
+        /** {@link RecordComponent}の{@link Map}表現 */
         final Map<String, RecordComponent> map;
-        /** プロパティ名のSet */
+        /** プロパティ名の {@link Set} */
         final Set<String> properties;
 
         /**
          * コンストラクタ。
          *
          * <p>
-         * クラスの{@link RecordComponent}を取得して配列表現と{@link Map}表現、プロパティ名のSetを構築する。
+         * クラスの{@link RecordComponent}を取得して配列表現と{@link Map}表現、プロパティ名の{@link Set}を構築する。
          * </p>
          *
          * @param beanClass クラス
@@ -1695,7 +1695,7 @@ public final class BeanUtil {
          * 指定したプロパティ名の{@link RecordComponent}を取得する。
          *
          * @param propertyName プロパティ名
-         * @return 指定したプロパティ名の{@link PropertyDescriptor}
+         * @return 指定したコンポーネント名の {@link RecordComponent}
          * @throws BeansException {@code propertyName} に対応する{@link RecordComponent}が見つからない場合。
          */
         RecordComponent getRecordComponent(String propertyName) {
