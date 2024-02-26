@@ -1675,9 +1675,7 @@ public final class BeanUtil {
         RecordComponents(Class<?> beanClass) {
             RecordComponent[] rcs = beanClass.getRecordComponents();
             map = new LinkedHashMap<>(rcs.length - 1);
-            for (RecordComponent rc : rcs) {
-                map.put(rc.getName(), rc);
-            }
+            Arrays.stream(rcs).forEach(rc -> map.put(rc.getName(), rc));
             array = map.values().toArray(new RecordComponent[0]);
             properties = Arrays.stream(array).map(RecordComponent::getName).collect(Collectors.toSet());
         }
