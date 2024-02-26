@@ -666,6 +666,14 @@ public final class BeanUtil {
     }
 
 
+    /**
+     * JavaBeansもしくはレコードからレコードを生成する。
+     *
+     * @param beanClass 生成するレコードのClass
+     * @param srcBean 生成元のJavaBeansもしくはレコード
+     * @param copyOptions コピーの設定
+     * @param <T> 型引数
+     */
     private static <T> T createRecord(Class<? extends T> beanClass, Object srcBean, CopyOptions copyOptions) {
         CopyOptions copyOptionsFromSrc = CopyOptions.fromAnnotation(srcBean.getClass());
         CopyOptions mergedCopyOptions = copyOptions.merge(copyOptionsFromSrc);
