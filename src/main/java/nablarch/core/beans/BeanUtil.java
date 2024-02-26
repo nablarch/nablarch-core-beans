@@ -60,8 +60,6 @@ public final class BeanUtil {
 
     /**
      * 指定したレコードに属する全てのプロパティの {@link RecordComponent} を取得する。
-     * <p>
-     * ただし、classプロパティは取得対象外となる。
      *
      * @param recordClass プロパティを取得したいクラス
      * @return RecordComponent[] 全てのプロパティの {@link RecordComponent}
