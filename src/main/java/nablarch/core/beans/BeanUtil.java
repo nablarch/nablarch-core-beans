@@ -292,11 +292,11 @@ public final class BeanUtil {
 
         Class<?> genericType = getGenericType(bean, propertyName);
         if (expression.isNode()) {
-            // プリミティブ型の場合
+            // これ以上ネストしない場合
             Object propertyValue = map.get(expression.getRawKey());
             list.set(index, ConversionUtil.convert(genericType, propertyValue));
         } else {
-            // オブジェクト型の場合
+            // ネストしたオブジェクトである場合
             if (genericType.isRecord()) {
                 list.set(index, createRecord(genericType, getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot())));
 
@@ -339,11 +339,11 @@ public final class BeanUtil {
 
         int index = expression.getListIndex();
         if (expression.isNode()) {
-            // プリミティブ型の場合
+            // これ以上ネストしない場合
             Object propertyValue = map.get(expression.getRawKey());
             Array.set(array, index, ConversionUtil.convert(componentType, propertyValue));
         } else {
-            // オブジェクト型の場合
+            // ネストしたオブジェクトである場合
             if (componentType.isRecord()) {
                 Array.set(array, index, createRecord(componentType, getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot())));
             } else {
@@ -911,11 +911,11 @@ public final class BeanUtil {
         }
 
         if (expression.isNode()) {
-            // プリミティブ型の場合
+            // これ以上ネストしない場合
             Object propertyValue = map.get(expression.getRawKey());
             Array.set(array, index, ConversionUtil.convert(componentType, propertyValue));
         } else {
-            // オブジェクト型の場合
+            // ネストしたオブジェクトである場合
             if (componentType.isRecord()) {
                 Array.set(array, index, createRecord(componentType, getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot())));
 
@@ -959,10 +959,10 @@ public final class BeanUtil {
         Class<?> genericType = getGenericTypeForRecord(beanClass, listPropertyName);
         Object propertyValue = map.get(expression.getRawKey());
         if (expression.isNode()) {
-            // プリミティブ型の場合
+            // これ以上ネストしない場合
             list.set(index, ConversionUtil.convert(genericType, propertyValue));
         } else {
-            // オブジェクト型の場合
+            // ネストしたオブジェクトである場合
             if (genericType.isRecord()) {
                 list.set(index, createRecord(genericType, getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot())));
 
