@@ -526,7 +526,7 @@ public final class BeanUtil {
             throw new IllegalArgumentException("The target bean must not be a record.");
         }
 
-        setProperty(bean, propertyName, new HashMap<>(){{put(propertyName, propertyValue);}}, CopyOptions.empty());
+        setProperty(bean, propertyName, Map.of(propertyName, propertyValue), CopyOptions.empty());
     }
 
     /**
@@ -1019,20 +1019,16 @@ public final class BeanUtil {
     /**
      * プリミティブ型に対応するデフォルト値
      */
-    private static final Map<Class<?>, Object> PRIM_DEFAULT_VALUES = new HashMap<>() {
-        {
-            put(boolean.class, false);
-            put(byte.class, (byte) 0);
-            put(short.class, (short) 0);
-            put(int.class, 0);
-            put(long.class, 0L);
-            put(float.class, 0.0f);
-            put(double.class, 0.0d);
-            put(char.class, '\u0000');
-        }
-    };
-
-
+    private static final Map<Class<?>, Object> PRIM_DEFAULT_VALUES = Map.of(
+            boolean.class, false,
+            byte.class, (byte) 0,
+            short.class, (short) 0,
+            int.class, 0,
+            long.class, 0L,
+            float.class, 0.0f,
+            double.class, 0.0d,
+            char.class, '\u0000'
+    );
 
     /**
      * {@link Map}からBeanを生成する。
