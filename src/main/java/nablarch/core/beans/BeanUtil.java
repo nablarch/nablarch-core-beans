@@ -1511,7 +1511,7 @@ public final class BeanUtil {
 
     /**
      * クラスの{@link PropertyDescriptor}をまとめたもの。
-     *
+     * <p>
      * ただしプロパティ名が{@literal class}のものは除かれている。
      * 
      * @author Taichi Uragami
