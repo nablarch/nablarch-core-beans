@@ -876,10 +876,7 @@ public final class BeanUtil {
             }
             propertyMap.put(propertyName, createRecord(propertyType, getReducedMap(propertyName, map), copyOptions.reduce(propertyName)));
         } else {
-            Object nested
-                    = propertyMap.containsKey(propertyName)
-                    ? propertyMap.get(propertyName)
-                    : createInstance(propertyType);
+            Object nested = propertyMap.getOrDefault(propertyName, createInstance(propertyType));
             setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(propertyName));
             propertyMap.put(propertyName, nested);
         }
@@ -900,10 +897,7 @@ public final class BeanUtil {
         Class<?> propertyType = getPropertyType(beanClass, listPropertyName);
         Class<?> componentType = propertyType.getComponentType();
 
-        Object array
-                = propertyMap.containsKey(listPropertyName)
-                ? propertyMap.get(listPropertyName)
-                : Array.newInstance(componentType, expression.getListIndex() + 1);
+        Object array = propertyMap.getOrDefault(listPropertyName, Array.newInstance(componentType, expression.getListIndex() + 1));
 
         int index = expression.getListIndex();
         if (index >= Array.getLength(array)) {
@@ -949,10 +943,7 @@ public final class BeanUtil {
     private static void setListPropertyToMap(Class<?> beanClass, PropertyExpression expression, Map<String, Object> propertyMap, Map<String, ?> map, CopyOptions copyOptions) {
         String listPropertyName = expression.getListPropertyName();
 
-        List list
-                = propertyMap.containsKey(listPropertyName)
-                ? (List) propertyMap.get(listPropertyName)
-                : new ArrayList();
+        List list = (List) propertyMap.getOrDefault(listPropertyName, new ArrayList());
 
         int index = expression.getListIndex();
         if (index >= list.size()) {
