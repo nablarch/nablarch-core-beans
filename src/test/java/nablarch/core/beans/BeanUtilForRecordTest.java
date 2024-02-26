@@ -313,7 +313,7 @@ public class BeanUtilForRecordTest {
     public void Mapからレコードに値を設定できること() {
 
         Map<String, Object> srcMap = Map.ofEntries(
-                Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
+                Map.entry("sample", 10),
                 Map.entry("address.postCode", "111-2222"),
                 Map.entry("address.addr", "東京都江東区"),
                 Map.entry("innerRecord.id", 10001),
@@ -437,7 +437,7 @@ public class BeanUtilForRecordTest {
     public void 指定したネストパラメータおよびリストパラメータを使用してレコードを生成できること() {
 
         Map<String, Object> srcMap = Map.ofEntries(
-                Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
+                Map.entry("sample", 10),
                 Map.entry("address.postCode", "111-2222"),
                 Map.entry("address.addr", "東京都江東区"),
                 Map.entry("innerRecord.id", 10001),
@@ -509,7 +509,7 @@ public class BeanUtilForRecordTest {
     public void 指定したパラメータのみ使用してレコードを生成できること() {
 
         Map<String, Object> srcMap = Map.of(
-                "sample", 10, // StringからIntegerへ変換できることも合わせて確認する
+                "sample", 10,
                 "address", new Address("111-2222", "東京都江東区"),
                 "innerRecord", new InnerRecord(10001, "中田昇"),
                 "strList", List.of("1", "2"),
@@ -553,7 +553,7 @@ public class BeanUtilForRecordTest {
     public void 指定したネストパラメータおよびリストパラメータを除外してレコードを生成できること() {
 
         Map<String, Object> srcMap = Map.ofEntries(
-                Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
+                Map.entry("sample", 10),
                 Map.entry("address.postCode", "111-2222"),
                 Map.entry("address.addr", "東京都江東区"),
                 Map.entry("innerRecord.id", 10001),
@@ -625,7 +625,7 @@ public class BeanUtilForRecordTest {
     public void 指定したパラメータを除外してレコードを生成できること() {
 
         Map<String, Object> srcMap = Map.of(
-                "sample", 10, // StringからIntegerへ変換できることも合わせて確認する
+                "sample", 10,
                 "address", new Address("111-2222", "東京都江東区"),
                 "innerRecord", new InnerRecord(10001, "中田昇"),
                 "strList", List.of("1", "2"),
