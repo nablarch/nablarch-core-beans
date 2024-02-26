@@ -1344,7 +1344,6 @@ public class BeanUtilForRecordTest {
         assertThat(dest.vshort, is((short) 0));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void レコードからMapを生成できること() {
 
@@ -1369,16 +1368,16 @@ public class BeanUtilForRecordTest {
         assertThat(dest.get("address.addr"), is("東京都江東区"));
         assertThat(dest.get("innerRecord.id"), is(10001));
         assertThat(dest.get("innerRecord.name"), is("中田昇"));
-        assertThat(((List<String>)dest.get("strList")).get(0), is("1"));
-        assertThat(((List<String>)dest.get("strList")).get(1), is("2"));
-        assertThat(((List<Address>)dest.get("addressList")).get(0).postCode, is("111-2222"));
-        assertThat(((List<Address>)dest.get("addressList")).get(0).addr, is("東京都新宿区"));
-        assertThat(((List<Address>)dest.get("addressList")).get(1).postCode, is("333-4444"));
-        assertThat(((List<Address>)dest.get("addressList")).get(1).addr, is("兵庫県神戸市"));
-        assertThat(((List<InnerRecord>)dest.get("innerRecordList")).get(0).id, is(10002));
-        assertThat(((List<InnerRecord>)dest.get("innerRecordList")).get(0).name, is("武藤菊夜"));
-        assertThat(((List<InnerRecord>)dest.get("innerRecordList")).get(1).id, is(10003));
-        assertThat(((List<InnerRecord>)dest.get("innerRecordList")).get(1).name, is("猪野麻天"));
+        assertThat(((List<?>)dest.get("strList")).get(0), is("1"));
+        assertThat(((List<?>)dest.get("strList")).get(1), is("2"));
+        assertThat(((Address)(((List<?>)dest.get("addressList")).get(0))).postCode, is("111-2222"));
+        assertThat(((Address)(((List<?>)dest.get("addressList")).get(0))).addr, is("東京都新宿区"));
+        assertThat(((Address)(((List<?>)dest.get("addressList")).get(1))).postCode, is("333-4444"));
+        assertThat(((Address)(((List<?>)dest.get("addressList")).get(1))).addr, is("兵庫県神戸市"));
+        assertThat(((InnerRecord)(((List<?>)dest.get("innerRecordList")).get(0))).id, is(10002));
+        assertThat(((InnerRecord)(((List<?>)dest.get("innerRecordList")).get(0))).name, is("武藤菊夜"));
+        assertThat(((InnerRecord)(((List<?>)dest.get("innerRecordList")).get(1))).id, is(10003));
+        assertThat(((InnerRecord)(((List<?>)dest.get("innerRecordList")).get(1))).name, is("猪野麻天"));
         assertThat(((String[])dest.get("strArray"))[0], is("3"));
         assertThat(((String[])dest.get("strArray"))[1], is("4"));
         assertThat(((Address[])dest.get("addressArray"))[0].postCode, is("555-6666"));
@@ -1392,7 +1391,6 @@ public class BeanUtilForRecordTest {
 
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void 指定したパラメータのみ使用してレコードからMapを生成できること() {
 
@@ -1415,8 +1413,8 @@ public class BeanUtilForRecordTest {
         assertThat(dest.get("onlyInSourceRecord"), is("test"));
         assertThat(dest.containsKey("address"), is(false));
         assertThat(dest.containsKey("innerRecord"), is(false));
-        assertThat(((List<String>)dest.get("strList")).get(0), is("1"));
-        assertThat(((List<String>)dest.get("strList")).get(1), is("2"));
+        assertThat(((List<?>)dest.get("strList")).get(0), is("1"));
+        assertThat(((List<?>)dest.get("strList")).get(1), is("2"));
         assertThat(dest.containsKey("addressList"), is(false));
         assertThat(dest.containsKey("innerRecordList"), is(false));
         assertThat(dest.containsKey("strArray"), is(false));
@@ -1428,7 +1426,6 @@ public class BeanUtilForRecordTest {
 
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void 指定したパラメータを除外してレコードからMapを生成できること() {
 
@@ -1454,14 +1451,14 @@ public class BeanUtilForRecordTest {
         assertThat(dest.get("innerRecord.id"), is(10001));
         assertThat(dest.get("innerRecord.name"), is("中田昇"));
         assertThat(dest.containsKey("strList"), is(false));
-        assertThat(((List<Address>)dest.get("addressList")).get(0).postCode, is("111-2222"));
-        assertThat(((List<Address>)dest.get("addressList")).get(0).addr, is("東京都新宿区"));
-        assertThat(((List<Address>)dest.get("addressList")).get(1).postCode, is("333-4444"));
-        assertThat(((List<Address>)dest.get("addressList")).get(1).addr, is("兵庫県神戸市"));
-        assertThat(((List<InnerRecord>)dest.get("innerRecordList")).get(0).id, is(10002));
-        assertThat(((List<InnerRecord>)dest.get("innerRecordList")).get(0).name, is("武藤菊夜"));
-        assertThat(((List<InnerRecord>)dest.get("innerRecordList")).get(1).id, is(10003));
-        assertThat(((List<InnerRecord>)dest.get("innerRecordList")).get(1).name, is("猪野麻天"));
+        assertThat(((Address)(((List<?>)dest.get("addressList")).get(0))).postCode, is("111-2222"));
+        assertThat(((Address)(((List<?>)dest.get("addressList")).get(0))).addr, is("東京都新宿区"));
+        assertThat(((Address)(((List<?>)dest.get("addressList")).get(1))).postCode, is("333-4444"));
+        assertThat(((Address)(((List<?>)dest.get("addressList")).get(1))).addr, is("兵庫県神戸市"));
+        assertThat(((InnerRecord)(((List<?>)dest.get("innerRecordList")).get(0))).id, is(10002));
+        assertThat(((InnerRecord)(((List<?>)dest.get("innerRecordList")).get(0))).name, is("武藤菊夜"));
+        assertThat(((InnerRecord)(((List<?>)dest.get("innerRecordList")).get(1))).id, is(10003));
+        assertThat(((InnerRecord)(((List<?>)dest.get("innerRecordList")).get(1))).name, is("猪野麻天"));
         assertThat(((String[])dest.get("strArray"))[0], is("3"));
         assertThat(((String[])dest.get("strArray"))[1], is("4"));
         assertThat(((Address[])dest.get("addressArray"))[0].postCode, is("555-6666"));
