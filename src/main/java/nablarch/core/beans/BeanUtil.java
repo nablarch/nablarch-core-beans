@@ -37,47 +37,71 @@ public final class BeanUtil {
      * 指定したクラスに属する全てのプロパティの {@link PropertyDescriptor} を取得する。
      * <p>
      * ただし、classプロパティは取得対象外となる。
+     * <p>
+     * 本メソッドの引数にレコードクラスを指定した場合、実行時例外が送出される。
      *
      * @param beanClass プロパティを取得したいクラス
      * @return PropertyDescriptor[] 全てのプロパティの {@link PropertyDescriptor}
      * @throws BeansException プロパティの取得に失敗した場合。
+     * @throws IllegalArgumentException 引数の{@code beanClass}がレコードの場合
      */
     public static PropertyDescriptor[] getPropertyDescriptors(final Class<?> beanClass) {
+        if(beanClass.isRecord()) {
+            throw new IllegalArgumentException("The target bean class must not be a record class.");
+        }
         return PropertyDescriptors.get(beanClass).array;
     }
 
     /**
      * 指定したクラスから、特定のプロパティの{@link PropertyDescriptor} を取得する。<br/>
+     * <p>
+     * 本メソッドの引数にレコードクラスを指定した場合、実行時例外が送出される。
      *
      * @param beanClass プロパティを取得したいクラス
      * @param propertyName 取得したいプロパティ名
      * @return PropertyDescriptor 取得したプロパティ
      * @throws BeansException {@code propertyName} に対応するプロパティが定義されていない場合。
+     * @throws IllegalArgumentException 引数の{@code beanClass}がレコードの場合
      */
     public static PropertyDescriptor getPropertyDescriptor(final Class<?> beanClass, final String propertyName) {
+        if(beanClass.isRecord()) {
+            throw new IllegalArgumentException("The target bean class must not be a record class.");
+        }
         return PropertyDescriptors.get(beanClass).getPropertyDescriptor(propertyName);
     }
 
     /**
      * 指定したレコードに属する全てのプロパティの {@link RecordComponent} を取得する。
+     * <p>
+     * 本メソッドの引数にレコードクラスでないクラスを指定した場合、実行時例外が送出される。
      *
      * @param recordClass プロパティを取得したいクラス
      * @return RecordComponent[] 全てのプロパティの {@link RecordComponent}
      * @throws BeansException プロパティの取得に失敗した場合。
+     * @throws IllegalArgumentException 引数の{@code recordClass}がレコードでない場合
      */
     public static RecordComponent[] getRecordComponents(final Class<?> recordClass) {
+        if(!recordClass.isRecord()) {
+            throw new IllegalArgumentException("The target bean class must be a record class.");
+        }
         return RecordComponents.get(recordClass).array;
     }
 
     /**
      * 指定したクラスから、特定のプロパティの{@link RecordComponent} を取得する。<br/>
+     * <p>
+     * 本メソッドの引数にレコードクラスでないクラスを指定した場合、実行時例外が送出される。
      *
      * @param recordClass プロパティを取得したいクラス
      * @param propertyName 取得したいプロパティ名
      * @return RecordComponent 取得したプロパティ
      * @throws BeansException {@code propertyName} に対応するプロパティが定義されていない場合。
+     * @throws IllegalArgumentException 引数の{@code recordClass}がレコードでない場合
      */
     public static RecordComponent getRecordComponent(final Class<?> recordClass, final String propertyName) {
+        if(!recordClass.isRecord()) {
+            throw new IllegalArgumentException("The target bean class must be a record class.");
+        }
         return RecordComponents.get(recordClass).getRecordComponent(propertyName);
     }
 
