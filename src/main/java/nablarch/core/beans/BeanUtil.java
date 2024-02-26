@@ -1202,7 +1202,7 @@ public final class BeanUtil {
      * @param <DEST> コピー先のBeanの型
      * @return コピー先のBeanオブジェクト
      */
-    private static <SRC, DEST> DEST copyInner(final SRC srcBean, final DEST destBean, final CopyOptions copyOptions) {
+    static <SRC, DEST> DEST copyInner(final SRC srcBean, final DEST destBean, final CopyOptions copyOptions) {
 
         CopyOptions copyOptionsFromSrc = CopyOptions.fromAnnotation(srcBean.getClass());
         CopyOptions copyOptionsFromDest = CopyOptions.fromAnnotation(destBean.getClass());
