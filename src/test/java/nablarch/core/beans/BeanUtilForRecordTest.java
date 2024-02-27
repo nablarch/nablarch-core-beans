@@ -1174,33 +1174,25 @@ public class BeanUtilForRecordTest {
     public record NoGenericTypeRecord(List children){}
 
     @Test
-    @Ignore("if文は通るが、エラーが握りつぶされるので、テストが通らない")
-    public void Generic型が未指定の場合_実行時例外が送出されること() {
-        try {
-            BeanUtil.createAndCopy(NoGenericTypeRecord.class, new HashMap<>(){{
-                put("children[0].name", "aaa");
-            }});
-            fail("BeansExceptionがスローされるはず");
-        } catch (BeansException e) {
-            assertThat(e.getMessage(), is(
-                    "must set generics type for property. "
-                            + "class: class nablarch.core.beans.NestedListPropertyTest$NoGenericTypeBean "
-                            + "property: children"));
-        }
+    public void Generic型が未指定の場合_BeansExceptionが送出されかつデバッグログが出力されること() {
+        BeanUtil.createAndCopy(NoGenericTypeRecord.class, new HashMap<>(){{
+            put("children[0].name", "aaa");
+        }});
+        assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
+                containsString("must set generics type for property. class: " +
+                        "class nablarch.core.beans.BeanUtilForRecordTest$NoGenericTypeRecord property: children"),
+                containsString("nablarch.core.beans.BeansException"))));
     }
 
     public record InvalidNestedRecord(Set<NestedListPropertyTest.Child> children) {
     }
 
     @Test
-    @Ignore("if文は通るが、エラーが握りつぶされるので、テストが通らない")
     public void レコードに設定するデータを持つMapのキーが階層構造を持つ場合に_値のコピー先のプロパティの型がListまたは配列ではない場合_実行時例外が送出されること() {
-        try {
-            BeanUtil.createAndCopy(InvalidNestedRecord.class, Map.of("children[0].name", new String[]{"aaa"}));
-            fail();
-        } catch (BeansException e) {
-            assertThat(e.getMessage(), is("property type must be List or Array."));
-        }
+        BeanUtil.createAndCopy(InvalidNestedRecord.class, Map.of("children[0].name", new String[]{"aaa"}));
+        assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
+                containsString("property type must be List or Array."),
+                containsString("nablarch.core.beans.BeansException"))));
     }
 
     public record DateDestRecord(java.util.Date foo,
