@@ -1611,12 +1611,10 @@ public final class BeanUtil {
          * @throws BeansException {@code propertyName} に対応する{@link PropertyDescriptor}が見つからない場合。
          */
         PropertyDescriptor getPropertyDescriptor(String propertyName) {
-            PropertyDescriptor pd = map.get(propertyName);
-            if (pd != null) {
-                return pd;
-            }
-            throw new BeansException(
-                    new IntrospectionException("Unknown property: " + propertyName));
+            return map.computeIfAbsent(propertyName, k -> {
+                throw new BeansException(
+                        new IntrospectionException("Unknown property: " + propertyName));
+            });
         }
 
         /**
@@ -1635,20 +1633,15 @@ public final class BeanUtil {
                 throw new IllegalArgumentException("The target bean class must not be a record class.");
             }
 
-            PropertyDescriptors beanDescCache = CACHE.get(beanClass);
-            if (beanDescCache != null) {
-                return beanDescCache;
-            }
-            try {
-                beanDescCache = new PropertyDescriptors(beanClass);
-            } catch (IntrospectionException e) {
-                throw new BeansException("Failed to introspect bean class. class name: " + beanClass.getName(), e);
-            }
-            CACHE.put(beanClass, beanDescCache);
-            return beanDescCache;
+            return CACHE.computeIfAbsent(beanClass, k -> {
+                try {
+                    return new PropertyDescriptors(beanClass);
+                } catch (IntrospectionException e) {
+                    throw new BeansException("Failed to introspect bean class. class name: " + beanClass.getName(), e);
+                }
+            });
         }
     }
-
 
     /**
      * レコードの{@link RecordComponent}をまとめたもの。
@@ -1703,11 +1696,9 @@ public final class BeanUtil {
          * @throws BeansException {@code propertyName} に対応する{@link RecordComponent}が見つからない場合。
          */
         RecordComponent getRecordComponent(String propertyName) {
-            RecordComponent rc = map.get(propertyName);
-            if (rc != null) {
-                return rc;
-            }
-            throw new BeansException("Unknown property: " + propertyName);
+            return map.computeIfAbsent(propertyName, k -> {
+                throw new BeansException("Unknown property: " + propertyName);
+            });
         }
 
         /**
@@ -1725,14 +1716,8 @@ public final class BeanUtil {
                 throw new IllegalArgumentException("The target bean class must be a record class.");
             }
 
-            RecordComponents beanDescCache = CACHE.get(recordClass);
-            if (beanDescCache != null) {
-                return beanDescCache;
-            }
+            return CACHE.computeIfAbsent(recordClass, k -> new RecordComponents(recordClass));
 
-            beanDescCache = new RecordComponents(recordClass);
-            CACHE.put(recordClass, beanDescCache);
-            return beanDescCache;
         }
     }
 }
