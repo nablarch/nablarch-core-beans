@@ -77,7 +77,7 @@ public final class BeanUtil {
      * @throws BeansException プロパティの取得に失敗した場合。
      * @throws IllegalArgumentException 引数の{@code recordClass}がレコードでない場合
      */
-    public static RecordComponent[] getRecordComponents(Class<?> recordClass) {
+    static RecordComponent[] getRecordComponents(Class<?> recordClass) {
         return RecordComponents.get(recordClass).array;
     }
 
@@ -92,7 +92,7 @@ public final class BeanUtil {
      * @throws BeansException {@code propertyName} に対応するプロパティが定義されていない場合。
      * @throws IllegalArgumentException 引数の{@code recordClass}がレコードでない場合
      */
-    public static RecordComponent getRecordComponent(Class<?> recordClass, String propertyName) {
+    static RecordComponent getRecordComponent(Class<?> recordClass, String propertyName) {
         return RecordComponents.get(recordClass).getRecordComponent(propertyName);
     }
 
@@ -102,7 +102,7 @@ public final class BeanUtil {
      * @param beanClass プロパティ名を取得したいクラス
      * @return Set<String> 全てのプロパティの名前
      */
-    public static Set<String> getPropertyNames(Class<?> beanClass) {
+    static Set<String> getPropertyNames(Class<?> beanClass) {
         if (beanClass.isRecord()) {
             return RecordComponents.get(beanClass).properties;
         }
@@ -116,7 +116,7 @@ public final class BeanUtil {
      * @param propertyName 取得したいプロパティ名
      * @return Class<?> プロパティの型
      */
-    public static Class<?> getPropertyType(Class<?> beanClass, String propertyName) {
+    static Class<?> getPropertyType(Class<?> beanClass, String propertyName) {
         if (beanClass.isRecord()) {
             return getRecordComponent(beanClass, propertyName).getType();
         }
@@ -130,7 +130,7 @@ public final class BeanUtil {
      * @param propertyName 取得したいプロパティ名
      * @return Method プロパティの読み取りメソッド
      */
-    public static Method getReadMethod(Class<?> beanClass, String propertyName) {
+    static Method getReadMethod(Class<?> beanClass, String propertyName) {
         if (beanClass.isRecord()) {
             return getRecordComponent(beanClass, propertyName).getAccessor();
         }
