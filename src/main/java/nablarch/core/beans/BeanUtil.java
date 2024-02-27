@@ -12,6 +12,7 @@ import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import nablarch.core.log.Logger;
@@ -1582,12 +1583,9 @@ public final class BeanUtil {
         PropertyDescriptors(Class<?> beanClass) throws IntrospectionException {
             final BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
             PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
-            map = new LinkedHashMap<>(pds.length - 1);
-            for (PropertyDescriptor pd : pds) {
-                if (!"class".equals(pd.getName())) {
-                    map.put(pd.getName(), pd);
-                }
-            }
+            map = Arrays.stream(pds)
+                    .filter(pd -> !"class".equals(pd.getName()))
+                    .collect(Collectors.toMap(PropertyDescriptor::getName, Function.identity(), (a, b) -> b, LinkedHashMap::new));
             array = map.values().toArray(new PropertyDescriptor[0]);
             properties = Arrays.stream(array).map(PropertyDescriptor::getName).collect(Collectors.toSet());
         }
@@ -1671,8 +1669,7 @@ public final class BeanUtil {
          */
         RecordComponents(Class<?> beanClass) {
             RecordComponent[] rcs = beanClass.getRecordComponents();
-            map = new LinkedHashMap<>(rcs.length - 1);
-            Arrays.stream(rcs).forEach(rc -> map.put(rc.getName(), rc));
+            map = Arrays.stream(rcs).collect(Collectors.toMap(RecordComponent::getName, Function.identity(), (a, b) -> b, LinkedHashMap::new));
             array = map.values().toArray(new RecordComponent[0]);
             properties = Arrays.stream(array).map(RecordComponent::getName).collect(Collectors.toSet());
         }
