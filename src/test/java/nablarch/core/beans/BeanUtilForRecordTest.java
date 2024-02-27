@@ -708,6 +708,304 @@ public class BeanUtilForRecordTest {
         assertThat(dest.innerRecordArray, is(nullValue()));
     }
 
+
+    @Test
+    public void MapからBeanに値を設定できること() {
+
+        Map<String, Object> srcMap = Map.ofEntries(
+                Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
+                Map.entry("address.postCode", "111-2222"),
+                Map.entry("address.addr", "東京都江東区"),
+                Map.entry("innerRecord.id", 10001),
+                Map.entry("innerRecord.name", "中田昇"),
+                Map.entry("strList[0]", "1"),
+                Map.entry("strList[1]", "2"),
+                Map.entry("addressList[0].postCode", "111-2222"),
+                Map.entry("addressList[0].addr", "東京都新宿区"),
+                Map.entry("addressList[1].postCode", "333-4444"),
+                Map.entry("addressList[1].addr", "兵庫県神戸市"),
+                Map.entry("innerRecordList[0].id", 10002),
+                Map.entry("innerRecordList[0].name", "武藤菊夜"),
+                Map.entry("innerRecordList[1].id", 10003),
+                Map.entry("innerRecordList[1].name", "猪野麻天"),
+                Map.entry("strArray[0]", "3"),
+                Map.entry("strArray[1]", "4"),
+                Map.entry("addressArray[0].postCode", "555-6666"),
+                Map.entry("addressArray[0].addr", "大阪府大阪市"),
+                Map.entry("addressArray[1].postCode", "777-8888"),
+                Map.entry("addressArray[1].addr", "福岡県福岡市"),
+                Map.entry("innerRecordArray[0].id", 10004),
+                Map.entry("innerRecordArray[0].name", "神田幹太"),
+                Map.entry("innerRecordArray[1].id", 10005),
+                Map.entry("innerRecordArray[1].name", "森川瑛太")
+        );
+
+        TestBean dest = BeanUtil.createAndCopy(TestBean.class, srcMap, CopyOptions.empty());
+
+        assertThat(dest.sample, is(10));
+        assertThat(dest.address.postCode, is("111-2222"));
+        assertThat(dest.address.addr, is("東京都江東区"));
+        assertThat(dest.innerRecord.id, is(10001));
+        assertThat(dest.innerRecord.name, is("中田昇"));
+        assertThat(dest.strList.get(0), is("1"));
+        assertThat(dest.strList.get(1), is("2"));
+        assertThat(dest.addressList.get(0).postCode, is("111-2222"));
+        assertThat(dest.addressList.get(0).addr, is("東京都新宿区"));
+        assertThat(dest.addressList.get(1).postCode, is("333-4444"));
+        assertThat(dest.addressList.get(1).addr, is("兵庫県神戸市"));
+        assertThat(dest.innerRecordList.get(0).id, is(10002));
+        assertThat(dest.innerRecordList.get(0).name, is("武藤菊夜"));
+        assertThat(dest.innerRecordList.get(1).id, is(10003));
+        assertThat(dest.innerRecordList.get(1).name, is("猪野麻天"));
+        assertThat(dest.strArray[0], is("3"));
+        assertThat(dest.strArray[1], is("4"));
+        assertThat(dest.addressArray[0].postCode, is("555-6666"));
+        assertThat(dest.addressArray[0].addr, is("大阪府大阪市"));
+        assertThat(dest.addressArray[1].postCode, is("777-8888"));
+        assertThat(dest.addressArray[1].addr, is("福岡県福岡市"));
+        assertThat(dest.innerRecordArray[0].id, is(10004));
+        assertThat(dest.innerRecordArray[0].name, is("神田幹太"));
+        assertThat(dest.innerRecordArray[1].id, is(10005));
+        assertThat(dest.innerRecordArray[1].name, is("森川瑛太"));
+
+    }
+
+    @Test
+    public void Beanのプロパティにレコードが含まれる場合でも_指定したネストパラメータ及びリストパラメータを使用してBeanを生成できること() {
+
+        Map<String, Object> srcMap = Map.ofEntries(
+                Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
+                Map.entry("address.postCode", "111-2222"),
+                Map.entry("address.addr", "東京都江東区"),
+                Map.entry("innerRecord.id", 10001),
+                Map.entry("innerRecord.name", "中田昇"),
+                Map.entry("strList[0]", "1"),
+                Map.entry("strList[1]", "2"),
+                Map.entry("addressList[0].postCode", "111-2222"),
+                Map.entry("addressList[0].addr", "東京都新宿区"),
+                Map.entry("addressList[1].postCode", "333-4444"),
+                Map.entry("addressList[1].addr", "兵庫県神戸市"),
+                Map.entry("innerRecordList[0].id", 10002),
+                Map.entry("innerRecordList[0].name", "武藤菊夜"),
+                Map.entry("innerRecordList[1].id", 10003),
+                Map.entry("innerRecordList[1].name", "猪野麻天"),
+                Map.entry("strArray[0]", "3"),
+                Map.entry("strArray[1]", "4"),
+                Map.entry("addressArray[0].postCode", "555-6666"),
+                Map.entry("addressArray[0].addr", "大阪府大阪市"),
+                Map.entry("addressArray[1].postCode", "777-8888"),
+                Map.entry("addressArray[1].addr", "福岡県福岡市"),
+                Map.entry("innerRecordArray[0].id", 10004),
+                Map.entry("innerRecordArray[0].name", "神田幹太"),
+                Map.entry("innerRecordArray[1].id", 10005),
+                Map.entry("innerRecordArray[1].name", "森川瑛太")
+        );
+
+        String[] includeParamList = new String[] {
+                "sample",
+                "address.postCode",
+                "innerRecord.name",
+                "strList[1]",
+                "addressList[1].addr",
+                "innerRecordList[1].id",
+                "strArray[0]",
+                "addressArray[0].postCode",
+                "innerRecordArray[0].name"
+        };
+
+
+
+        TestBean dest = BeanUtil.createAndCopyIncludes(TestBean.class, srcMap, includeParamList);
+
+        assertThat(dest.sample, is(10));
+        assertThat(dest.address.postCode, is("111-2222"));
+        assertThat(dest.address.addr, is(nullValue()));
+        assertThat(dest.innerRecord.id, is(nullValue()));
+        assertThat(dest.innerRecord.name, is("中田昇"));
+        assertThat(dest.strList.get(0), is(nullValue()));
+        assertThat(dest.strList.get(1), is("2"));
+        assertThat(dest.addressList.get(0), is(nullValue()));
+        assertThat(dest.addressList.get(1).postCode, is(nullValue()));
+        assertThat(dest.addressList.get(1).addr, is("兵庫県神戸市"));
+        assertThat(dest.innerRecordList.get(0), is(nullValue()));
+        assertThat(dest.innerRecordList.get(1).id, is(10003));
+        assertThat(dest.innerRecordList.get(1).name, is(nullValue()));
+        assertThat(dest.strArray[0], is("3"));
+        assertThat(dest.addressArray[0].postCode, is("555-6666"));
+        assertThat(dest.addressArray[0].addr, is(nullValue()));
+        assertThat(dest.innerRecordArray[0].id, is(nullValue()));
+        assertThat(dest.innerRecordArray[0].name, is("神田幹太"));
+
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> System.out.println(dest.strArray[1]));
+
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> System.out.println(dest.addressArray[1]));
+
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> System.out.println(dest.innerRecordArray[1]));
+    }
+
+    @Test
+    public void Beanのプロパティにレコードが含まれる場合でも_指定したパラメータのみ使用してBeanを生成できること() {
+
+        Map<String, Object> srcMap = Map.of(
+                "sample", 10, // StringからIntegerへ変換できることも合わせて確認する
+                "address", new Address("111-2222", "東京都江東区"),
+                "innerRecord", new InnerRecord(10001, "中田昇"),
+                "strList", List.of("1", "2"),
+                "addressList", List.of(new Address("111-2222", "東京都新宿区"), new Address("333-4444", "兵庫県神戸市")),
+                "innerRecordList", List.of(new InnerRecord(10002, "武藤菊夜"), new InnerRecord(10003, "猪野麻天")),
+                "strArray", new String[]{"3", "4"},
+                "addressArray", new Address[]{new Address("555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")},
+                "innerRecordArray", new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")}
+        );
+
+        String[] includeParamList = new String[] {
+                "sample",
+                "address",
+                "addressList",
+                "strArray",
+                "innerRecordArray"
+        };
+
+        TestBean dest = BeanUtil.createAndCopyIncludes(TestBean.class, srcMap, includeParamList);
+
+        assertThat(dest.sample, is(10));
+        assertThat(dest.address.postCode, is("111-2222"));
+        assertThat(dest.address.addr, is("東京都江東区"));
+        assertThat(dest.innerRecord, is(nullValue()));
+        assertThat(dest.strList, is(nullValue()));
+        assertThat(dest.addressList.get(0).postCode, is("111-2222"));
+        assertThat(dest.addressList.get(0).addr, is("東京都新宿区"));
+        assertThat(dest.addressList.get(1).postCode, is("333-4444"));
+        assertThat(dest.addressList.get(1).addr, is("兵庫県神戸市"));
+        assertThat(dest.innerRecordList, is(nullValue()));
+        assertThat(dest.strArray[0], is("3"));
+        assertThat(dest.strArray[1], is("4"));
+        assertThat(dest.addressArray, is(nullValue()));
+        assertThat(dest.innerRecordArray[0].id, is(10004));
+        assertThat(dest.innerRecordArray[0].name, is("神田幹太"));
+        assertThat(dest.innerRecordArray[1].id, is(10005));
+        assertThat(dest.innerRecordArray[1].name, is("森川瑛太"));
+    }
+
+    @Test
+    public void Beanのプロパティにレコードが含まれる場合でも_指定したネストパラメータ及びリストパラメータを除外してBeanを生成できること() {
+
+        Map<String, Object> srcMap = Map.ofEntries(
+                Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
+                Map.entry("address.postCode", "111-2222"),
+                Map.entry("address.addr", "東京都江東区"),
+                Map.entry("innerRecord.id", 10001),
+                Map.entry("innerRecord.name", "中田昇"),
+                Map.entry("strList[0]", "1"),
+                Map.entry("strList[1]", "2"),
+                Map.entry("addressList[0].postCode", "111-2222"),
+                Map.entry("addressList[0].addr", "東京都新宿区"),
+                Map.entry("addressList[1].postCode", "333-4444"),
+                Map.entry("addressList[1].addr", "兵庫県神戸市"),
+                Map.entry("innerRecordList[0].id", 10002),
+                Map.entry("innerRecordList[0].name", "武藤菊夜"),
+                Map.entry("innerRecordList[1].id", 10003),
+                Map.entry("innerRecordList[1].name", "猪野麻天"),
+                Map.entry("strArray[0]", "3"),
+                Map.entry("strArray[1]", "4"),
+                Map.entry("addressArray[0].postCode", "555-6666"),
+                Map.entry("addressArray[0].addr", "大阪府大阪市"),
+                Map.entry("addressArray[1].postCode", "777-8888"),
+                Map.entry("addressArray[1].addr", "福岡県福岡市"),
+                Map.entry("innerRecordArray[0].id", 10004),
+                Map.entry("innerRecordArray[0].name", "神田幹太"),
+                Map.entry("innerRecordArray[1].id", 10005),
+                Map.entry("innerRecordArray[1].name", "森川瑛太")
+        );
+
+        String[] includeParamList = new String[] {
+                "sample",
+                "address.postCode",
+                "innerRecord.name",
+                "strList[1]",
+                "addressList[1].addr",
+                "innerRecordList[1].id",
+                "strArray[0]",
+                "addressArray[0].postCode",
+                "innerRecordArray[0].name"
+        };
+
+        TestBean dest = BeanUtil.createAndCopyExcludes(TestBean.class, srcMap, includeParamList);
+
+        assertThat(dest.sample, is(nullValue()));
+        assertThat(dest.address.postCode, is(nullValue()));
+        assertThat(dest.address.addr, is("東京都江東区"));
+        assertThat(dest.innerRecord.id, is(10001));
+        assertThat(dest.innerRecord.name, is(nullValue()));
+        assertThat(dest.strList.get(0), is("1"));
+        assertThat(dest.addressList.get(0).postCode, is("111-2222"));
+        assertThat(dest.addressList.get(0).addr, is("東京都新宿区"));
+        assertThat(dest.addressList.get(1).postCode, is("333-4444"));
+        assertThat(dest.addressList.get(1).addr, is(nullValue()));
+        assertThat(dest.innerRecordList.get(0).id, is(10002));
+        assertThat(dest.innerRecordList.get(0).name, is("武藤菊夜"));
+        assertThat(dest.innerRecordList.get(1).id, is(nullValue()));
+        assertThat(dest.innerRecordList.get(1).name, is("猪野麻天"));
+        assertThat(dest.strArray[0], is(nullValue()));
+        assertThat(dest.strArray[1], is("4"));
+        assertThat(dest.addressArray[0].postCode, is(nullValue()));
+        assertThat(dest.addressArray[0].addr, is("大阪府大阪市"));
+        assertThat(dest.addressArray[1].postCode, is("777-8888"));
+        assertThat(dest.addressArray[1].addr, is("福岡県福岡市"));
+        assertThat(dest.innerRecordArray[0].id, is(10004));
+        assertThat(dest.innerRecordArray[0].name, is(nullValue()));
+        assertThat(dest.innerRecordArray[1].id, is(10005));
+        assertThat(dest.innerRecordArray[1].name, is("森川瑛太"));
+
+        assertThrows(IndexOutOfBoundsException.class, () -> System.out.println(dest.strList.get(1)));
+
+    }
+
+    @Test
+    public void Beanのプロパティにレコードが含まれる場合でも_指定したパラメータを除外してBeanを生成できること() {
+
+        Map<String, Object> srcMap = Map.of(
+                "sample", 10, // StringからIntegerへ変換できることも合わせて確認する
+                "address", new Address("111-2222", "東京都江東区"),
+                "innerRecord", new InnerRecord(10001, "中田昇"),
+                "strList", List.of("1", "2"),
+                "addressList", List.of(new Address("111-2222", "東京都新宿区"), new Address("333-4444", "兵庫県神戸市")),
+                "innerRecordList", List.of(new InnerRecord(10002, "武藤菊夜"), new InnerRecord(10003, "猪野麻天")),
+                "strArray", new String[]{"3", "4"},
+                "addressArray", new Address[]{new Address("555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")},
+                "innerRecordArray", new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")}
+        );
+
+        String[] includeParamList = new String[] {
+                "sample",
+                "address",
+                "addressList",
+                "strArray",
+                "innerRecordArray"
+        };
+
+        TestBean dest = BeanUtil.createAndCopyExcludes(TestBean.class, srcMap, includeParamList);
+
+        assertThat(dest.sample, is(nullValue()));
+        assertThat(dest.address, is(nullValue()));
+        assertThat(dest.innerRecord.id, is(10001));
+        assertThat(dest.innerRecord.name, is("中田昇"));
+        assertThat(dest.strList.get(0), is("1"));
+        assertThat(dest.strList.get(1), is("2"));
+        assertThat(dest.addressList, is(nullValue()));
+        assertThat(dest.innerRecordList.get(0).id, is(10002));
+        assertThat(dest.innerRecordList.get(0).name, is("武藤菊夜"));
+        assertThat(dest.innerRecordList.get(1).id, is(10003));
+        assertThat(dest.innerRecordList.get(1).name, is("猪野麻天"));
+        assertThat(dest.strArray, is(nullValue()));
+        assertThat(dest.addressArray[0].postCode, is("555-6666"));
+        assertThat(dest.addressArray[0].addr, is("大阪府大阪市"));
+        assertThat(dest.addressArray[1].postCode, is("777-8888"));
+        assertThat(dest.addressArray[1].addr, is("福岡県福岡市"));
+        assertThat(dest.innerRecordArray, is(nullValue()));
+
+    }
+
     @Test
     public void レコードからレコードに値を設定できること() {
 
