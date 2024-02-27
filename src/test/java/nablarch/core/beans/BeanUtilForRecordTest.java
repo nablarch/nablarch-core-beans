@@ -3,17 +3,23 @@ package nablarch.core.beans;
 import nablarch.core.repository.SystemRepository;
 import nablarch.test.support.log.app.OnMemoryLogWriter;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import static nablarch.core.beans.BeanUtilConversionCustomizedTest.date;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
 /**
  * {@link BeanUtil}の、レコード型に対するテストクラス。
@@ -1145,6 +1151,130 @@ public class BeanUtilForRecordTest {
     public void getRecordComponentメソッドの引数にBeanを指定した場合_実行時例外が発生すること() {
         IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> BeanUtil.getRecordComponent(TestBean.class, "sample"));
         assertThat(result.getMessage(), is("The target bean class must be a record class."));
+    }
+
+
+    public record ItemRecord<D extends Serializable>(List<D> items){}
+    @Test
+    public void コンポーネント内の型引数が具体型でないレコードを生成しようとした場合_実行時例外が発生すること() {
+        Map<String, Object> map = Map.of(
+                "items[0].name", "aaa",
+                "items[1].name", "bbb");
+
+        IllegalStateException result = assertThrows(IllegalStateException.class, () -> {
+            BeanUtil.createAndCopy(ItemRecord.class, map);
+        });
+        assertThat(result.getMessage(), is(
+                "BeanUtil does not support type parameter for List type, so the accessor in the concrete class must be overridden. "
+                        + "getter method = [nablarch.core.beans.BeanUtilForRecordTest$ItemRecord#items]"));
+    }
+
+
+    @SuppressWarnings("rawtypes")
+    public record NoGenericTypeRecord(List children){}
+
+    @Test
+    @Ignore("if文は通るが、エラーが握りつぶされるので、テストが通らない")
+    public void Generic型が未指定の場合_実行時例外が送出されること() {
+        try {
+            BeanUtil.createAndCopy(NoGenericTypeRecord.class, new HashMap<>(){{
+                put("children[0].name", "aaa");
+            }});
+            fail("BeansExceptionがスローされるはず");
+        } catch (BeansException e) {
+            assertThat(e.getMessage(), is(
+                    "must set generics type for property. "
+                            + "class: class nablarch.core.beans.NestedListPropertyTest$NoGenericTypeBean "
+                            + "property: children"));
+        }
+    }
+
+    public record InvalidNestedRecord(Set<NestedListPropertyTest.Child> children) {
+    }
+
+    @Test
+    @Ignore("if文は通るが、エラーが握りつぶされるので、テストが通らない")
+    public void レコードに設定するデータを持つMapのキーが階層構造を持つ場合に_値のコピー先のプロパティの型がListまたは配列ではない場合_実行時例外が送出されること() {
+        try {
+            BeanUtil.createAndCopy(InvalidNestedRecord.class, Map.of("children[0].name", new String[]{"aaa"}));
+            fail();
+        } catch (BeansException e) {
+            assertThat(e.getMessage(), is("property type must be List or Array."));
+        }
+    }
+
+    public record DateDestRecord(java.util.Date foo,
+                                 java.sql.Date bar,
+                                 Timestamp baz){}
+
+    @Test
+    public void デフォルトコンバータを使用して値を変換できること() {
+        BeanUtilConversionCustomizedTest.Src srcBean = new BeanUtilConversionCustomizedTest.Src();
+        srcBean.setFoo("20180214");
+        srcBean.setBar("20180215");
+        srcBean.setBaz("20180216");
+        CopyOptions copyOptions = CopyOptions.empty();
+        DateDestRecord destRecord = BeanUtil.createAndCopy(DateDestRecord.class, srcBean, copyOptions);
+
+        assertThat(destRecord.foo(), is(date("2018-02-14 00:00:00")));
+        assertThat(destRecord.bar(), is(java.sql.Date.valueOf("2018-02-15")));
+        assertThat(destRecord.baz(), is(Timestamp.valueOf("2018-02-16 00:00:00")));
+    }
+
+    @Test
+    public void デフォルトコンバータを使用して値の変換に失敗すること() {
+        BeanUtilConversionCustomizedTest.Src srcBean = new BeanUtilConversionCustomizedTest.Src();
+        srcBean.setFoo("2018/02/14");
+        srcBean.setBar("2018/02/15");
+        srcBean.setBaz("2018/02/16");
+        CopyOptions copyOptions = CopyOptions.empty();
+        DateDestRecord destRecord = BeanUtil.createAndCopy(DateDestRecord.class, srcBean, copyOptions);
+
+        assertThat(destRecord.foo(), is(nullValue()));
+        assertThat(destRecord.bar(), is(nullValue()));
+        assertThat(destRecord.baz(), is(nullValue()));
+    }
+
+    @Test
+    public void プロパティ名を指定したカスタムコンバーターを使用して値を変換できること() {
+        BeanUtilConversionCustomizedTest.Src srcBean = new BeanUtilConversionCustomizedTest.Src();
+        srcBean.setFoo("2018/02/14");
+        srcBean.setBar("2018/02/15");
+        srcBean.setBaz("2018/02/16");
+        final java.util.Date date = new java.util.Date();
+        final java.sql.Date sqlDate = new java.sql.Date(0);
+        final Timestamp timestamp = new Timestamp(0);
+        CopyOptions copyOptions = CopyOptions.options()
+                .converterByName("foo", java.util.Date.class, value -> date)
+                .converterByName("bar", java.sql.Date.class, value -> sqlDate)
+                .converterByName("baz", Timestamp.class, value -> timestamp)
+                .build();
+        DateDestRecord destRecord = BeanUtil.createAndCopy(DateDestRecord.class, srcBean, copyOptions);
+
+        assertThat(destRecord.foo(), is(sameInstance(date)));
+        assertThat(destRecord.bar(), is(sameInstance(sqlDate)));
+        assertThat(destRecord.baz(), is(sameInstance(timestamp)));
+    }
+
+    @Test
+    public void クラスを指定したカスタムコンバーターを使用して値を変換できること() {
+        BeanUtilConversionCustomizedTest.Src srcBean = new BeanUtilConversionCustomizedTest.Src();
+        srcBean.setFoo("2018/02/14");
+        srcBean.setBar("2018/02/15");
+        srcBean.setBaz("2018/02/16");
+        final java.util.Date date = new java.util.Date();
+        final java.sql.Date sqlDate = new java.sql.Date(0);
+        final Timestamp timestamp = new Timestamp(0);
+        CopyOptions copyOptions = CopyOptions.options()
+                .converter(java.util.Date.class, value -> date)
+                .converterByName("bar", java.sql.Date.class, value -> sqlDate)
+                .converterByName("baz", Timestamp.class, value -> timestamp)
+                .build();
+        DateDestRecord destRecord = BeanUtil.createAndCopy(DateDestRecord.class, srcBean, copyOptions);
+
+        assertThat(destRecord.foo(), is(sameInstance(date)));
+        assertThat(destRecord.bar(), is(sameInstance(sqlDate)));
+        assertThat(destRecord.baz(), is(sameInstance(timestamp)));
     }
 
 }

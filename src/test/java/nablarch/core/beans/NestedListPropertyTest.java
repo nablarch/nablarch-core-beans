@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -62,25 +61,6 @@ public class NestedListPropertyTest {
         }
     }
 
-    /**
-     * Generic型が未指定の場合、例外がスローされること。
-     */
-    @Test
-    @Ignore("if文は通るが、エラーが握りつぶされるので、テストが通らない")
-    public void testNoGenericTypeInRecord() {
-        try {
-            BeanUtil.createAndCopy(NoGenericTypeRecord.class, new HashMap<>(){{
-                put("children[0].name", "aaa");
-            }});
-            fail("BeansExceptionがスローされるはず");
-        } catch (BeansException e) {
-            assertThat(e.getMessage(), is(
-                    "must set generics type for property. "
-                            + "class: class nablarch.core.beans.NestedListPropertyTest$NoGenericTypeBean "
-                            + "property: children"));
-        }
-    }
-
     @SuppressWarnings("rawtypes")
     public static class NoGenericTypeBean {
         private List children;
@@ -91,9 +71,6 @@ public class NestedListPropertyTest {
             this.children = children;
         }
     }
-
-    @SuppressWarnings("rawtypes")
-    public record NoGenericTypeRecord(List children){}
 
     /**
      * {@link Map}のキーが階層構造を持つ場合に、ネストしたBeanに値をコピーできることを確認する.
@@ -285,26 +262,6 @@ public class NestedListPropertyTest {
         }
         public void setChildren(Set<Child> children) {
             this.children = children;
-        }
-    }
-
-    /** コピー先レコード */
-    public record InvalidNestedRecord(Set<Child> children) {
-    }
-
-    /**
-     * レコードに設定するデータを持つ、Mapのキーが階層構造を持つ場合、
-     * 値のコピー先のプロパティの型が{@link List}または配列ではない場合、
-     * 例外が発生することを確認する.
-     */
-    @Test
-    @Ignore("if文は通るが、エラーが握りつぶされるので、テストが通らない")
-    public void testCreateAndCopyRecordNotListAndArray() {
-        try {
-            BeanUtil.createAndCopy(InvalidNestedRecord.class, Map.of("children[0].name", new String[]{"aaa"}));
-            fail();
-        } catch (BeansException e) {
-            assertThat(e.getMessage(), is("property type must be List or Array."));
         }
     }
 
