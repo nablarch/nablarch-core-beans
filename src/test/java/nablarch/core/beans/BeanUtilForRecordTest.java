@@ -710,7 +710,7 @@ public class BeanUtilForRecordTest {
 
 
     @Test
-    public void MapからBeanに値を設定できること() {
+    public void Beanのプロパティにレコードが含まれる場合でも_MapからBeanに値を設定できること() {
 
         Map<String, Object> srcMap = Map.ofEntries(
                 Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
