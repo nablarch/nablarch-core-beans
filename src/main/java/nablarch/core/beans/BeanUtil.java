@@ -201,7 +201,7 @@ public final class BeanUtil {
             }
             return value;
         } catch (Exception e) {
-            throw new BeansException(e);
+            throw new BeansException("corresponding property does not exist in the bean or record. property name: " + propertyName, e);
         }
     }
 
@@ -396,7 +396,7 @@ public final class BeanUtil {
             }
             setter.invoke(bean, value);
         } catch (Exception e) {
-            throw new BeansException(e);
+            throw new BeansException("Failed to convert property. property name: " + propertyName, e);
         }
     }
 
@@ -730,7 +730,7 @@ public final class BeanUtil {
             } catch (BeansException bex) {
                 LOGGER.logDebug("An error occurred while copying the property: " + propertyName);
             } catch (InvocationTargetException | IllegalAccessException e) {
-                throw new BeansException(e);
+                throw new BeansException("Failed to read property. property name: " + propertyName, e);
             }
         }
 
@@ -740,7 +740,7 @@ public final class BeanUtil {
             srcLeftProperties.removeAll(getPropertyNames(beanClass));
             for (String propertyName : srcLeftProperties) {
                 if (mergedCopyOptions.isTargetProperty(propertyName)) {
-                    LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
+                    LOGGER.logDebug("The property does not exist in destination bean. property name: " + propertyName);
                 }
             }
         }
@@ -749,7 +749,7 @@ public final class BeanUtil {
         try {
             recordInstance = beanClass.getConstructor(parameterTypes).newInstance(args);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new BeansException(e);
+            throw new BeansException("An error occurred while creating the record: " + beanClass.getName(), e);
         }
 
         return recordInstance;
@@ -790,7 +790,7 @@ public final class BeanUtil {
         try {
             recordInstance = beanClass.getConstructor(parameterTypes).newInstance(args);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new BeansException(e);
+            throw new BeansException("An error occurred while creating the record: " + beanClass.getName(), e);
         }
 
         return recordInstance;
@@ -1011,7 +1011,7 @@ public final class BeanUtil {
 
             return ConversionUtil.convert(clazz, propertyValue);
         } catch (Exception e) {
-            throw new BeansException(e);
+            throw new BeansException("Failed to convert property. property name: " + propertyName, e);
         }
     }
 
@@ -1269,7 +1269,7 @@ public final class BeanUtil {
             } catch (BeansException bex) {
                 LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
             } catch (Exception e) {
-                throw new BeansException(e);
+                throw new BeansException("Failed to read property from source bean. property name: " + propertyName, e);
             }
         }
 
@@ -1279,7 +1279,7 @@ public final class BeanUtil {
             srcLeftProperties.removeAll(getPropertyNames(destBean.getClass()));
             for (String propertyName : srcLeftProperties) {
                 if (mergedCopyOptions.isTargetProperty(propertyName)) {
-                    LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
+                    LOGGER.logDebug("The property does not exist in destination bean. property name: " + propertyName);
                 }
             }
         }
@@ -1510,7 +1510,7 @@ public final class BeanUtil {
             try {
                 propertyValue = readMethod.invoke(srcBean);
             } catch (Exception e) {
-                throw new BeansException(e);
+                throw new BeansException("Failed to read property. property name: " + propertyName, e);
             }
             if (ConversionUtil.hasConverter(getPropertyType(srcBean.getClass(), propertyName))) {
                 result.put(key, propertyValue);
@@ -1536,7 +1536,7 @@ public final class BeanUtil {
         try {
             return clazz.getConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            throw new BeansException(e);
+            throw new BeansException("Failed to create instance using default constructor. class name: " + clazz.getName(), e);
         }
     }
 
@@ -1642,7 +1642,7 @@ public final class BeanUtil {
             try {
                 beanDescCache = new PropertyDescriptors(beanClass);
             } catch (IntrospectionException e) {
-                throw new BeansException(e);
+                throw new BeansException("Failed to introspect bean class. class name: " + beanClass.getName(), e);
             }
             CACHE.put(beanClass, beanDescCache);
             return beanDescCache;

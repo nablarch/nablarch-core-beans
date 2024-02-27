@@ -716,7 +716,7 @@ public class BeanUtilTest {
         assertThat(dest.address.addr, is("兵庫県神戸市"));
         assertThat(dest.address.postCode, is("333-4444"));
         assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
-                containsString("An error occurred while copying the property :ssn"),
+                containsString("The property does not exist in destination bean. property name: ssn"),
                 not(containsString("nablarch.core.beans.BeansException"))
         )));
 
@@ -808,7 +808,7 @@ public class BeanUtilTest {
         assertThat(dest.address.addr, is("東京都新宿区"));
         assertThat(dest.address.postCode, is("111-2222"));
         assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
-                containsString("An error occurred while copying the property :ssn"),
+                containsString("The property does not exist in destination bean. property name: ssn"),
                 not(containsString("nablarch.core.beans.BeansException"))
         )));
 

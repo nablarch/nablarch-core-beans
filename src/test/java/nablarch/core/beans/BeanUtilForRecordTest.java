@@ -782,7 +782,7 @@ public class BeanUtilForRecordTest {
         assertThat(dest.innerRecordArray[1].name, is("森川瑛太"));
 
         assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
-                containsString("An error occurred while copying the property :onlyInSourceRecord"),
+                containsString("The property does not exist in destination bean. property name: onlyInSourceRecord"),
                 not(containsString("nablarch.core.beans.BeansException"))
         )));
     }
