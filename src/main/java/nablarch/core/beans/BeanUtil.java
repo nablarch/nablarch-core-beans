@@ -527,7 +527,7 @@ public final class BeanUtil {
      * @throws IllegalArgumentException 引数の{@code bean}がレコードの場合
      */
     public static void setProperty(final Object bean, final String propertyName, final Object propertyValue) {
-        setProperty(bean, propertyName, Map.of(propertyName, propertyValue), CopyOptions.empty());
+        setProperty(bean, propertyName, new HashMap<>(){{put(propertyName, propertyValue);}}, CopyOptions.empty());
     }
 
     /**
@@ -828,7 +828,7 @@ public final class BeanUtil {
      */
     private static Map<String, ?> createPropertyMap(Class<?> beanClass, Map<String, ?> map, CopyOptions copyOptions) {
         if (map == null) {
-            return Map.of();
+            return Collections.emptyMap();
         }
 
         Map<String, Object> propertyMap = new HashMap<>();
