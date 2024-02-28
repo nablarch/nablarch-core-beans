@@ -722,10 +722,12 @@ public final class BeanUtil {
                 if (hasConverter(beanClass, propertyName, mergedCopyOptions)) {
                     args[i] = createPropertyValue(beanClass, propertyName, val, mergedCopyOptions);
                 } else {
-                    if (parameterTypes[i].isRecord()) {
-                        args[i] = createRecord(parameterTypes[i], val, CopyOptions.empty());
-                    } else {
-                        args[i] = copyInner(val, createInstance(parameterTypes[i]), CopyOptions.empty());
+                    if (val != null) {
+                        if (parameterTypes[i].isRecord()) {
+                            args[i] = createRecord(parameterTypes[i], val, CopyOptions.empty());
+                        } else {
+                            args[i] = copyInner(val, createInstance(parameterTypes[i]), CopyOptions.empty());
+                        }
                     }
                 }
             } catch (BeansException bex) {

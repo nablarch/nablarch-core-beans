@@ -3,7 +3,6 @@ package nablarch.core.beans;
 import nablarch.core.repository.SystemRepository;
 import nablarch.test.support.log.app.OnMemoryLogWriter;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.Serializable;
@@ -1565,6 +1564,111 @@ public class BeanUtilForRecordTest {
         assertThat(destRecord.foo(), is(sameInstance(date)));
         assertThat(destRecord.bar(), is(sameInstance(sqlDate)));
         assertThat(destRecord.baz(), is(sameInstance(timestamp)));
+    }
+
+    @Test
+    public void 移送元をMapとするcreateAndCopy_keyがnullの場合は実行時例外が送出されること() {
+        Map<String, Object> srcMap = new HashMap<>(){{put(null, 10);}};
+
+        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () ->
+                BeanUtil.createAndCopy(TestRecord.class, srcMap, CopyOptions.empty()));
+        assertThat(result.getMessage(), is("expression is null or blank."));
+    }
+
+    @Test
+    public void 移送元をMapとするcreateAndCopy_valueがnullの場合は成功すること() {
+        Map<String, Object> srcMap = new HashMap<>(){{put("sample", null);}};
+        TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, srcMap, CopyOptions.empty());
+        assertThat(dest.sample(), is(nullValue()));
+    }
+
+    @Test
+    public void 移送元をBeanとするcreateAndCopy_移送元の各プロパティがnullの場合は成功すること() {
+        SourceBean src = new SourceBean();
+
+        TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, src, CopyOptions.empty());
+        assertThat(dest.sample(), is(nullValue()));
+    }
+
+    @Test
+    public void 移送元をBeanとするcreateAndCopy_コピー元beanがnullの場合はNPEが送出されること() {
+        assertThrows(NullPointerException.class, () ->
+                BeanUtil.createAndCopy(TestRecord.class, (SourceBean) null, CopyOptions.empty()));
+    }
+
+    @Test
+    public void 移送元をMapとするcreateAndCopyIncludes_プロパティの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
+        Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
+
+        assertThrows(NullPointerException.class, () ->
+                BeanUtil.createAndCopyIncludes(TestRecord.class, srcMap, (String[]) null));
+
+    }
+
+    @Test
+    public void 移送元をMapとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
+        Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
+
+        TestRecord dest = BeanUtil.createAndCopyIncludes(TestRecord.class, srcMap, (String) null);
+        assertThat(dest.sample(), is(nullValue()));
+    }
+
+    @Test
+    public void 移送元をMapとするcreateAndCopyExcludes_プロパティの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
+        Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
+
+        assertThrows(NullPointerException.class, () ->
+                BeanUtil.createAndCopyExcludes(TestRecord.class, srcMap, (String[]) null));
+
+    }
+
+    @Test
+    public void 移送元をMapとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
+        Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
+
+        TestRecord dest = BeanUtil.createAndCopyExcludes(TestRecord.class, srcMap, (String) null);
+        assertThat(dest.sample(), is(10));
+
+    }
+
+    @Test
+    public void 移送元をBeanとするcreateAndCopyIncludes_プロパティの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
+        SourceBean src = new SourceBean();
+        src.setSample(10);
+
+        assertThrows(NullPointerException.class, () ->
+                BeanUtil.createAndCopyIncludes(TestRecord.class, src, (String[]) null));
+
+    }
+
+    @Test
+    public void 移送元をBeanとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
+        SourceBean src = new SourceBean();
+        src.setSample(10);
+
+        TestRecord dest = BeanUtil.createAndCopyIncludes(TestRecord.class, src, (String) null);
+        assertThat(dest.sample(), is(nullValue()));
+
+    }
+
+    @Test
+    public void 移送元をBeanとするcreateAndCopyExcludes_プロパティの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
+        SourceBean src = new SourceBean();
+        src.setSample(10);
+
+        assertThrows(NullPointerException.class, () ->
+                BeanUtil.createAndCopyExcludes(TestRecord.class, src, (String[]) null));
+
+    }
+
+    @Test
+    public void 移送元をBeanとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
+        SourceBean src = new SourceBean();
+        src.setSample(10);
+
+        TestRecord dest = BeanUtil.createAndCopyExcludes(TestRecord.class, src, (String) null);
+        assertThat(dest.sample(), is(10));
+
     }
 
 }
