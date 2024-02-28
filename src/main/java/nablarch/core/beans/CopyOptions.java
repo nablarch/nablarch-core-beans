@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 import nablarch.core.beans.converter.BigDecimalConverter;
 import nablarch.core.beans.converter.DateConverter;
@@ -254,6 +255,30 @@ public final class CopyOptions {
         }
         return copyOptions;
     }
+
+
+    /**
+     * {@link CopyOptions#includesProperties}および{@link CopyOptions#excludesProperties}で、
+     * 指定した親プロパティ名を持つプロパティから親プロパティ名を削除した新しい{@link CopyOptions}を返す。
+     *
+     * @param propertyName 親プロパティ名
+     * @return 新しい {@link CopyOptions}
+     */
+    CopyOptions reduce(String propertyName) {
+        Collection<String> tmpIncludeProperties = includesProperties.stream()
+                .map(pn -> pn.replace(propertyName + ".", ""))
+                .collect(Collectors.toCollection(HashSet::new));
+        Collection<String> tmpExcludeProperties = excludesProperties.stream()
+                .map(pn -> pn.replace(propertyName + ".", ""))
+                .collect(Collectors.toCollection(HashSet::new));
+        return new CopyOptions(
+                typedConverters,
+                namedConverters,
+                excludesNull,
+                tmpExcludeProperties,
+                tmpIncludeProperties);
+    }
+
 
     /**
      * 他の{@link CopyOptions}をマージする。
