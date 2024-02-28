@@ -202,7 +202,7 @@ public final class BeanUtil {
             }
             return value;
         } catch (Exception e) {
-            throw new BeansException("corresponding property does not exist in the bean or record. property name: " + propertyName, e);
+            throw new BeansException("property does not exist in the bean or record. property name: " + propertyName, e);
         }
     }
 
