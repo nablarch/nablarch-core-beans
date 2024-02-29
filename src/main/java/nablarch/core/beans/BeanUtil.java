@@ -527,7 +527,10 @@ public final class BeanUtil {
      * @throws IllegalArgumentException 引数の{@code bean}がレコードの場合
      */
     public static void setProperty(final Object bean, final String propertyName, final Object propertyValue) {
-        setProperty(bean, propertyName, Map.of(propertyName, propertyValue), CopyOptions.empty());
+        Map<String, Object> parameterMap = new HashMap<>(){{
+            put(propertyName, propertyValue);
+        }};
+        setProperty(bean, propertyName, parameterMap, CopyOptions.empty());
     }
 
     /**
@@ -722,10 +725,12 @@ public final class BeanUtil {
                 if (hasConverter(beanClass, propertyName, mergedCopyOptions)) {
                     args[i] = createPropertyValue(beanClass, propertyName, val, mergedCopyOptions);
                 } else {
-                    if (parameterTypes[i].isRecord()) {
-                        args[i] = createRecord(parameterTypes[i], val, CopyOptions.empty());
-                    } else {
-                        args[i] = copyInner(val, createInstance(parameterTypes[i]), CopyOptions.empty());
+                    if (val != null) {
+                        if (parameterTypes[i].isRecord()) {
+                            args[i] = createRecord(parameterTypes[i], val, CopyOptions.empty());
+                        } else {
+                            args[i] = copyInner(val, createInstance(parameterTypes[i]), CopyOptions.empty());
+                        }
                     }
                 }
             } catch (BeansException bex) {
@@ -828,7 +833,7 @@ public final class BeanUtil {
      */
     private static Map<String, ?> createPropertyMap(Class<?> beanClass, Map<String, ?> map, CopyOptions copyOptions) {
         if (map == null) {
-            return Map.of();
+            return Collections.emptyMap();
         }
 
         Map<String, Object> propertyMap = new HashMap<>();
