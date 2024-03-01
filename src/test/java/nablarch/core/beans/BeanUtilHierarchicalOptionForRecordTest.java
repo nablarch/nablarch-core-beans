@@ -5,7 +5,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
+import static nablarch.core.beans.BeanUtilConversionCustomizedTest.date;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -83,4 +85,168 @@ public class BeanUtilHierarchicalOptionForRecordTest {
             @CopyOption(datePattern = "yyyy.MM.dd")
             Timestamp annotatedOptionAtDestBean,
             Timestamp methodArgOption) {}
+
+
+    @Test
+    public void CopyOptionアノテーションのテスト_Beanからレコード() {
+        SourceBeanWithAnnotation src = new SourceBeanWithAnnotation();
+        src.dateAtSrc = "2024_02_29";
+        src.dateAtDest = "2024~03~01";
+        src.numberAtSrc = "12,3456,7890";
+        src.numberAtDest = "12345,67890";
+
+        DestRecordWithAnnotation dest = BeanUtil.createAndCopy(DestRecordWithAnnotation.class, src,CopyOptions.empty());
+
+        assertThat(dest.dateAtSrc, is(date("2024-02-29 00:00:00")));
+        assertThat(dest.dateAtDest, is(date("2024-03-01 00:00:00")));
+        assertThat(dest.numberAtSrc, is(1234567890));
+        assertThat(dest.numberAtDest, is(1234567890));
+
+    }
+
+    @Test
+    public void CopyOptionアノテーションのテスト_レコードからBean() {
+        SourceRecordWithAnnotation src = new SourceRecordWithAnnotation(
+                "2024_02_29",
+                "2024~03~01",
+                "12,3456,7890",
+                "12345,67890");
+
+        DestBeanWithAnnotation dest = BeanUtil.createAndCopy(DestBeanWithAnnotation.class, src,CopyOptions.empty());
+
+        assertThat(dest.dateAtSrc, is(date("2024-02-29 00:00:00")));
+        assertThat(dest.dateAtDest, is(date("2024-03-01 00:00:00")));
+        assertThat(dest.numberAtSrc, is(1234567890));
+        assertThat(dest.numberAtDest, is(1234567890));
+
+    }
+
+    @Test
+    public void CopyOptionアノテーションのテスト_レコードからレコード() {
+        SourceRecordWithAnnotation src = new SourceRecordWithAnnotation(
+                "2024_02_29",
+                "2024~03~01",
+                "12,3456,7890",
+                "12345,67890");
+
+        DestRecordWithAnnotation dest = BeanUtil.createAndCopy(DestRecordWithAnnotation.class, src,CopyOptions.empty());
+
+        assertThat(dest.dateAtSrc, is(date("2024-02-29 00:00:00")));
+        assertThat(dest.dateAtDest, is(date("2024-03-01 00:00:00")));
+        assertThat(dest.numberAtSrc, is(1234567890));
+        assertThat(dest.numberAtDest, is(1234567890));
+
+    }
+
+
+    public static class SourceBeanWithAnnotation {
+        @CopyOption(datePattern = "yyyy_MM_dd")
+        private String dateAtSrc;
+
+        private String dateAtDest;
+
+        @CopyOption(numberPattern = "#,####")
+        private String numberAtSrc;
+
+        private String numberAtDest;
+
+        public String getDateAtSrc() {
+            return dateAtSrc;
+        }
+
+        public void setDateAtSrc(String dateAtSrc) {
+            this.dateAtSrc = dateAtSrc;
+        }
+
+        public String getDateAtDest() {
+            return dateAtDest;
+        }
+
+        public void setDateAtDest(String dateAtDest) {
+            this.dateAtDest = dateAtDest;
+        }
+
+        public String getNumberAtSrc() {
+            return numberAtSrc;
+        }
+
+        public void setNumberAtSrc(String numberAtSrc) {
+            this.numberAtSrc = numberAtSrc;
+        }
+
+        public String getNumberAtDest() {
+            return numberAtDest;
+        }
+
+        public void setNumberAtDest(String numberAtDest) {
+            this.numberAtDest = numberAtDest;
+        }
+    }
+
+    public static class DestBeanWithAnnotation {
+        @CopyOption(datePattern = "yyyy~MM~dd")
+        private Date dateAtSrc;
+
+        @CopyOption(datePattern = "yyyy~MM~dd")
+        private Date dateAtDest;
+
+        @CopyOption(numberPattern = "#,#####")
+        private Integer numberAtSrc;
+
+        @CopyOption(numberPattern = "#,#####")
+        private Integer numberAtDest;
+
+        public Date getDateAtSrc() {
+            return dateAtSrc;
+        }
+
+        public void setDateAtSrc(Date dateAtSrc) {
+            this.dateAtSrc = dateAtSrc;
+        }
+
+        public Date getDateAtDest() {
+            return dateAtDest;
+        }
+
+        public void setDateAtDest(Date dateAtDest) {
+            this.dateAtDest = dateAtDest;
+        }
+
+        public Integer getNumberAtSrc() {
+            return numberAtSrc;
+        }
+
+        public void setNumberAtSrc(Integer numberAtSrc) {
+            this.numberAtSrc = numberAtSrc;
+        }
+
+        public Integer getNumberAtDest() {
+            return numberAtDest;
+        }
+
+        public void setNumberAtDest(Integer numberAtDest) {
+            this.numberAtDest = numberAtDest;
+        }
+    }
+
+    public record SourceRecordWithAnnotation(
+            @CopyOption(datePattern = "yyyy_MM_dd")
+            String dateAtSrc,
+            String dateAtDest,
+            @CopyOption(numberPattern = "#,####")
+            String numberAtSrc,
+            String numberAtDest
+    ) {}
+
+    public record DestRecordWithAnnotation(
+            @CopyOption(datePattern = "yyyy~MM~dd")
+            Date dateAtSrc,
+            @CopyOption(datePattern = "yyyy~MM~dd")
+            Date dateAtDest,
+            @CopyOption(numberPattern = "#,#####")
+            Integer numberAtSrc,
+            @CopyOption(numberPattern = "#,#####")
+            Integer numberAtDest
+    ) {}
+
 }

@@ -691,7 +691,8 @@ public final class BeanUtil {
      */
     private static <T> T createRecord(Class<? extends T> beanClass, Object srcBean, CopyOptions copyOptions) {
         CopyOptions copyOptionsFromSrc = CopyOptions.fromAnnotation(srcBean.getClass());
-        CopyOptions mergedCopyOptions = copyOptions.merge(copyOptionsFromSrc);
+        CopyOptions copyOptionsFromDest = CopyOptions.fromAnnotation(beanClass);
+        CopyOptions mergedCopyOptions = copyOptions.merge(copyOptionsFromSrc).merge(copyOptionsFromDest);
 
         final RecordComponent[] destRcs = getRecordComponents(beanClass);
         final Class<?>[] parameterTypes = new Class<?>[destRcs.length];
