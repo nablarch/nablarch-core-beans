@@ -798,27 +798,6 @@ public final class BeanUtil {
         }
     }
 
-
-//    /**
-//     * 移送元のパラメータマップから、指定した親プロパティ名を持つエントリのみを抽出し、子パラメータのマップを生成する。
-//     *
-//     * @param rootProperty 親プロパティ名
-//     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
-//     * @return 子パラメータのマップ
-//     */
-//    private static Map<String, Object> getReducedMap(String rootProperty, Map<String, ?> map) {
-//        Map<String, Object> result = new HashMap<>();
-//        for(Map.Entry<String, ?> entry : map.entrySet()) {
-//            String key = entry.getKey();
-//            String rootPropertyWithDot = rootProperty + ".";
-//            if(key.startsWith(rootPropertyWithDot)) {
-//                result.put(key.replace(rootPropertyWithDot, ""), entry.getValue());
-//            }
-//        }
-//        return result;
-//    }
-
-
     /**
      * レコードを生成するためのプロパティ値を格納したマップを生成する。
      *
