@@ -20,6 +20,8 @@ import nablarch.core.log.LoggerManager;
 import nablarch.core.util.StringUtil;
 import nablarch.core.util.annotation.Published;
 
+import static nablarch.core.beans.PropertyExpression.getReducedMap;
+
 /**
  * JavaBeansおよびレコードに関する操作をまとめたユーティリティクラス。
  * <p>
@@ -455,8 +457,8 @@ public final class BeanUtil {
         }
         Object genericType = genericTypeParameter.getActualTypeArguments()[0];
         if (genericType instanceof TypeVariable<?>) {
-            throw new IllegalStateException("BeanUtil does not support type parameter for List type, so the accessor in the concrete class must be overridden. "
-                    + "getter method = [" + beanClass.getName() + "#" + propertyName + "]");
+            throw new IllegalStateException("BeanUtil does not support type parameter for List type component," +
+                    " so the type parameter in the record class must be concrete type.");
         }
         return (Class<?>) genericType;
     }
@@ -751,14 +753,11 @@ public final class BeanUtil {
             }
         }
 
-        T recordInstance;
         try {
-            recordInstance = beanClass.getConstructor(parameterTypes).newInstance(args);
+            return beanClass.getConstructor(parameterTypes).newInstance(args);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new BeansException("An error occurred while creating the record: " + beanClass.getName(), e);
         }
-
-        return recordInstance;
     }
 
 
@@ -792,35 +791,32 @@ public final class BeanUtil {
             args[i] = propertyMap.get(propertyName);
         }
 
-        T recordInstance;
         try {
-            recordInstance = beanClass.getConstructor(parameterTypes).newInstance(args);
+            return beanClass.getConstructor(parameterTypes).newInstance(args);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new BeansException("An error occurred while creating the record: " + beanClass.getName(), e);
         }
-
-        return recordInstance;
     }
 
 
-    /**
-     * 移送元のパラメータマップから、指定した親プロパティ名を持つエントリのみを抽出し、子パラメータのマップを生成する。
-     *
-     * @param rootProperty 親プロパティ名
-     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
-     * @return 子パラメータのマップ
-     */
-    private static Map<String, Object> getReducedMap(String rootProperty, Map<String, ?> map) {
-        Map<String, Object> result = new HashMap<>();
-        for(Map.Entry<String, ?> entry : map.entrySet()) {
-            String key = entry.getKey();
-            String rootPropertyWithDot = rootProperty + ".";
-            if(key.startsWith(rootPropertyWithDot)) {
-                result.put(key.replace(rootPropertyWithDot, ""), entry.getValue());
-            }
-        }
-        return result;
-    }
+//    /**
+//     * 移送元のパラメータマップから、指定した親プロパティ名を持つエントリのみを抽出し、子パラメータのマップを生成する。
+//     *
+//     * @param rootProperty 親プロパティ名
+//     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
+//     * @return 子パラメータのマップ
+//     */
+//    private static Map<String, Object> getReducedMap(String rootProperty, Map<String, ?> map) {
+//        Map<String, Object> result = new HashMap<>();
+//        for(Map.Entry<String, ?> entry : map.entrySet()) {
+//            String key = entry.getKey();
+//            String rootPropertyWithDot = rootProperty + ".";
+//            if(key.startsWith(rootPropertyWithDot)) {
+//                result.put(key.replace(rootPropertyWithDot, ""), entry.getValue());
+//            }
+//        }
+//        return result;
+//    }
 
 
     /**
@@ -1148,6 +1144,9 @@ public final class BeanUtil {
     public static <T> T createAndCopy(final Class<T> beanClass, final Object srcBean, final CopyOptions copyOptions) {
 
         if(beanClass.isRecord()) {
+            if(Objects.isNull(srcBean)) {
+                return createRecord(beanClass, Collections.emptyMap(), copyOptions);
+            }
             return createRecord(beanClass, srcBean, copyOptions);
         }
 

@@ -2,10 +2,7 @@ package nablarch.core.beans;
 
 import nablarch.core.util.StringUtil;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -156,6 +153,25 @@ class PropertyExpression {
     String getRawKey() {
         return rawKey;
     }
+
+    /**
+     * 移送元のパラメータマップから、指定した親プロパティ名を持つエントリのみを抽出し、子パラメータのマップを生成する。
+     *
+     * @param rootProperty 親プロパティ名
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
+     * @return 子パラメータのマップ
+     */
+    static Map<String, Object> getReducedMap(String rootProperty, Map<String, ?> map) {
+        Map<String, Object> result = new HashMap<>();
+        for(Map.Entry<String, ?> entry : map.entrySet()) {
+            PropertyExpression key = new PropertyExpression(entry.getKey());
+            if(key.getRoot().equals(rootProperty)) {
+                result.put(key.rest().rawKey, entry.getValue());
+            }
+        }
+        return result;
+    }
+
 
     /**
      * リストまたは配列型プロパティに関する情報をまとめたJava Beansクラス。

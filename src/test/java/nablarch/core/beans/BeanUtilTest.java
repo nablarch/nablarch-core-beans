@@ -13,11 +13,9 @@ import org.mockito.Mockito;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -27,17 +25,9 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.arrayContaining;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author Iwauo Tajima
@@ -347,6 +337,25 @@ public class BeanUtilTest {
     public void testThatItCanRetrievePropertyDescriptorsOfAClass() {
         PropertyDescriptor[] pds = BeanUtil.getPropertyDescriptors(UserDto.class);
         assertEquals(8, pds.length);
+    }
+
+    @Test
+    public void getPropertyNamesメソッドからすべてのBeanプロパティ名を受け取れること() {
+        Set<String> propertyNames = BeanUtil.getPropertyNames(UserDto.class);
+        assertThat(propertyNames.size(), is(8));
+        assertThat(propertyNames, containsInAnyOrder("age", "firstName", "lastName", "phoneNumbers", "bin", "address", "fullName", "ageInDays"));
+    }
+
+    @Test
+    public void getPropertyTypeメソッドでBeanプロパティの型を受け取れること() {
+        Class<?> propertyType = BeanUtil.getPropertyType(UserDto.class, "phoneNumbers");
+        assertThat(propertyType.getName(), is("[Ljava.lang.String;"));
+    }
+
+    @Test
+    public void getReadMethodメソッドでBeanプロパティのgetterを受け取れること() {
+        Method getter = BeanUtil.getReadMethod(UserDto.class, "fullName");
+        assertThat(getter.getName(), is("getFullName"));
     }
 
     @Test

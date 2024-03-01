@@ -2,6 +2,8 @@ package nablarch.core.beans;
 
 import org.junit.Test;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +15,7 @@ import static org.junit.Assert.assertThrows;
  * Nablarch 6における、BeanUtilでのnullプロパティの挙動を確認するテスト。
  */
 @SuppressWarnings("NonAsciiCharacters")
-public class BeanUtilForNullPropertyTest {
+public class BeanUtilWithNullPropertyTest {
 
     public static class SrcBean {
         private String name;
@@ -37,6 +39,7 @@ public class BeanUtilForNullPropertyTest {
 
     public static class SrcParentBean {
         private ChildBean childBean;
+        @SuppressWarnings("unused")
         public ChildBean getChildBean() {
             return childBean;
         }
@@ -98,6 +101,25 @@ public class BeanUtilForNullPropertyTest {
 
         BeanUtil.copy(DestBean.class, dest, srcMap, CopyOptions.empty());
         assertThat(dest.getName(), is(nullValue()));
+    }
+
+    @Test
+    public void 移送元をMapとするcopy_Mapがnullの場合はNPEが送出されること() {
+        DestBean dest = new DestBean();
+        dest.setName("value");
+
+        assertThrows(NullPointerException.class, () ->
+                BeanUtil.copy(DestBean.class, dest, null, CopyOptions.empty()));
+    }
+
+    @Test
+    public void 移送元をMapとするcopy_Mapが空の場合はBeanが生成されること() {
+        DestBean dest = new DestBean();
+        dest.setName("value");
+
+        BeanUtil.copy(DestBean.class, dest, Map.of(), CopyOptions.empty());
+        // CopyOptions.empty().isExcludesNull() == false なので、nullのプロパティもコピーされるはずだが、Nablarch6時点ではではコピーされない。
+        assertThat(dest.name, is("value"));
     }
 
     @Test
