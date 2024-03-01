@@ -1869,8 +1869,67 @@ public class BeanUtilForRecordTest {
     }
 
 
+    public static class BeanWithNoGetterProperty {
+        private String test;
+
+        public String getTest() {
+            return test;
+        }
+
+        public void setTest(String test) {
+            this.test = test;
+        }
+
+        public void setSample(String sample) {
+            // nop
+        }
+    }
+
+    public record RecordForNoGetterProperty(String test, String sample) {}
+
+    @Test
+    public void 移送元のgetterがないプロパティはコピーされないこと() {
+        BeanWithNoGetterProperty src = new BeanWithNoGetterProperty();
+        src.setTest("test");
+
+        RecordForNoGetterProperty dest = BeanUtil.createAndCopy(RecordForNoGetterProperty.class, src);
+        assertThat(dest.test, is("test"));
+        assertThat(dest.sample, is(nullValue()));
+
+    }
 
 
+    public static class BeanWithPrivateGetterProperty {
+        private String test;
+        private String sample;
+
+        public String getTest() {
+            return test;
+        }
+
+        public void setTest(String test) {
+            this.test = test;
+        }
+
+        private String getSample() {
+            return sample;
+        }
+
+        public void setSample(String sample) {
+            this.sample = sample;
+        }
+    }
+
+
+    @Test
+    public void 移送元のgetterがprivateの場合はコピーされないこと() {
+        BeanWithNoGetterProperty src = new BeanWithNoGetterProperty();
+        src.setTest("test");
+
+        RecordForNoGetterProperty dest = BeanUtil.createAndCopy(RecordForNoGetterProperty.class, src);
+        assertThat(dest.test, is("test"));
+        assertThat(dest.sample, is(nullValue()));
+    }
 
 
 }
