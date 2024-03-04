@@ -33,7 +33,7 @@ public class BeanUtilWithListAndArrayForRecordTest {
             TreeSet<Integer> nums,
             Set<Obj> objects) {}
 
-    public record Obj(String name){};
+    public record Obj(String name){}
 
     @Before
     public void setUp() {

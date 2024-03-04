@@ -36,7 +36,7 @@ public class NestedListPropertyTest {
      * ネストしたBeanのプロパティへ値を設定する.(ネストが2階層のケース)
      */
     @Test
-    public void testCopyToGrandChildsProperty() throws Exception {
+    public void testCopyToGrandChildsProperty() {
         NestedBean nestedBean = new NestedBean();
         BeanUtil.setProperty(nestedBean, "children[0].grandChild.str", "bbb");
         List<Child> children = nestedBean.getChildren();
@@ -64,9 +64,11 @@ public class NestedListPropertyTest {
     @SuppressWarnings("rawtypes")
     public static class NoGenericTypeBean {
         private List children;
+        @SuppressWarnings("unused")
         public List getChildren() {
             return children;
         }
+        @SuppressWarnings("unused")
         public void setChildren(List children) {
             this.children = children;
         }
@@ -160,6 +162,7 @@ public class NestedListPropertyTest {
             return children;
         }
 
+        @SuppressWarnings("unused")
         public void setChildren(List<Child> children) {
             this.children = children;
         }
@@ -168,6 +171,7 @@ public class NestedListPropertyTest {
             return stringListProp;
         }
 
+        @SuppressWarnings("unused")
         public void setStringListProp(List<String> stringListProp) {
             this.stringListProp = stringListProp;
         }
@@ -176,14 +180,17 @@ public class NestedListPropertyTest {
             return array;
         }
 
+        @SuppressWarnings("unused")
         public void setArray(Child[] array) {
             this.array = array;
         }
 
+        @SuppressWarnings("unused")
         public String[] getStringArray() {
             return stringArray;
         }
 
+        @SuppressWarnings("unused")
         public void setStringArray(String[] stringArray) {
             this.stringArray = stringArray;
         }
@@ -210,6 +217,7 @@ public class NestedListPropertyTest {
             return address;
         }
 
+        @SuppressWarnings("unused")
         public void setAddress(String address) {
             this.address = address;
         }
@@ -218,6 +226,7 @@ public class NestedListPropertyTest {
             return grandChild;
         }
 
+        @SuppressWarnings("unused")
         public void setGrandChild(GrandChild grandChild) {
             this.grandChild = grandChild;
         }
@@ -233,6 +242,7 @@ public class NestedListPropertyTest {
             return str;
         }
 
+        @SuppressWarnings("unused")
         public void setStr(String str) {
             this.str = str;
         }
@@ -257,9 +267,11 @@ public class NestedListPropertyTest {
     /** コピー先Bean */
     public static class InvalidNestedBean {
         private Set<Child> children; // List、配列でない
+        @SuppressWarnings("unused")
         public Set<Child> getChildren() {
             return children;
         }
+        @SuppressWarnings("unused")
         public void setChildren(Set<Child> children) {
             this.children = children;
         }
@@ -469,6 +481,7 @@ public class NestedListPropertyTest {
         // パラメータの値がnull(配列要素)だけの場合
         request.put("array[0].name", new String[]{null});
         bean = BeanUtil.createAndCopy(NestedBean.class, request);
+        //noinspection unchecked
         assertThat(bean.getArray(), arrayContaining(
                 hasProperty("name", is(nullValue()))
         ));

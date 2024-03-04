@@ -150,34 +150,42 @@ public class BeanUtilHierarchicalOptionForRecordTest {
 
         private String numberAtDest;
 
+        @SuppressWarnings("unused")
         public String getDateAtSrc() {
             return dateAtSrc;
         }
 
+        @SuppressWarnings("unused")
         public void setDateAtSrc(String dateAtSrc) {
             this.dateAtSrc = dateAtSrc;
         }
 
+        @SuppressWarnings("unused")
         public String getDateAtDest() {
             return dateAtDest;
         }
 
+        @SuppressWarnings("unused")
         public void setDateAtDest(String dateAtDest) {
             this.dateAtDest = dateAtDest;
         }
 
+        @SuppressWarnings("unused")
         public String getNumberAtSrc() {
             return numberAtSrc;
         }
 
+        @SuppressWarnings("unused")
         public void setNumberAtSrc(String numberAtSrc) {
             this.numberAtSrc = numberAtSrc;
         }
 
+        @SuppressWarnings("unused")
         public String getNumberAtDest() {
             return numberAtDest;
         }
 
+        @SuppressWarnings("unused")
         public void setNumberAtDest(String numberAtDest) {
             this.numberAtDest = numberAtDest;
         }
@@ -196,34 +204,42 @@ public class BeanUtilHierarchicalOptionForRecordTest {
         @CopyOption(numberPattern = "#,#####")
         private Integer numberAtDest;
 
+        @SuppressWarnings("unused")
         public Date getDateAtSrc() {
             return dateAtSrc;
         }
 
+        @SuppressWarnings("unused")
         public void setDateAtSrc(Date dateAtSrc) {
             this.dateAtSrc = dateAtSrc;
         }
 
+        @SuppressWarnings("unused")
         public Date getDateAtDest() {
             return dateAtDest;
         }
 
+        @SuppressWarnings("unused")
         public void setDateAtDest(Date dateAtDest) {
             this.dateAtDest = dateAtDest;
         }
 
+        @SuppressWarnings("unused")
         public Integer getNumberAtSrc() {
             return numberAtSrc;
         }
 
+        @SuppressWarnings("unused")
         public void setNumberAtSrc(Integer numberAtSrc) {
             this.numberAtSrc = numberAtSrc;
         }
 
+        @SuppressWarnings("unused")
         public Integer getNumberAtDest() {
             return numberAtDest;
         }
 
+        @SuppressWarnings("unused")
         public void setNumberAtDest(Integer numberAtDest) {
             this.numberAtDest = numberAtDest;
         }

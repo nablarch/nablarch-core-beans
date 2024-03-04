@@ -1876,7 +1876,8 @@ public class BeanUtilForRecordTest {
             this.test = test;
         }
 
-        public void setSample(String sample) {
+        @SuppressWarnings("unused")
+        public void setSample(@SuppressWarnings("unused") String sample) {
             // nop
         }
     }
@@ -1895,6 +1896,7 @@ public class BeanUtilForRecordTest {
     }
 
 
+    @SuppressWarnings("unused")
     public static class BeanWithPrivateGetterProperty {
         private String test;
         private String sample;
@@ -1907,10 +1909,12 @@ public class BeanUtilForRecordTest {
             this.test = test;
         }
 
+        @SuppressWarnings("unused")
         private String getSample() {
             return sample;
         }
 
+        @SuppressWarnings("unused")
         public void setSample(String sample) {
             this.sample = sample;
         }
