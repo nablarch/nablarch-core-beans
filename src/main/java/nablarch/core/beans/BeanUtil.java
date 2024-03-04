@@ -11,7 +11,17 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -749,7 +759,7 @@ public final class BeanUtil {
             srcLeftProperties.removeAll(getPropertyNames(beanClass));
             for (String propertyName : srcLeftProperties) {
                 if (mergedCopyOptions.isTargetProperty(propertyName)) {
-                    LOGGER.logDebug("The property does not exist in destination bean. property name: " + propertyName);
+                    LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
                 }
             }
         }
@@ -1264,7 +1274,7 @@ public final class BeanUtil {
             srcLeftProperties.removeAll(getPropertyNames(destBean.getClass()));
             for (String propertyName : srcLeftProperties) {
                 if (mergedCopyOptions.isTargetProperty(propertyName)) {
-                    LOGGER.logDebug("The property does not exist in destination bean. property name: " + propertyName);
+                    LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
                 }
             }
         }

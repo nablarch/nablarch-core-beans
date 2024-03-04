@@ -2,11 +2,9 @@ package nablarch.core.beans;
 
 import nablarch.core.repository.SystemRepository;
 import nablarch.test.support.log.app.OnMemoryLogWriter;
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
 import java.sql.Timestamp;
@@ -15,13 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static nablarch.core.beans.BeanUtilConversionCustomizedTest.date;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 
 /**
  * {@link BeanUtil}の、レコード型に対するテストクラス。
@@ -1073,7 +1069,7 @@ public class BeanUtilForRecordTest {
         assertThat(dest.innerRecordArray[1].name, is("森川瑛太"));
 
         assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
-                containsString("The property does not exist in destination bean. property name: onlyInSourceRecord"),
+                containsString("An error occurred while copying the property :onlyInSourceRecord"),
                 not(containsString("nablarch.core.beans.BeansException"))
         )));
     }

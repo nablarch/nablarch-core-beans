@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
 
+@SuppressWarnings("NonAsciiCharacters")
 public class BeanUtilInInvocationErrorTest {
 
     public static class NormalBean {
@@ -33,19 +34,20 @@ public class BeanUtilInInvocationErrorTest {
             throw new RuntimeException("thrown by ErrorInGetterBean.");
         }
 
-        public void setTest(String test) {
+        public void setTest(@SuppressWarnings("unused") String test) {
             // nop
         }
     }
 
     public static class ErrorInSetterBean {
+        @SuppressWarnings("unused")
         private String test;
 
         public String getTest() {
             return test;
         }
 
-        public void setTest(String test) {
+        public void setTest(@SuppressWarnings("unused") String test) {
             throw new RuntimeException("thrown by ErrorInSetterBean.");
         }
     }

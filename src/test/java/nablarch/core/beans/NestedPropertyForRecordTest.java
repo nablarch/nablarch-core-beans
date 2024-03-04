@@ -7,7 +7,6 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
 
 /**
  * ネストしたBeanへ値を設定するテスト.
@@ -17,53 +16,34 @@ import static org.junit.Assert.fail;
 @SuppressWarnings("NonAsciiCharacters")
 public class NestedPropertyForRecordTest {
 
-//    @Test
-//    public void test() {
-//        NestedBean nestedBean = new NestedBean();
-//        BeanUtil.setProperty(nestedBean, "child.grandChild.str", "aaa");
-//        Child child = nestedBean.getChild();
-//        GrandChild grandChild = child.getGrandChild();
-//        assertThat(grandChild.getStr(), is("aaa"));
-//    }
-//
-//
-//    @Test
-//    public void testMap() {
-//        Map<String, String[]> request = new HashMap<>();
-//        request.put("child.grandChild.str", new String[]{"aaa"});
-//        request.put("child.name", new String[]{"こども"});
-//        request.put("array", new String[]{"1", "2", "3"});
-//        NestedBean bean = BeanUtil.createAndCopy(NestedBean.class, request);
-//
-//
-//        assertThat(bean.getArray(), is(new String[] {"1", "2", "3"}));
-//        Child child = bean.getChild();
-//        assertThat(child.getName(), is("こども"));
-//        assertThat(child.getGrandChild().getStr(), is("aaa"));
-//    }
-
     public static class Address {
         private String postCode;
         private String addr;
 
+        @SuppressWarnings("unused")
         public Address() {
         }
 
+        @SuppressWarnings("unused")
         public Address(String postCode, String addr) {
             super();
             this.postCode = postCode;
             this.addr = addr;
         }
 
+        @SuppressWarnings("unused")
         public String getPostCode() {
             return postCode;
         }
+        @SuppressWarnings("unused")
         public void setPostCode(String postCode) {
             this.postCode = postCode;
         }
+        @SuppressWarnings("unused")
         public String getAddr() {
             return addr;
         }
+        @SuppressWarnings("unused")
         public void setAddr(String addr) {
             this.addr = addr;
         }

@@ -29,9 +29,7 @@ public class BeanUtilWithTypeParameterForRecordTest {
                 "items[0].name", "aaa",
                 "items[1].name", "bbb");
 
-        IllegalStateException result = assertThrows(IllegalStateException.class, () -> {
-            BeanUtil.createAndCopy(ItemRecord.class, map);
-        });
+        IllegalStateException result = assertThrows(IllegalStateException.class, () -> BeanUtil.createAndCopy(ItemRecord.class, map));
         assertThat(result.getMessage(), is(
                 "BeanUtil does not support type parameter for List type component, so the type parameter in the record class must be concrete type."));
     }

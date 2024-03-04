@@ -4,7 +4,12 @@ import nablarch.core.repository.SystemRepository;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -40,12 +45,12 @@ public class BeanUtilWithListAndArrayForRecordTest {
         WithList src = new WithList(
                 "なまえ",
                 List.of("a", "1", "aaa"),
-                new ArrayList<Integer>(){{
+                new ArrayList<>() {{
                     add(1);
                     add(10);
                     add(100);
                 }},
-                new LinkedList<Obj>() {{
+                new LinkedList<>() {{
                     add(new Obj("a"));
                     add(new Obj("aa"));
                 }});
@@ -63,7 +68,7 @@ public class BeanUtilWithListAndArrayForRecordTest {
         WithSet src = new WithSet(
                 "なまえ",
                 Set.of("a", "1", "aaa"),
-                new TreeSet<Integer>(Set.of(1, 10, 100)),
+                new TreeSet<>(Set.of(1, 10, 100)),
                 Set.of(new Obj("a"), new Obj("aa")));
 
         Map<String, ?> actual = BeanUtil.createMapAndCopy(src);

@@ -15,7 +15,11 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -741,7 +745,7 @@ public class BeanUtilTest {
         assertThat(dest.address.addr, is("兵庫県神戸市"));
         assertThat(dest.address.postCode, is("333-4444"));
         assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
-                containsString("The property does not exist in destination bean. property name: ssn"),
+                containsString("An error occurred while copying the property :ssn"),
                 not(containsString("nablarch.core.beans.BeansException"))
         )));
 
@@ -833,7 +837,7 @@ public class BeanUtilTest {
         assertThat(dest.address.addr, is("東京都新宿区"));
         assertThat(dest.address.postCode, is("111-2222"));
         assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
-                containsString("The property does not exist in destination bean. property name: ssn"),
+                containsString("An error occurred while copying the property :ssn"),
                 not(containsString("nablarch.core.beans.BeansException"))
         )));
 
