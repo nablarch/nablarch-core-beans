@@ -539,9 +539,8 @@ public final class BeanUtil {
      * @throws IllegalArgumentException 引数の{@code bean}がレコードの場合
      */
     public static void setProperty(final Object bean, final String propertyName, final Object propertyValue) {
-        Map<String, Object> parameterMap = new HashMap<>(){{
-            put(propertyName, propertyValue);
-        }};
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put(propertyName, propertyValue);
         setProperty(bean, propertyName, parameterMap, CopyOptions.empty());
     }
 
