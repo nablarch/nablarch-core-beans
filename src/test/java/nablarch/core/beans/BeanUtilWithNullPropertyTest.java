@@ -12,7 +12,6 @@ import static org.junit.Assert.assertThrows;
 /**
  * Nablarch 6における、BeanUtilでのnullプロパティの挙動を確認するテスト。
  */
-@SuppressWarnings("NonAsciiCharacters")
 public class BeanUtilWithNullPropertyTest {
 
     public static class SrcBean {

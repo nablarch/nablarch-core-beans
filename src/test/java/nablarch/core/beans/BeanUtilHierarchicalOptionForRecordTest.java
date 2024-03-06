@@ -19,7 +19,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Taichi Uragami
  *
  */
-@SuppressWarnings("NonAsciiCharacters")
 public class BeanUtilHierarchicalOptionForRecordTest {
 
     @Rule

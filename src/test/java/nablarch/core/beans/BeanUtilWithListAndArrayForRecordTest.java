@@ -18,7 +18,6 @@ import static org.hamcrest.Matchers.is;
 /**
  * [nablarch.core.beans.BeanUtil]の[java.util.List]及び配列に関するテスト。
  */
-@SuppressWarnings("NonAsciiCharacters")
 public class BeanUtilWithListAndArrayForRecordTest {
 
     public record WithList(

@@ -14,7 +14,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * カスタムコンバータそのもののテストは{@link BeanUtilConversionCustomizedTest}にて行っているため、
  * ここではレコードに対してカスタムコンバータを適用することができることを確認する。
  */
-@SuppressWarnings("NonAsciiCharacters")
 public class BeanUtilConversionCustomizedForRecordTest {
 
     public record DateDestRecord(java.util.Date foo,

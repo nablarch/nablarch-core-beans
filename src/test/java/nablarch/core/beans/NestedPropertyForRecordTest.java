@@ -13,7 +13,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  * @author T.Kawasaki
  */
-@SuppressWarnings("NonAsciiCharacters")
 public class NestedPropertyForRecordTest {
 
     public static class Address {

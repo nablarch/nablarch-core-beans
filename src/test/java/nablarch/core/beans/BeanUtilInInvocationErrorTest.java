@@ -10,7 +10,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
 
-@SuppressWarnings("NonAsciiCharacters")
 public class BeanUtilInInvocationErrorTest {
 
     public static class NormalBean {

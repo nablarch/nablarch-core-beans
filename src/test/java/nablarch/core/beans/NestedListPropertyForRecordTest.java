@@ -13,7 +13,6 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
-@SuppressWarnings("NonAsciiCharacters")
 public class NestedListPropertyForRecordTest {
 
 

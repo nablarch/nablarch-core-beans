@@ -36,7 +36,6 @@ import static org.junit.Assert.*;
 /**
  * @author Iwauo Tajima
  */
-@SuppressWarnings("NonAsciiCharacters")
 public class BeanUtilTest {
 
     @Before

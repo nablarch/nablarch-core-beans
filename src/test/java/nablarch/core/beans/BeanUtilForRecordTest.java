@@ -24,7 +24,6 @@ import static org.junit.Assert.assertThrows;
  *
  * @author Takayuki Uchida
  */
-@SuppressWarnings("NonAsciiCharacters")
 public class BeanUtilForRecordTest {
 
     @SuppressWarnings("RedundantThrows")

@@ -13,7 +13,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThrows;
 
-@SuppressWarnings("NonAsciiCharacters")
 public class BeanUtilWithTypeParameterForRecordTest {
 
     @Before
