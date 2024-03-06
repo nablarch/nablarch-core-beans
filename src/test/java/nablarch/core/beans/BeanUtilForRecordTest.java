@@ -309,7 +309,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void Mapからレコードに値を設定できること() {
+    public void Mapからレコードを生成できること() {
 
         Map<String, Object> srcMap = Map.ofEntries(
                 Map.entry("sample", "10"),
@@ -370,7 +370,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void Mapからレコードに値を設定できること_Mapエントリの値がBeanやレコードである場合() {
+    public void Mapからレコードを生成できること_Mapエントリの値がBeanやレコードである場合() {
 
         Map<String, Object> srcMap = Map.ofEntries(
                 Map.entry("sample", 10),
@@ -688,7 +688,7 @@ public class BeanUtilForRecordTest {
 
 
     @Test
-    public void Beanのプロパティにレコードが含まれる場合でも_MapからBeanに値を設定できること() {
+    public void Beanのプロパティにレコードが含まれる場合でも_MapからBeanを生成できること() {
 
         Map<String, Object> srcMap = Map.ofEntries(
                 Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
@@ -985,7 +985,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void レコードからレコードに値を設定できること() {
+    public void レコードからレコードを生成できること() {
 
         SourceRecord srcRecord = new SourceRecord(
             "10",
@@ -1031,7 +1031,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 指定したプロパティのみレコードからレコードに値を設定できること() {
+    public void 指定したプロパティのみ使用して_レコードからレコードを生成できること() {
 
         SourceRecord srcRecord = new SourceRecord(
                 "10",
@@ -1070,7 +1070,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 指定したプロパティを除外してレコードからレコードに値を設定できること() {
+    public void 指定したプロパティを除外して_レコードからレコードを生成できること() {
 
         SourceRecord srcRecord = new SourceRecord(
                 "10",
@@ -1229,7 +1229,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void Beanからレコードに値を設定できること() {
+    public void Beanからレコードを生成できること() {
 
         SourceBean srcBean = new SourceBean();
         srcBean.setSample("10");
@@ -1274,7 +1274,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void Map内にプリミティブ型のコンポーネントに対応するパラメタが存在しない場合_デフォルト値で置換されること() {
+    public void Map内にプリミティブ型のコンポーネントに対応するパラメタが存在しない場合_デフォルト値を設定したレコードが生成されること() {
         TestPrimRecord dest = BeanUtil.createAndCopy(TestPrimRecord.class, Map.of(), CopyOptions.empty());
         assertThat(dest.vint, is(0));
         assertThat(dest.vlong, is(0L));
@@ -1287,7 +1287,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void Bean内にプリミティブ型のコンポーネントに対応するパラメタもしくはgetterが存在しない場合_デフォルト値で置換されること() {
+    public void Bean内にプリミティブ型のコンポーネントに対応するパラメタもしくはgetterが存在しない場合_デフォルト値を設定したレコードが生成されること() {
         TestPrimRecord dest = BeanUtil.createAndCopy(TestPrimRecord.class, new SourcePrimRecord(), CopyOptions.empty());
         assertThat(dest.vint, is(0));
         assertThat(dest.vlong, is(0L));
@@ -1589,7 +1589,7 @@ public class BeanUtilForRecordTest {
 
 
     @Test
-    public void 移送元をMapとするcreateAndCopy_値を変換して設定できること(){
+    public void 移送元をMapとするcreateAndCopy_値を変換してレコードを生成できること(){
         Map<String, Object> src = new HashMap<>();
         src.put("sample", "123");
         TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, src);
@@ -1598,7 +1598,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopy_値を変換して設定できること(){
+    public void 移送元をBeanとするcreateAndCopy_値を変換してレコードを生成できること(){
         SourceBean src = new SourceBean();
         src.setSample("123");
         TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, src);
@@ -1606,7 +1606,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopyIncludes_値を変換して設定できること(){
+    public void 移送元をMapとするcreateAndCopyIncludes_値を変換してレコードを生成できること(){
         Map<String, Object> src = new HashMap<>();
         src.put("sample", "123");
         TestRecord dest = BeanUtil.createAndCopyIncludes(TestRecord.class, src, "sample");
@@ -1615,7 +1615,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopyIncludes_値を変換して設定できること(){
+    public void 移送元をBeanとするcreateAndCopyIncludes_値を変換してレコードを生成できること(){
         SourceBean src = new SourceBean();
         src.setSample("123");
         TestRecord dest = BeanUtil.createAndCopyIncludes(TestRecord.class, src, "sample");
@@ -1623,7 +1623,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopyExcludes_値を変換して設定できること(){
+    public void 移送元をMapとするcreateAndCopyExcludes_値を変換してレコードを生成できること(){
         Map<String, Object> src = new HashMap<>();
         src.put("sample", "123");
         TestRecord dest = BeanUtil.createAndCopyExcludes(TestRecord.class, src, "");
@@ -1632,7 +1632,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopyExcludes_値を変換して設定できること(){
+    public void 移送元をBeanとするcreateAndCopyExcludes_値を変換してレコードを生成できること(){
         SourceBean src = new SourceBean();
         src.setSample("123");
         TestRecord dest = BeanUtil.createAndCopyExcludes(TestRecord.class, src, "");
@@ -1640,7 +1640,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopy_nullからなるString配列を渡してもレコードが生成できること() {
+    public void 移送元をMapとするcreateAndCopy_nullからなるString配列を渡してもレコードを生成できること() {
         Map<String, Object> input = Map.of(
                 "sample", new String[] {null}
         );
@@ -1652,7 +1652,7 @@ public class BeanUtilForRecordTest {
 
     public record WithTimestampRecord(Timestamp timestamp){}
     @Test
-    public void マイクロ秒を持つTimestampのプロパティがコピーできること() {
+    public void マイクロ秒を持つTimestampのプロパティを設定してレコードを生成できること() {
         BeanUtilTest.WithTimestamp src = new BeanUtilTest.WithTimestamp();
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         timestamp.setNanos(100000001);
@@ -1663,7 +1663,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void CopyOptionsでincludesPropertiesを指定する() {
+    public void CopyOptionsでincludesPropertiesを指定した場合_指定したプロパティのみ設定されること() {
         SourceBean src = new SourceBean();
         src.setSample("123");
         src.setAddress(new Address("111-2233", "Nablarch市"));
@@ -1679,7 +1679,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void CopyOptionsでexcludesPropertiesを指定する() {
+    public void CopyOptionsでexcludesPropertiesを指定した場合_指定したプロパティは設定されないこと() {
         SourceBean src = new SourceBean();
         src.setSample("123");
         src.setAddress(new Address("111-2233", "Nablarch市"));
@@ -1879,7 +1879,7 @@ public class BeanUtilForRecordTest {
     public record RecordForNoGetterProperty(String test, String sample) {}
 
     @Test
-    public void 移送元のgetterがないプロパティはコピーされないこと() {
+    public void 移送元のgetterがないプロパティは値が設定されないこと() {
         BeanWithNoGetterProperty src = new BeanWithNoGetterProperty();
         src.setTest("test");
 
@@ -1913,7 +1913,7 @@ public class BeanUtilForRecordTest {
 
 
     @Test
-    public void 移送元のgetterがprivateの場合はコピーされないこと() {
+    public void 移送元のgetterがprivateの場合は値が設定されないこと() {
         BeanWithNoGetterProperty src = new BeanWithNoGetterProperty();
         src.setTest("test");
 

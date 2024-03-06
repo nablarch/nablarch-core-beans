@@ -109,7 +109,7 @@ public class BeanUtilWithNullPropertyTest {
     }
 
     @Test
-    public void 移送元をMapとするcopy_Mapが空の場合はBeanが生成されること() {
+    public void 移送元をMapとするcopy_Mapが空の場合はBeanに値がコピーされないこと() {
         DestBean dest = new DestBean();
         dest.setName("value");
 
@@ -130,7 +130,7 @@ public class BeanUtilWithNullPropertyTest {
     }
 
     @Test
-    public void 移送元をBeanとするcopy_コピー元beanがnullの場合はNPEが送出されること() {
+    public void 移送元をBeanとするcopy_移送元beanがnullの場合はNPEが送出されること() {
         DestBean dest = new DestBean();
         dest.setName("value");
 
@@ -139,7 +139,7 @@ public class BeanUtilWithNullPropertyTest {
     }
 
     @Test
-    public void 移送元をBeanとするcopy_コピー先beanがnullの場合はNPEが送出されること() {
+    public void 移送元をBeanとするcopy_移送先beanがnullの場合はNPEが送出されること() {
         SrcBean src = new SrcBean();
         src.setName("value");
 
@@ -148,7 +148,7 @@ public class BeanUtilWithNullPropertyTest {
     }
 
     @Test
-    public void 移送元をBeanとするcopy_コピー元beanの子Beanがnullの場合はコピーされないこと() {
+    public void 移送元をBeanとするcopy_移送元beanの子Beanがnullの場合はコピーされないこと() {
         SrcParentBean src = new SrcParentBean();
         src.setChildBean(null);
         DestParentBean dest = new DestParentBean();

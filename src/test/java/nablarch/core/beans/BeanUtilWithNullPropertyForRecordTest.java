@@ -46,7 +46,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopy_コピー元beanがnullの場合はnullが設定されること() {
+    public void 移送元をBeanとするcreateAndCopy_移送元beanがnullの場合はnullが設定されること() {
         BeanUtilForRecordTest.TestRecord dest = BeanUtil.createAndCopy(BeanUtilForRecordTest.TestRecord.class, (BeanUtilForRecordTest.SourceBean) null, CopyOptions.empty());
         assertThat(dest.sample(), is(nullValue()));
     }
