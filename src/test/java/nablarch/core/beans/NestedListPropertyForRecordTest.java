@@ -143,7 +143,7 @@ public class NestedListPropertyForRecordTest {
     }
 
     @Test
-    public void レコードに設定するデータを持つMapのキーが階層構造を持つ場合に_値の設定先のプロパティの型がListまたは配列ではない場合_実行時例外が送出されること() {
+    public void レコードに設定するデータを持つMapのキーが階層構造を持つ場合に_値の設定先のプロパティの型がListでも配列でもない場合_実行時例外が送出されること() {
         BeanUtil.createAndCopy(InvalidNestedRecord.class, Map.of("children[0].name", new String[]{"aaa"}));
         assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
                 containsString("property type must be List or Array."),
