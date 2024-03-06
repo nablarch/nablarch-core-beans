@@ -22,14 +22,14 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopy_valueがnullの場合は成功すること() {
+    public void 移送元をMapとするcreateAndCopy_valueがnullの場合はnullが設定されること() {
         Map<String, Object> srcMap = new HashMap<>(){{put("sample", null);}};
         BeanUtilForRecordTest.TestRecord dest = BeanUtil.createAndCopy(BeanUtilForRecordTest.TestRecord.class, srcMap, CopyOptions.empty());
         assertThat(dest.sample(), is(nullValue()));
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopy_移送元の各プロパティがnullの場合は成功すること() {
+    public void 移送元をBeanとするcreateAndCopy_移送元の各プロパティがnullの場合はnullが設定されること() {
         BeanUtilForRecordTest.SourceBean src = new BeanUtilForRecordTest.SourceBean();
 
         BeanUtilForRecordTest.TestRecord dest = BeanUtil.createAndCopy(BeanUtilForRecordTest.TestRecord.class, src, CopyOptions.empty());
@@ -37,7 +37,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopy_移送元の一部のプロパティがnullの場合は成功すること() {
+    public void 移送元をBeanとするcreateAndCopy_移送元の一部のプロパティがnullであってもnullでない値は設定されること() {
         BeanUtilForRecordTest.SourceBean src = new BeanUtilForRecordTest.SourceBean();
         src.setSample("10");
 
@@ -46,7 +46,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopy_コピー元beanがnullの場合は成功すること() {
+    public void 移送元をBeanとするcreateAndCopy_コピー元beanがnullの場合はnullが設定されること() {
         BeanUtilForRecordTest.TestRecord dest = BeanUtil.createAndCopy(BeanUtilForRecordTest.TestRecord.class, (BeanUtilForRecordTest.SourceBean) null, CopyOptions.empty());
         assertThat(dest.sample(), is(nullValue()));
     }
@@ -61,7 +61,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
+    public void 移送元をMapとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合はnullが設定されること() {
         Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
 
         BeanUtilForRecordTest.TestRecord dest = BeanUtil.createAndCopyIncludes(BeanUtilForRecordTest.TestRecord.class, srcMap, (String) null);
@@ -78,7 +78,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
+    public void 移送元をMapとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は値が設定されること() {
         Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
 
         BeanUtilForRecordTest.TestRecord dest = BeanUtil.createAndCopyExcludes(BeanUtilForRecordTest.TestRecord.class, srcMap, (String) null);
@@ -97,7 +97,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
+    public void 移送元をBeanとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合はnullが設定されること() {
         BeanUtilForRecordTest.SourceBean src = new BeanUtilForRecordTest.SourceBean();
         src.setSample("10");
 
@@ -117,7 +117,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
+    public void 移送元をBeanとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は値が設定されること() {
         BeanUtilForRecordTest.SourceBean src = new BeanUtilForRecordTest.SourceBean();
         src.setSample("10");
 

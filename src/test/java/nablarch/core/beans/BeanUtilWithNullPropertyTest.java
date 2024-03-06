@@ -72,7 +72,7 @@ public class BeanUtilWithNullPropertyTest {
     }
 
     @Test
-    public void setProperty_propertyValueがnullの場合は成功すること() {
+    public void setProperty_propertyValueがnullの場合はnullが設定されること() {
         DestBean dest = new DestBean();
         dest.setName("value");
 
@@ -90,7 +90,7 @@ public class BeanUtilWithNullPropertyTest {
     }
 
     @Test
-    public void 移送元をMapとするcopy_valueがnullの場合は成功すること() {
+    public void 移送元をMapとするcopy_valueがnullの場合はnullが設定されること() {
         Map<String, Object> srcMap = new HashMap<>(){{put("name", null);}};
         DestBean dest = new DestBean();
         dest.setName("value");
@@ -119,7 +119,7 @@ public class BeanUtilWithNullPropertyTest {
     }
 
     @Test
-    public void 移送元をBeanとするcopy_valueがnullの場合は成功すること() {
+    public void 移送元をBeanとするcopy_valueがnullの場合はnullが設定されること() {
         SrcBean src = new SrcBean();
         src.setName(null);
         DestBean dest = new DestBean();
@@ -169,7 +169,7 @@ public class BeanUtilWithNullPropertyTest {
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
+    public void 移送元をMapとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合はnullが設定されること() {
         Map<String, Object> srcMap = new HashMap<>(){{put("name", "value");}};
 
         DestBean dest = BeanUtil.createAndCopyIncludes(DestBean.class, srcMap, (String) null);
@@ -186,7 +186,7 @@ public class BeanUtilWithNullPropertyTest {
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
+    public void 移送元をMapとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は値が設定されること() {
         Map<String, Object> srcMap = new HashMap<>(){{put("name", "value");}};
 
         DestBean dest = BeanUtil.createAndCopyExcludes(DestBean.class, srcMap, (String) null);
@@ -205,7 +205,7 @@ public class BeanUtilWithNullPropertyTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
+    public void 移送元をBeanとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合はnullが設定されること() {
         SrcBean src = new SrcBean();
         src.setName("value");
 
@@ -225,7 +225,7 @@ public class BeanUtilWithNullPropertyTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
+    public void 移送元をBeanとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は値が設定されること() {
         SrcBean src = new SrcBean();
         src.setName("value");
 
