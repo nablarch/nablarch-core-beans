@@ -57,7 +57,6 @@ public class BeanUtilTest {
         private byte[] bin;
         private Address address;
 
-        @SuppressWarnings("unused")
         private int height;
 
         public int getAge() {

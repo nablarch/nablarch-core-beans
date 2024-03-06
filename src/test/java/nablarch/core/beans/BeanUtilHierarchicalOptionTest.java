@@ -17,7 +17,7 @@ import nablarch.test.support.SystemRepositoryResource;
  * @author Taichi Uragami
  *
  */
-@SuppressWarnings("NonAsciiCharacters")
+
 public class BeanUtilHierarchicalOptionTest {
 
     @Rule

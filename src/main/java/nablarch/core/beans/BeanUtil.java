@@ -30,8 +30,6 @@ import nablarch.core.log.LoggerManager;
 import nablarch.core.util.StringUtil;
 import nablarch.core.util.annotation.Published;
 
-import static nablarch.core.beans.PropertyExpression.getReducedMap;
-
 /**
  * JavaBeansおよびレコードに関する操作をまとめたユーティリティクラス。
  * <p>
@@ -806,6 +804,24 @@ public final class BeanUtil {
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new BeansException("An error occurred while creating the record: " + beanClass.getName(), e);
         }
+    }
+
+    /**
+     * 移送元のパラメータマップから、指定した親プロパティ名を持つエントリのみを抽出し、子パラメータのマップを生成する。
+     *
+     * @param rootProperty 親プロパティ名
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
+     * @return 子パラメータのマップ
+     */
+    static Map<String, Object> getReducedMap(String rootProperty, Map<String, ?> map) {
+        Map<String, Object> result = new HashMap<>();
+        for(Map.Entry<String, ?> entry : map.entrySet()) {
+            PropertyExpression key = new PropertyExpression(entry.getKey());
+            if(key.getRoot().equals(rootProperty)) {
+                result.put(key.rest().getRawKey(), entry.getValue());
+            }
+        }
+        return result;
     }
 
     /**
