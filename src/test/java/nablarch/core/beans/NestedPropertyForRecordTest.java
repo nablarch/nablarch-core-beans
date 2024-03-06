@@ -53,7 +53,7 @@ public class NestedPropertyForRecordTest {
     }
 
     @Test
-    public void 変換元データを格納するMapのキーに_レコードに存在しないプロパティ名が指定された場合レコードが生成されること() {
+    public void 移送元データを格納するMapのキーに_レコードに存在しないプロパティ名が指定された場合レコードが生成されること() {
         Map<String, Object> request = Map.of(
                 "childRecord.invalid", "value"
         );
@@ -64,7 +64,7 @@ public class NestedPropertyForRecordTest {
     }
 
     @Test
-    public void 変換元データを格納するMapのキーに_レコードに存在しないプロパティ名と存在するプロパティ名の両方が指定された場合レコードが生成されること() {
+    public void 移送元データを格納するMapのキーに_レコードに存在しないプロパティ名と存在するプロパティ名の両方が指定された場合レコードが生成されること() {
         Map<String, Object> request = Map.of(
                 "childRecord.invalid", "value",
                 "childRecord.id", "10"
@@ -76,7 +76,7 @@ public class NestedPropertyForRecordTest {
     }
 
     @Test
-    public void 変換元データを格納するMapのキーに_null値を含むプロパティのみ指定された場合レコードが生成されること() {
+    public void 移送元データを格納するMapのキーに_null値を含むプロパティが指定された場合レコードが生成されること() {
         Map<String, Object> request = new HashMap<>(){{
             put("childRecord.id", "10");
             put("childRecord.name", null);
@@ -88,7 +88,7 @@ public class NestedPropertyForRecordTest {
     }
 
     @Test
-    public void 変換元データを格納するMapのキーに_null値を含むプロパティが指定された場合レコードが生成されること() {
+    public void 移送元データを格納するMapのキーに_null値を含むプロパティのみ指定された場合レコードが生成されること() {
         Map<String, Object> request = new HashMap<>(){{
             put("childRecord.id", null);
             put("childRecord.name", null);

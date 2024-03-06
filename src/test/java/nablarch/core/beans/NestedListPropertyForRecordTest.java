@@ -143,7 +143,7 @@ public class NestedListPropertyForRecordTest {
     }
 
     @Test
-    public void レコードに設定するデータを持つMapのキーが階層構造を持つ場合に_値のコピー先のプロパティの型がListまたは配列ではない場合_実行時例外が送出されること() {
+    public void レコードに設定するデータを持つMapのキーが階層構造を持つ場合に_値の設定先のプロパティの型がListまたは配列ではない場合_実行時例外が送出されること() {
         BeanUtil.createAndCopy(InvalidNestedRecord.class, Map.of("children[0].name", new String[]{"aaa"}));
         assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
                 containsString("property type must be List or Array."),
@@ -152,7 +152,7 @@ public class NestedListPropertyForRecordTest {
 
 
     @Test
-    public void 変換元データを格納するMapのキーに_レコードに存在しないプロパティ名が指定された場合レコードが生成されること() {
+    public void 移送元データを格納するMapのキーに_レコードに存在しないプロパティ名が指定された場合レコードが生成されること() {
         Map<String, Object> request = Map.of("invalid[0].name", "a0-1");
         TestRecord bean = BeanUtil.createAndCopy(TestRecord.class, request);
 
@@ -165,7 +165,7 @@ public class NestedListPropertyForRecordTest {
     }
 
     @Test
-    public void 変換元データを格納するMapのキーに_子プロパティ名として存在しない名前のみ指定した場合_レコード内のBeanプロパティは生成されず_レコードプロパティは生成されること () {
+    public void 移送元データを格納するMapのキーに_子プロパティ名として存在しない名前のみ指定した場合_レコード内のBeanプロパティは生成されず_レコードプロパティは生成されること () {
         Map<String, Object> request = Map.of(
                 "addressList[0].invalid", "test1",
                 "innerRecordList[0].invalid", "test3",
@@ -181,7 +181,7 @@ public class NestedListPropertyForRecordTest {
     }
 
     @Test
-    public void 変換元データを格納するMapのキーに_子プロパティにnullのみ指定した場合_レコード内の各プロパティは生成されること() {
+    public void 移送元データを格納するMapのキーに_子プロパティにnullのみ指定した場合_レコード内の各プロパティは生成されること() {
         Map<String, Object> request = new HashMap<>(){{
             put("addressList[0].postCode", null);
             put("addressList[0].addr", new String[]{null});
@@ -207,7 +207,7 @@ public class NestedListPropertyForRecordTest {
     }
 
     @Test
-    public void 変換元データを格納するMapのキーに_子プロパティの一部にnullを指定した場合_レコード内の各プロパティは生成されること() {
+    public void 移送元データを格納するMapのキーに_子プロパティの一部にnullを指定した場合_レコード内の各プロパティは生成されること() {
         Map<String, Object> request = new HashMap<>(){{
             put("addressList[0].postCode", "111-2222");
             put("addressList[0].addr", new String[]{null});
@@ -233,7 +233,7 @@ public class NestedListPropertyForRecordTest {
     }
 
     @Test
-    public void 変換元データを格納するMapのキーに_子プロパティ名として存在する名前と存在しない名前の両方を指定した場合_レコード内の各プロパティが生成されること() {
+    public void 移送元データを格納するMapのキーに_子プロパティ名として存在する名前と存在しない名前の両方を指定した場合_レコード内の各プロパティが生成されること() {
         Map<String, Object> request = Map.of(
                 "addressList[0].invalid", "test1",
                 "addressList[0].addr", "test2",
@@ -257,7 +257,7 @@ public class NestedListPropertyForRecordTest {
     }
 
     @Test
-    public void 変換元データを格納するMapのキーに_レコード内のプロパティが持っていないプロパティ名と持っているプロパティの両方を指定した場合_レコードの各プロパティが生成されること() {
+    public void 移送元データを格納するMapのキーに_レコード内のプロパティが持っていないプロパティ名と持っているプロパティの両方を指定した場合_レコードの各プロパティが生成されること() {
         Map<String, Object> request = Map.of(
                 "addressList[0].invalid", "test1",
                 "addressList[0].addr", "test2",
@@ -282,7 +282,7 @@ public class NestedListPropertyForRecordTest {
 
 
     @Test
-    public void 複数階層ネストしているMapをレコードにコピーできること() {
+    public void 複数階層ネストしているMapからレコードを生成できること() {
         Map<String, Object> request = Map.ofEntries(
                 Map.entry("name", "name"),
                 Map.entry("bean.name", "beanName" ),
