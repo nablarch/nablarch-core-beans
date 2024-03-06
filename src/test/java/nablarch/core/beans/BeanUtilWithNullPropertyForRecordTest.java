@@ -52,7 +52,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopyIncludes_プロパティの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
+    public void 移送元をMapとするcreateAndCopyIncludes_コンポーネントの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
         Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
 
         assertThrows(NullPointerException.class, () ->
@@ -61,7 +61,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合はnullが設定されること() {
+    public void 移送元をMapとするcreateAndCopyIncludes_コンポーネントの指定がStringにキャストされたnullの場合はnullが設定されること() {
         Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
 
         BeanUtilForRecordTest.TestRecord dest = BeanUtil.createAndCopyIncludes(BeanUtilForRecordTest.TestRecord.class, srcMap, (String) null);
@@ -69,7 +69,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopyExcludes_プロパティの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
+    public void 移送元をMapとするcreateAndCopyExcludes_コンポーネントの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
         Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
 
         assertThrows(NullPointerException.class, () ->
@@ -78,7 +78,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は値が設定されること() {
+    public void 移送元をMapとするcreateAndCopyExcludes_コンポーネントの指定がStringにキャストされたnullの場合は値が設定されること() {
         Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
 
         BeanUtilForRecordTest.TestRecord dest = BeanUtil.createAndCopyExcludes(BeanUtilForRecordTest.TestRecord.class, srcMap, (String) null);
@@ -87,7 +87,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopyIncludes_プロパティの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
+    public void 移送元をBeanとするcreateAndCopyIncludes_コンポーネントの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
         BeanUtilForRecordTest.SourceBean src = new BeanUtilForRecordTest.SourceBean();
         src.setSample("10");
 
@@ -97,7 +97,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合はnullが設定されること() {
+    public void 移送元をBeanとするcreateAndCopyIncludes_コンポーネントの指定がStringにキャストされたnullの場合はnullが設定されること() {
         BeanUtilForRecordTest.SourceBean src = new BeanUtilForRecordTest.SourceBean();
         src.setSample("10");
 
@@ -107,7 +107,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopyExcludes_プロパティの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
+    public void 移送元をBeanとするcreateAndCopyExcludes_コンポーネントの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
         BeanUtilForRecordTest.SourceBean src = new BeanUtilForRecordTest.SourceBean();
         src.setSample("10");
 
@@ -117,7 +117,7 @@ public class BeanUtilWithNullPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は値が設定されること() {
+    public void 移送元をBeanとするcreateAndCopyExcludes_コンポーネントの指定がStringにキャストされたnullの場合は値が設定されること() {
         BeanUtilForRecordTest.SourceBean src = new BeanUtilForRecordTest.SourceBean();
         src.setSample("10");
 

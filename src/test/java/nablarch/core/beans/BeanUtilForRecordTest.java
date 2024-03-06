@@ -1031,7 +1031,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 指定したプロパティのみ使用して_レコードからレコードを生成できること() {
+    public void 指定したコンポーネントのみ使用して_レコードからレコードを生成できること() {
 
         SourceRecord srcRecord = new SourceRecord(
                 "10",
@@ -1070,7 +1070,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 指定したプロパティを除外して_レコードからレコードを生成できること() {
+    public void 指定したコンポーネントを除外して_レコードからレコードを生成できること() {
 
         SourceRecord srcRecord = new SourceRecord(
                 "10",
@@ -1158,7 +1158,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 指定したプロパティのみレコードからBeanに値を設定できること() {
+    public void 指定したコンポーネントのみレコードからBeanに値を設定できること() {
 
         SourceRecord srcRecord = new SourceRecord(
                 "10",
@@ -1186,7 +1186,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 指定したプロパティを除外してレコードからBeanに値を設定できること() {
+    public void 指定したコンポーネントを除外してレコードからBeanに値を設定できること() {
 
         SourceRecord srcRecord = new SourceRecord(
                 "10",
@@ -1652,7 +1652,7 @@ public class BeanUtilForRecordTest {
 
     public record WithTimestampRecord(Timestamp timestamp){}
     @Test
-    public void マイクロ秒を持つTimestampのプロパティを設定してレコードを生成できること() {
+    public void マイクロ秒を持つTimestampのコンポーネントを設定してレコードを生成できること() {
         BeanUtilTest.WithTimestamp src = new BeanUtilTest.WithTimestamp();
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         timestamp.setNanos(100000001);
@@ -1663,7 +1663,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void CopyOptionsでincludesPropertiesを指定した場合_指定したプロパティのみ設定されること() {
+    public void CopyOptionsでincludesPropertiesを指定した場合_指定したコンポーネントのみ設定されること() {
         SourceBean src = new SourceBean();
         src.setSample("123");
         src.setAddress(new Address("111-2233", "Nablarch市"));
@@ -1679,7 +1679,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void CopyOptionsでexcludesPropertiesを指定した場合_指定したプロパティは設定されないこと() {
+    public void CopyOptionsでexcludesPropertiesを指定した場合_指定したコンポーネントは設定されないこと() {
         SourceBean src = new SourceBean();
         src.setSample("123");
         src.setAddress(new Address("111-2233", "Nablarch市"));
@@ -1724,13 +1724,13 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void getPropertyメソッドでレコードからプロパティの値を取得できること() {
+    public void getPropertyメソッドでレコードからコンポーネントの値を取得できること() {
         SourceRecord src = new SourceRecord("10",null,null,null,null,null,null,null,null,null);
         assertThat(BeanUtil.getProperty(src, "sample"), is("10"));
     }
 
     @Test
-    public void getPropertyメソッドでレコードから値を変換してプロパティの値を取得できること() {
+    public void getPropertyメソッドでレコードから値を変換してコンポーネントの値を取得できること() {
         SourceRecord src = new SourceRecord(null,"25",null,null,null,null,null,null,null,null);
         assertThat(BeanUtil.getProperty(src, "onlyInSourceRecord", Integer.class), is(25));
         assertThat(BeanUtil.getProperty(src, "onlyInSourceRecord", null), is("25"));
@@ -1826,26 +1826,26 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void getPropertyNamesメソッドからすべてのレコードプロパティ名を受け取れること() {
+    public void getPropertyNamesメソッドからすべてのレコードコンポーネント名を受け取れること() {
         Set<String> propertyNames = BeanUtil.getPropertyNames(TestRecord.class);
         assertThat(propertyNames.size(), is(10));
         assertThat(propertyNames, containsInAnyOrder("sample", "onlyInTestRecord", "address", "innerRecord", "strList", "addressList", "innerRecordList", "strArray", "addressArray", "innerRecordArray"));
     }
 
     @Test
-    public void getPropertyTypeメソッドでレコードプロパティの型を受け取れること() {
+    public void getPropertyTypeメソッドでレコードコンポーネントの型を受け取れること() {
         Class<?> propertyType = BeanUtil.getPropertyType(TestRecord.class, "innerRecord");
         assertThat(propertyType.getName(), is("nablarch.core.beans.BeanUtilForRecordTest$InnerRecord"));
     }
 
     @Test
-    public void getReadMethodメソッドでレコードプロパティのgetterを受け取れること() {
+    public void getReadMethodメソッドでレコードコンポーネントのgetterを受け取れること() {
         Method accessor = BeanUtil.getReadMethod(TestRecord.class, "innerRecord");
         assertThat(accessor.getName(), is("innerRecord"));
     }
 
     @Test
-    public void getPropertyメソッドでレコードからString配列のプロパティの値を取得できること() {
+    public void getPropertyメソッドでレコードからString配列のコンポーネントの値を取得できること() {
         SourceRecord src = new SourceRecord(null,null,null,null,null,null,null,new String[]{"test1", "test2"},null,null);
         String[] result = (String[])BeanUtil.getProperty(src, "strArray");
         assertThat(result[0], is("test1"));
@@ -1853,7 +1853,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void getPropertyメソッドでレコードに存在しないプロパティを指定した場合_実行時例外が送出されること() {
+    public void getPropertyメソッドでレコードに存在しないコンポーネント名を指定した場合_実行時例外が送出されること() {
         SourceRecord src = new SourceRecord("10",null,null,null,null,null,null,null,null,null);
         BeansException result = assertThrows(BeansException.class, () -> BeanUtil.getProperty(src, "invalid"));
         assertThat(result.getMessage(), is("The property does not exist in the bean or record. property name: invalid"));
