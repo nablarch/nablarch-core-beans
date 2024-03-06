@@ -1694,6 +1694,21 @@ public class BeanUtilForRecordTest {
         assertThat(dest.innerRecord(), is(nullValue()));
     }
 
+    @Test
+    public void CopyOptionsでexcludesNullを指定した場合_Nullコンポーネントを除いてレコードからBeanに値を設定できること() {
+
+        SourceRecord srcRecord = new SourceRecord(null, null, new Address("111-2222", "東京都江東区"), null, null, null, null, null, null, null);
+
+        TestBean testBean = new TestBean();
+        testBean.sample = 10;
+        testBean.address = new Address("333-4444", "東京都新宿区");
+        TestBean dest = BeanUtil.copy(srcRecord, testBean, CopyOptions.options().excludesNull().build());
+
+        assertThat(dest.sample, is(10));
+        assertThat(dest.address.postCode, is("111-2222"));
+        assertThat(dest.address.addr, is("東京都江東区"));
+    }
+
     public record SelfNestedRecord(String foo, String bar, SelfNestedRecord rec) {}
     @Test
     public void ネストしたレコードにはexcludesPropertiesは引き継がれない() {
@@ -1721,6 +1736,21 @@ public class BeanUtilForRecordTest {
         assertThat(dest.rec(), is(not(sameInstance(srcChild))));
         assertThat(dest.rec().foo(), is("3"));
         assertThat(dest.rec().bar(), is("4"));
+    }
+
+    @Test
+    public void ネストしたレコードにもexcludesNullは引き継がれる() {
+
+        SourceRecord srcRecord = new SourceRecord(null, null, new Address("111-2222", null), null, null, null, null, null, null, null);
+
+        TestBean testBean = new TestBean();
+        testBean.sample = 10;
+        testBean.address = new Address("333-4444", "東京都新宿区");
+        TestBean dest = BeanUtil.copy(srcRecord, testBean, CopyOptions.options().excludesNull().build());
+
+        assertThat(dest.sample, is(10));
+        assertThat(dest.address.postCode, is("111-2222"));
+        assertThat(dest.address.addr, is("東京都新宿区"));
     }
 
     @Test
