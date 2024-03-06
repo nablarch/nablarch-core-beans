@@ -316,7 +316,7 @@ public class BeanUtilForRecordTest {
                 Map.entry("address.postCode", "111-2222"),
                 Map.entry("address.addr", "東京都江東区"),
                 Map.entry("innerRecord.id", 10001),
-                Map.entry("innerRecord.name", "中田昇😁"),
+                Map.entry("innerRecord.name", "中田昇"),
                 Map.entry("strList[0]", "1"),
                 Map.entry("strList[1]", "2"),
                 Map.entry("addressList[0].postCode", "111-2222"),
@@ -345,7 +345,7 @@ public class BeanUtilForRecordTest {
         assertThat(dest.address.postCode, is("111-2222"));
         assertThat(dest.address.addr, is("東京都江東区"));
         assertThat(dest.innerRecord.id, is(10001));
-        assertThat(dest.innerRecord.name, is("中田昇😁"));
+        assertThat(dest.innerRecord.name, is("中田昇"));
         assertThat(dest.strList.get(0), is("1"));
         assertThat(dest.strList.get(1), is("2"));
         assertThat(dest.addressList.get(0).postCode, is("111-2222"));
@@ -695,7 +695,7 @@ public class BeanUtilForRecordTest {
                 Map.entry("address.postCode", "111-2222"),
                 Map.entry("address.addr", "東京都江東区"),
                 Map.entry("innerRecord.id", 10001),
-                Map.entry("innerRecord.name", "中田昇😁"),
+                Map.entry("innerRecord.name", "中田昇"),
                 Map.entry("strList[0]", "1"),
                 Map.entry("strList[1]", "2"),
                 Map.entry("addressList[0].postCode", "111-2222"),
@@ -724,7 +724,7 @@ public class BeanUtilForRecordTest {
         assertThat(dest.address.postCode, is("111-2222"));
         assertThat(dest.address.addr, is("東京都江東区"));
         assertThat(dest.innerRecord.id, is(10001));
-        assertThat(dest.innerRecord.name, is("中田昇😁"));
+        assertThat(dest.innerRecord.name, is("中田昇"));
         assertThat(dest.strList.get(0), is("1"));
         assertThat(dest.strList.get(1), is("2"));
         assertThat(dest.addressList.get(0).postCode, is("111-2222"));
@@ -1660,6 +1660,30 @@ public class BeanUtilForRecordTest {
 
         WithTimestampRecord actual = BeanUtil.createAndCopy(WithTimestampRecord.class, src);
         assertThat(actual.timestamp, is(timestamp));
+    }
+
+
+    @Test
+    public void 移送元をMapとするcreateAndCopy_サロゲートペア値を設定したレコードを生成できること(){
+        Map<String, Object> src = Map.of(
+                "strList[0]", "😁",
+                "strList[1]", "𠀃𠀄𠀅"
+        );
+        TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, src);
+
+        assertThat(dest.strList.get(0), is("😁"));
+        assertThat(dest.strList.get(1), is("𠀃𠀄𠀅"));
+    }
+
+    @Test
+    public void 移送元をBeanとするcreateAndCopy_サロゲートペア値を設定したレコードを生成できること(){
+        SourceBean src = new SourceBean();
+        src.setStrList(List.of("😁", "𠀃𠀄𠀅"));
+
+        TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, src);
+
+        assertThat(dest.strList.get(0), is("😁"));
+        assertThat(dest.strList.get(1), is("𠀃𠀄𠀅"));
     }
 
     @Test
