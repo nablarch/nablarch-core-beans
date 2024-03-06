@@ -152,7 +152,7 @@ public class NestedListPropertyForRecordTest {
 
 
     @Test
-    public void 移送元データを格納するMapのキーに_レコードに存在しないコンポーネント名が指定された場合レコードが生成されること() {
+    public void 移送元データを格納するMapのキーに_レコードに存在しないコンポーネント名が指定された場合_対象コンポーネントにnullが設定されたレコードが生成されること() {
         Map<String, Object> request = Map.of("invalid[0].name", "a0-1");
         TestRecord bean = BeanUtil.createAndCopy(TestRecord.class, request);
 
@@ -181,7 +181,7 @@ public class NestedListPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元データを格納するMapのキーに_子プロパティにnullのみ指定した場合_レコード内の各コンポーネントは生成されること() {
+    public void 移送元データを格納するMapのキーに_子プロパティにnullのみ指定した場合_レコード内の各コンポーネントはnullが設定されていること() {
         Map<String, Object> request = new HashMap<>(){{
             put("addressList[0].postCode", null);
             put("addressList[0].addr", new String[]{null});
@@ -207,7 +207,7 @@ public class NestedListPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元データを格納するMapのキーに_子プロパティの一部にnullを指定した場合_レコード内の各コンポーネントは生成されること() {
+    public void 移送元データを格納するMapのキーに_子プロパティの一部にnullを指定した場合_nullでないコンポーネントのみ設定されたレコードが生成されること() {
         Map<String, Object> request = new HashMap<>(){{
             put("addressList[0].postCode", "111-2222");
             put("addressList[0].addr", new String[]{null});
@@ -233,7 +233,7 @@ public class NestedListPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元データを格納するMapのキーに_子プロパティ名として存在する名前と存在しない名前の両方を指定した場合_レコード内の各コンポーネントが生成されること() {
+    public void 移送元データを格納するMapのキーに_子プロパティ名として存在する名前と存在しない名前の両方を指定した場合_存在するコンポーネントのみ設定されたレコードが生成されること() {
         Map<String, Object> request = Map.of(
                 "addressList[0].invalid", "test1",
                 "addressList[0].addr", "test2",
@@ -257,7 +257,7 @@ public class NestedListPropertyForRecordTest {
     }
 
     @Test
-    public void 移送元データを格納するMapのキーに_レコード内に存在しないコンポーネント名と存在するコンポーネント名の両方を指定した場合_レコードの各コンポーネントが生成されること() {
+    public void 移送元データを格納するMapのキーに_レコード内に存在しないコンポーネント名と存在するコンポーネント名の両方を指定した場合_存在するコンポーネントのみ設定されたレコードが生成されること() {
         Map<String, Object> request = Map.of(
                 "addressList[0].invalid", "test1",
                 "addressList[0].addr", "test2",

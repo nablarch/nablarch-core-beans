@@ -651,7 +651,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 空のMapからレコードを生成できること() {
+    public void 空のMapからは_各コンポーネントがnullであるレコードを生成できること() {
 
         Map<String, Object> srcMap = Map.of();
 
@@ -669,7 +669,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void NullのMapからレコードを生成できること() {
+    public void NullのMapからは_各コンポーネントがnullであるレコードを生成できること() {
 
         Map<String, Object> srcMap = null;
 

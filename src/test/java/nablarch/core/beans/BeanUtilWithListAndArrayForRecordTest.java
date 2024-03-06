@@ -63,7 +63,7 @@ public class BeanUtilWithListAndArrayForRecordTest {
     }
 
     @Test
-    public void createMapAndCopy_レコードからSetを設定してMapを生成できること() {
+    public void createMapAndCopy_レコードからSetを設定したMapを生成できること() {
         WithSet src = new WithSet(
                 "なまえ",
                 Set.of("a", "1", "aaa"),
