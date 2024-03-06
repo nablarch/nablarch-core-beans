@@ -36,7 +36,6 @@ public class BeanUtilForRecordTest {
         BeanUtil.clearCache();
     }
 
-    @SuppressWarnings("unused")
     public static class Address {
         private String postCode;
         private String addr;
@@ -94,7 +93,6 @@ public class BeanUtilForRecordTest {
     ) {
     }
 
-    @SuppressWarnings("unused")
     public static class TestBean {
         private Integer sample;
         private String onlyInTestBean;
@@ -188,7 +186,6 @@ public class BeanUtilForRecordTest {
         }
     }
 
-    @SuppressWarnings("unused")
     public static class SourceBean {
         private String sample;
         private String onlyInSourceBean;
@@ -292,7 +289,6 @@ public class BeanUtilForRecordTest {
                                  short vshort) {
     }
 
-    @SuppressWarnings("unused")
     public static class SourcePrimRecord {
 
 
@@ -1875,8 +1871,7 @@ public class BeanUtilForRecordTest {
             this.test = test;
         }
 
-        @SuppressWarnings("unused")
-        public void setSample(@SuppressWarnings("unused") String sample) {
+        public void setSample(String sample) {
             // nop
         }
     }
@@ -1895,7 +1890,6 @@ public class BeanUtilForRecordTest {
     }
 
 
-    @SuppressWarnings("unused")
     public static class BeanWithPrivateGetterProperty {
         private String test;
         private String sample;
@@ -1908,12 +1902,10 @@ public class BeanUtilForRecordTest {
             this.test = test;
         }
 
-        @SuppressWarnings("unused")
         private String getSample() {
             return sample;
         }
 
-        @SuppressWarnings("unused")
         public void setSample(String sample) {
             this.sample = sample;
         }

@@ -21,7 +21,6 @@ public class NestedListPropertyForRecordTest {
         OnMemoryLogWriter.clear();
     }
 
-    @SuppressWarnings("unused")
     public static class Address {
         private String postCode;
         private String addr;
@@ -79,62 +78,50 @@ public class NestedListPropertyForRecordTest {
             this.name = name;
         }
 
-        @SuppressWarnings("unused")
         public SelfNestedBean getBean() {
             return bean;
         }
 
-        @SuppressWarnings("unused")
         public void setBean(SelfNestedBean bean) {
             this.bean = bean;
         }
 
-        @SuppressWarnings("unused")
         public SelfNestedRecord getRec() {
             return rec;
         }
 
-        @SuppressWarnings("unused")
         public void setRec(SelfNestedRecord rec) {
             this.rec = rec;
         }
 
-        @SuppressWarnings("unused")
         public List<SelfNestedBean> getBeanList() {
             return beanList;
         }
 
-        @SuppressWarnings("unused")
         public void setBeanList(List<SelfNestedBean> beanList) {
             this.beanList = beanList;
         }
 
-        @SuppressWarnings("unused")
         public List<SelfNestedRecord> getRecList() {
             return recList;
         }
 
-        @SuppressWarnings("unused")
         public void setRecList(List<SelfNestedRecord> recList) {
             this.recList = recList;
         }
 
-        @SuppressWarnings("unused")
         public SelfNestedBean[] getBeanArray() {
             return beanArray;
         }
 
-        @SuppressWarnings("unused")
         public void setBeanArray(SelfNestedBean[] beanArray) {
             this.beanArray = beanArray;
         }
 
-        @SuppressWarnings("unused")
         public SelfNestedRecord[] getRecArray() {
             return recArray;
         }
 
-        @SuppressWarnings("unused")
         public void setRecArray(SelfNestedRecord[] recArray) {
             this.recArray = recArray;
         }

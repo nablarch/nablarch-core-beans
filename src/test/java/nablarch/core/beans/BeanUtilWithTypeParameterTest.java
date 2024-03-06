@@ -17,7 +17,6 @@ public class BeanUtilWithTypeParameterTest {
         public List<D> getItems() {
             return items;
         }
-        @SuppressWarnings("unused")
         public void setItems(List<D> items) {
             this.items = items;
         }
@@ -28,7 +27,6 @@ public class BeanUtilWithTypeParameterTest {
         public String getName() {
             return name;
         }
-        @SuppressWarnings("unused")
         public void setName(String name) {
             this.name = name;
         }

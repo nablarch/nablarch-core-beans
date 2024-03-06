@@ -19,30 +19,24 @@ public class NestedPropertyForRecordTest {
         private String postCode;
         private String addr;
 
-        @SuppressWarnings("unused")
         public Address() {
         }
 
-        @SuppressWarnings("unused")
         public Address(String postCode, String addr) {
             super();
             this.postCode = postCode;
             this.addr = addr;
         }
 
-        @SuppressWarnings("unused")
         public String getPostCode() {
             return postCode;
         }
-        @SuppressWarnings("unused")
         public void setPostCode(String postCode) {
             this.postCode = postCode;
         }
-        @SuppressWarnings("unused")
         public String getAddr() {
             return addr;
         }
-        @SuppressWarnings("unused")
         public void setAddr(String addr) {
             this.addr = addr;
         }

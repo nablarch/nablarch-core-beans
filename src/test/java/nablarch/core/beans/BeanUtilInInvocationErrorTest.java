@@ -33,20 +33,19 @@ public class BeanUtilInInvocationErrorTest {
             throw new RuntimeException("thrown by ErrorInGetterBean.");
         }
 
-        public void setTest(@SuppressWarnings("unused") String test) {
+        public void setTest(String test) {
             // nop
         }
     }
 
     public static class ErrorInSetterBean {
-        @SuppressWarnings("unused")
         private String test;
 
         public String getTest() {
             return test;
         }
 
-        public void setTest(@SuppressWarnings("unused") String test) {
+        public void setTest(String test) {
             throw new RuntimeException("thrown by ErrorInSetterBean.");
         }
     }

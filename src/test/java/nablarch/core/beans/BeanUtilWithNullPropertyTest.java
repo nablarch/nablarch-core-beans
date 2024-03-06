@@ -36,7 +36,6 @@ public class BeanUtilWithNullPropertyTest {
 
     public static class SrcParentBean {
         private ChildBean childBean;
-        @SuppressWarnings("unused")
         public ChildBean getChildBean() {
             return childBean;
         }

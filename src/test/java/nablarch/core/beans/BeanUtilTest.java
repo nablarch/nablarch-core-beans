@@ -64,14 +64,12 @@ public class BeanUtilTest {
         public void setAge(int age) {
             this.age = age;
         }
-        @SuppressWarnings("unused")
         public String getFirstName() {
             return firstName;
         }
         public void setFirstName(String name) {
             this.firstName = name;
         }
-        @SuppressWarnings("unused")
         public String getLastName() {
             return lastName;
         }
@@ -83,7 +81,6 @@ public class BeanUtilTest {
             return this.firstName + " " + this.lastName;
         }
         // wirte-only property
-        @SuppressWarnings("unused")
         public void setAgeInDays(int days) {
             this.age = days / 365; //てきとう
         }
@@ -142,53 +139,45 @@ public class BeanUtilTest {
         private String lastName;
         private String[] phones;
         private String ssn;
-        @SuppressWarnings("unused")
         private int height;
 
         private byte[] bin;
 
         private AddressEntity address;
 
-        @SuppressWarnings("unused")
         public int getAge() {
             return age;
         }
         public void setAge(int age) {
             this.age = age;
         }
-        @SuppressWarnings("unused")
         public String getFirstName() {
             return firstName;
         }
         public void setFirstName(String name) {
             this.firstName = name;
         }
-        @SuppressWarnings("unused")
         public String getLastName() {
             return lastName;
         }
         public void setLastName(String name) {
             this.lastName = name;
         }
-        @SuppressWarnings("unused")
         public String getFullName() {
             return this.firstName + " " + this.lastName;
         }
-        @SuppressWarnings("unused")
         public String getSsn() {
             return this.ssn;
         }
         public void setSsn(String ssn) {
             this.ssn = ssn;
         }
-        @SuppressWarnings("unused")
         public String[] getPhoneNumbers() {
             return this.phones;
         }
         public void setPhoneNumbers(String[] phones) {
             this.phones = phones;
         }
-        @SuppressWarnings("unused")
         public AddressEntity getAddress() {
             return address;
         }
@@ -196,7 +185,6 @@ public class BeanUtilTest {
             this.address = address;
         }
 
-        @SuppressWarnings("unused")
         public byte[] getBin() {
             return bin;
         }
@@ -214,19 +202,15 @@ public class BeanUtilTest {
             this.postCode = postCode;
             this.addr = addr;
         }
-        @SuppressWarnings("unused")
         public String getPostCode() {
             return postCode;
         }
-        @SuppressWarnings("unused")
         public void setPostCode(String postCode) {
             this.postCode = postCode;
         }
-        @SuppressWarnings("unused")
         public String getAddr() {
             return addr;
         }
-        @SuppressWarnings("unused")
         public void setAddr(String addr) {
             this.addr = addr;
         }
@@ -234,22 +218,19 @@ public class BeanUtilTest {
 
     public static class SrcBean {
         private String sample;
-        @SuppressWarnings({"unused", "FieldCanBeLocal"})
+        @SuppressWarnings("FieldCanBeLocal")
         private List<String> strList;
 
         public SrcBean(String sample){
             this.sample = sample;
         }
 
-        @SuppressWarnings("unused")
         public String getSample() {
             return sample;
         }
-        @SuppressWarnings("unused")
         public void setSample(String sample) {
             this.sample = sample;
         }
-        @SuppressWarnings("unused")
         public void setStrList(List<String> strList) {
             this.strList = strList;
         }
@@ -265,7 +246,6 @@ public class BeanUtilTest {
         public Integer getSample() {
             return sample;
         }
-        @SuppressWarnings("unused")
         public void setSample(Integer sample) {
             this.sample = sample;
         }
@@ -2127,12 +2107,10 @@ public class BeanUtilTest {
 
         private Timestamp timestamp;
 
-        @SuppressWarnings("unused")
         public Timestamp getTimestamp() {
             return timestamp;
         }
 
-        @SuppressWarnings("unused")
         public void setTimestamp(final Timestamp timestamp) {
             this.timestamp = timestamp;
         }
