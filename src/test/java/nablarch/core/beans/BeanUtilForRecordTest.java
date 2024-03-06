@@ -312,7 +312,7 @@ public class BeanUtilForRecordTest {
     public void Mapからレコードを生成できること() {
 
         Map<String, Object> srcMap = Map.ofEntries(
-                Map.entry("sample", "10"),
+                Map.entry("sample", 10),
                 Map.entry("address.postCode", "111-2222"),
                 Map.entry("address.addr", "東京都江東区"),
                 Map.entry("innerRecord.id", 10001),
