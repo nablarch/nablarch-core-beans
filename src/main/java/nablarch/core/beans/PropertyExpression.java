@@ -3,10 +3,8 @@ package nablarch.core.beans;
 import nablarch.core.util.StringUtil;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
