@@ -17,7 +17,6 @@ public class BeanUtilWithTypeParameterTest {
         public List<D> getItems() {
             return items;
         }
-        @SuppressWarnings("unused")
         public void setItems(List<D> items) {
             this.items = items;
         }
@@ -28,7 +27,6 @@ public class BeanUtilWithTypeParameterTest {
         public String getName() {
             return name;
         }
-        @SuppressWarnings("unused")
         public void setName(String name) {
             this.name = name;
         }
@@ -50,9 +48,7 @@ public class BeanUtilWithTypeParameterTest {
                 "items[0].name", "aaa",
                 "items[1].name", "bbb");
 
-        IllegalStateException result = assertThrows(IllegalStateException.class, () -> {
-            BeanUtil.createAndCopy(BadSampleForm.class, map);
-        });
+        IllegalStateException result = assertThrows(IllegalStateException.class, () -> BeanUtil.createAndCopy(BadSampleForm.class, map));
         assertThat(result.getMessage(), is(
                 "BeanUtil does not support type parameter for List type, so the getter method in the concrete class must be overridden. "
                         + "getter method = [nablarch.core.beans.BeanUtilWithTypeParameterTest$BadSampleForm#getItems]"));

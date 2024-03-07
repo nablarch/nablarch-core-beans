@@ -28,7 +28,6 @@ public class BeanUtilConversionCustomizedTest {
     /**
      * {@link BeanUtil#copy(Object, Object, CopyOptions)}のテスト。
      */
-    @SuppressWarnings("NonAsciiCharacters")
     public static class CopyTest {
 
         @Test
@@ -308,7 +307,6 @@ public class BeanUtilConversionCustomizedTest {
      * {@link BeanUtil#createAndCopy(Class, Map, CopyOptions)}のテスト。
      *
      */
-    @SuppressWarnings("NonAsciiCharacters")
     public static class CreateAndCopyTest {
 
         @Test

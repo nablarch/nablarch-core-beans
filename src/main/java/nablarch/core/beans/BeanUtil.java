@@ -11,7 +11,17 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -455,8 +465,8 @@ public final class BeanUtil {
         }
         Object genericType = genericTypeParameter.getActualTypeArguments()[0];
         if (genericType instanceof TypeVariable<?>) {
-            throw new IllegalStateException("BeanUtil does not support type parameter for List type, so the accessor in the concrete class must be overridden. "
-                    + "getter method = [" + beanClass.getName() + "#" + propertyName + "]");
+            throw new IllegalStateException("BeanUtil does not support type parameter for List type component," +
+                    " so the type parameter in the record class must be concrete type.");
         }
         return (Class<?>) genericType;
     }
@@ -527,9 +537,8 @@ public final class BeanUtil {
      * @throws IllegalArgumentException 引数の{@code bean}がレコードの場合
      */
     public static void setProperty(final Object bean, final String propertyName, final Object propertyValue) {
-        Map<String, Object> parameterMap = new HashMap<>(){{
-            put(propertyName, propertyValue);
-        }};
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put(propertyName, propertyValue);
         setProperty(bean, propertyName, parameterMap, CopyOptions.empty());
     }
 
@@ -689,7 +698,8 @@ public final class BeanUtil {
      */
     private static <T> T createRecord(Class<? extends T> beanClass, Object srcBean, CopyOptions copyOptions) {
         CopyOptions copyOptionsFromSrc = CopyOptions.fromAnnotation(srcBean.getClass());
-        CopyOptions mergedCopyOptions = copyOptions.merge(copyOptionsFromSrc);
+        CopyOptions copyOptionsFromDest = CopyOptions.fromAnnotation(beanClass);
+        CopyOptions mergedCopyOptions = copyOptions.merge(copyOptionsFromSrc).merge(copyOptionsFromDest);
 
         final RecordComponent[] destRcs = getRecordComponents(beanClass);
         final Class<?>[] parameterTypes = new Class<?>[destRcs.length];
@@ -746,19 +756,16 @@ public final class BeanUtil {
             srcLeftProperties.removeAll(getPropertyNames(beanClass));
             for (String propertyName : srcLeftProperties) {
                 if (mergedCopyOptions.isTargetProperty(propertyName)) {
-                    LOGGER.logDebug("The property does not exist in destination bean. property name: " + propertyName);
+                    LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
                 }
             }
         }
 
-        T recordInstance;
         try {
-            recordInstance = beanClass.getConstructor(parameterTypes).newInstance(args);
+            return beanClass.getConstructor(parameterTypes).newInstance(args);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new BeansException("An error occurred while creating the record: " + beanClass.getName(), e);
         }
-
-        return recordInstance;
     }
 
 
@@ -792,16 +799,12 @@ public final class BeanUtil {
             args[i] = propertyMap.get(propertyName);
         }
 
-        T recordInstance;
         try {
-            recordInstance = beanClass.getConstructor(parameterTypes).newInstance(args);
+            return beanClass.getConstructor(parameterTypes).newInstance(args);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new BeansException("An error occurred while creating the record: " + beanClass.getName(), e);
         }
-
-        return recordInstance;
     }
-
 
     /**
      * 移送元のパラメータマップから、指定した親プロパティ名を持つエントリのみを抽出し、子パラメータのマップを生成する。
@@ -810,18 +813,16 @@ public final class BeanUtil {
      * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
      * @return 子パラメータのマップ
      */
-    private static Map<String, Object> getReducedMap(String rootProperty, Map<String, ?> map) {
+    static Map<String, Object> getReducedMap(String rootProperty, Map<String, ?> map) {
         Map<String, Object> result = new HashMap<>();
         for(Map.Entry<String, ?> entry : map.entrySet()) {
-            String key = entry.getKey();
-            String rootPropertyWithDot = rootProperty + ".";
-            if(key.startsWith(rootPropertyWithDot)) {
-                result.put(key.replace(rootPropertyWithDot, ""), entry.getValue());
+            PropertyExpression key = new PropertyExpression(entry.getKey());
+            if(key.getRoot().equals(rootProperty)) {
+                result.put(key.rest().getRawKey(), entry.getValue());
             }
         }
         return result;
     }
-
 
     /**
      * レコードを生成するためのプロパティ値を格納したマップを生成する。
@@ -1148,6 +1149,9 @@ public final class BeanUtil {
     public static <T> T createAndCopy(final Class<T> beanClass, final Object srcBean, final CopyOptions copyOptions) {
 
         if(beanClass.isRecord()) {
+            if(Objects.isNull(srcBean)) {
+                return createRecord(beanClass, Collections.emptyMap(), copyOptions);
+            }
             return createRecord(beanClass, srcBean, copyOptions);
         }
 
@@ -1285,7 +1289,7 @@ public final class BeanUtil {
             srcLeftProperties.removeAll(getPropertyNames(destBean.getClass()));
             for (String propertyName : srcLeftProperties) {
                 if (mergedCopyOptions.isTargetProperty(propertyName)) {
-                    LOGGER.logDebug("The property does not exist in destination bean. property name: " + propertyName);
+                    LOGGER.logDebug("An error occurred while copying the property :" + propertyName);
                 }
             }
         }

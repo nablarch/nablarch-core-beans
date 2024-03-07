@@ -36,7 +36,7 @@ public class NestedListPropertyTest {
      * ネストしたBeanのプロパティへ値を設定する.(ネストが2階層のケース)
      */
     @Test
-    public void testCopyToGrandChildsProperty() throws Exception {
+    public void testCopyToGrandChildsProperty() {
         NestedBean nestedBean = new NestedBean();
         BeanUtil.setProperty(nestedBean, "children[0].grandChild.str", "bbb");
         List<Child> children = nestedBean.getChildren();
@@ -469,6 +469,7 @@ public class NestedListPropertyTest {
         // パラメータの値がnull(配列要素)だけの場合
         request.put("array[0].name", new String[]{null});
         bean = BeanUtil.createAndCopy(NestedBean.class, request);
+        //noinspection unchecked
         assertThat(bean.getArray(), arrayContaining(
                 hasProperty("name", is(nullValue()))
         ));

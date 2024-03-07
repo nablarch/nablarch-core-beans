@@ -5,27 +5,25 @@ import nablarch.test.support.log.app.OnMemoryLogWriter;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.RecordComponent;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static nablarch.core.beans.BeanUtilConversionCustomizedTest.date;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 
 /**
  * {@link BeanUtil}の、レコード型に対するテストクラス。
  *
  * @author Takayuki Uchida
  */
-@SuppressWarnings("NonAsciiCharacters")
 public class BeanUtilForRecordTest {
 
     @SuppressWarnings("RedundantThrows")
@@ -38,7 +36,6 @@ public class BeanUtilForRecordTest {
         BeanUtil.clearCache();
     }
 
-    @SuppressWarnings("unused")
     public static class Address {
         private String postCode;
         private String addr;
@@ -83,7 +80,7 @@ public class BeanUtilForRecordTest {
                              ) {
     }
 
-    public record SourceRecord(Integer sample,
+    public record SourceRecord(String sample,
                                String onlyInSourceRecord,
                                Address address,
                                InnerRecord innerRecord,
@@ -96,7 +93,6 @@ public class BeanUtilForRecordTest {
     ) {
     }
 
-    @SuppressWarnings("unused")
     public static class TestBean {
         private Integer sample;
         private String onlyInTestBean;
@@ -190,10 +186,10 @@ public class BeanUtilForRecordTest {
         }
     }
 
-    @SuppressWarnings("unused")
     public static class SourceBean {
-        private Integer sample;
+        private String sample;
         private String onlyInSourceBean;
+        private Address address;
         private InnerRecord innerRecord;
         private List<String> strList;
         private List<Address> addressList;
@@ -202,11 +198,11 @@ public class BeanUtilForRecordTest {
         private Address[] addressArray;
         private InnerRecord[] innerRecordArray;
 
-        public Integer getSample() {
+        public String getSample() {
             return sample;
         }
 
-        public void setSample(Integer sample) {
+        public void setSample(String sample) {
             this.sample = sample;
         }
 
@@ -218,9 +214,12 @@ public class BeanUtilForRecordTest {
             this.onlyInSourceBean = onlyInSourceBean;
         }
 
+        public Address getAddress() {
+            return address;
+        }
+
         public void setAddress(Address address) {
-            // nop
-            // getterメソッドを持たないプロパティとして実装
+            this.address = address;
         }
 
         public InnerRecord getInnerRecord() {
@@ -290,7 +289,6 @@ public class BeanUtilForRecordTest {
                                  short vshort) {
     }
 
-    @SuppressWarnings("unused")
     public static class SourcePrimRecord {
 
 
@@ -310,12 +308,8 @@ public class BeanUtilForRecordTest {
         }
     }
 
-    public record TestGetPropertyRecord(String string,
-                                        String intString,
-                                        String dateString) {}
-
     @Test
-    public void Mapからレコードに値を設定できること() {
+    public void Mapからレコードを生成できること() {
 
         Map<String, Object> srcMap = Map.ofEntries(
                 Map.entry("sample", 10),
@@ -376,67 +370,52 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void Null値のプロパティを持つMapからレコードを生成できること() {
+    public void Mapからレコードを生成できること_Mapエントリの値がBeanやレコードである場合() {
 
-        Map<String, Object> srcMap = new HashMap<>() {{
-            put("sample", null);
-            put("address.postCode", null);
-            put("address.addr", null);
-            put("innerRecord.id", null);
-            put("innerRecord.name", null);
-            put("strList[0]", null);
-            put("strList[1]", null);
-            put("addressList[0].postCode", null);
-            put("addressList[0].addr", null);
-            put("addressList[1].postCode", null);
-            put("addressList[1].addr", null);
-            put("innerRecordList[0].id", null);
-            put("innerRecordList[0].name", null);
-            put("innerRecordList[1].id", null);
-            put("innerRecordList[1].name", null);
-            put("strArray[0]", null);
-            put("strArray[1]", null);
-            put("addressArray[0].postCode", null);
-            put("addressArray[0].addr", null);
-            put("addressArray[1].postCode", null);
-            put("addressArray[1].addr", null);
-            put("innerRecordArray[0].id", null);
-            put("innerRecordArray[0].name", null);
-            put("innerRecordArray[1].id", null);
-            put("innerRecordArray[1].name", null);
-        }};
+        Map<String, Object> srcMap = Map.ofEntries(
+                Map.entry("sample", 10),
+                Map.entry("address", new Address("111-2222", "東京都江東区")),
+                Map.entry("innerRecord", new InnerRecord(10001, "中田昇")),
+                Map.entry("strList", List.of("1", "2")),
+                Map.entry("addressList", List.of(new Address("111-2222", "東京都新宿区"), new Address("333-4444", "兵庫県神戸市")) ),
+                Map.entry("innerRecordList", List.of(new InnerRecord(10002, "武藤菊夜"), new InnerRecord(10003, "猪野麻天"))),
+                Map.entry("strArray", new String[]{"3", "4"}),
+                Map.entry("addressArray", new Address[]{new Address( "555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")}),
+                Map.entry("innerRecordArray", new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")})
+        );
 
         TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, srcMap, CopyOptions.empty());
 
-        assertThat(dest.sample, is(nullValue()));
-        assertThat(dest.address.postCode, is(nullValue()));
-        assertThat(dest.address.addr, is(nullValue()));
-        assertThat(dest.innerRecord.id, is(nullValue()));
-        assertThat(dest.innerRecord.name, is(nullValue()));
-        assertThat(dest.strList.get(0), is(nullValue()));
-        assertThat(dest.strList.get(1), is(nullValue()));
-        assertThat(dest.addressList.get(0).postCode, is(nullValue()));
-        assertThat(dest.addressList.get(0).addr, is(nullValue()));
-        assertThat(dest.addressList.get(1).postCode, is(nullValue()));
-        assertThat(dest.addressList.get(1).addr, is(nullValue()));
-        assertThat(dest.innerRecordList.get(0).id, is(nullValue()));
-        assertThat(dest.innerRecordList.get(0).name, is(nullValue()));
-        assertThat(dest.innerRecordList.get(1).id, is(nullValue()));
-        assertThat(dest.innerRecordList.get(1).name, is(nullValue()));
-        assertThat(dest.strArray[0], is(nullValue()));
-        assertThat(dest.strArray[1], is(nullValue()));
-        assertThat(dest.addressArray[0].postCode, is(nullValue()));
-        assertThat(dest.addressArray[0].addr, is(nullValue()));
-        assertThat(dest.addressArray[1].postCode, is(nullValue()));
-        assertThat(dest.addressArray[1].addr, is(nullValue()));
-        assertThat(dest.innerRecordArray[0].id, is(nullValue()));
-        assertThat(dest.innerRecordArray[0].name, is(nullValue()));
-        assertThat(dest.innerRecordArray[1].id, is(nullValue()));
-        assertThat(dest.innerRecordArray[1].name, is(nullValue()));
-
-
+        assertThat(dest.sample, is(10));
+        assertThat(dest.address.postCode, is("111-2222"));
+        assertThat(dest.address.addr, is("東京都江東区"));
+        assertThat(dest.innerRecord.id, is(10001));
+        assertThat(dest.innerRecord.name, is("中田昇"));
+        assertThat(dest.strList.get(0), is("1"));
+        assertThat(dest.strList.get(1), is("2"));
+        assertThat(dest.addressList.get(0).postCode, is("111-2222"));
+        assertThat(dest.addressList.get(0).addr, is("東京都新宿区"));
+        assertThat(dest.addressList.get(1).postCode, is("333-4444"));
+        assertThat(dest.addressList.get(1).addr, is("兵庫県神戸市"));
+        assertThat(dest.innerRecordList.get(0).id, is(10002));
+        assertThat(dest.innerRecordList.get(0).name, is("武藤菊夜"));
+        assertThat(dest.innerRecordList.get(1).id, is(10003));
+        assertThat(dest.innerRecordList.get(1).name, is("猪野麻天"));
+        assertThat(dest.strArray[0], is("3"));
+        assertThat(dest.strArray[1], is("4"));
+        assertThat(dest.addressArray[0].postCode, is("555-6666"));
+        assertThat(dest.addressArray[0].addr, is("大阪府大阪市"));
+        assertThat(dest.addressArray[1].postCode, is("777-8888"));
+        assertThat(dest.addressArray[1].addr, is("福岡県福岡市"));
+        assertThat(dest.innerRecordArray[0].id, is(10004));
+        assertThat(dest.innerRecordArray[0].name, is("神田幹太"));
+        assertThat(dest.innerRecordArray[1].id, is(10005));
+        assertThat(dest.innerRecordArray[1].name, is("森川瑛太"));
 
     }
+
+
+
 
     @Test
     public void 指定したネストパラメータおよびリストパラメータを使用してレコードを生成できること() {
@@ -672,7 +651,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 空のMapからレコードを生成できること() {
+    public void 空のMapからは_各コンポーネントがnullであるレコードを生成できること() {
 
         Map<String, Object> srcMap = Map.of();
 
@@ -690,7 +669,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void NullのMapからレコードを生成できること() {
+    public void NullのMapからは_各コンポーネントがnullであるレコードを生成できること() {
 
         Map<String, Object> srcMap = null;
 
@@ -709,7 +688,7 @@ public class BeanUtilForRecordTest {
 
 
     @Test
-    public void Beanのプロパティにレコードが含まれる場合でも_MapからBeanに値を設定できること() {
+    public void Beanのプロパティにレコードが含まれる場合でも_MapからBeanを生成できること() {
 
         Map<String, Object> srcMap = Map.ofEntries(
                 Map.entry("sample", 10), // StringからIntegerへ変換できることも合わせて確認する
@@ -1006,10 +985,10 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void レコードからレコードに値を設定できること() {
+    public void レコードからレコードを生成できること() {
 
         SourceRecord srcRecord = new SourceRecord(
-            10,
+            "10",
             "test",
             new Address("111-2222", "東京都江東区"),
             new InnerRecord(10001, "中田昇"),
@@ -1052,10 +1031,10 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void 指定したプロパティのみレコードからレコードに値を設定できること() {
+    public void 指定したコンポーネントのみ使用して_レコードからレコードを生成できること() {
 
         SourceRecord srcRecord = new SourceRecord(
-                10,
+                "10",
                 "test",
                 new Address("111-2222", "東京都江東区"),
                 new InnerRecord(10001, "中田昇"),
@@ -1085,16 +1064,16 @@ public class BeanUtilForRecordTest {
         assertThat(dest.innerRecordArray[1].name, is("森川瑛太"));
 
         assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
-                containsString("The property does not exist in destination bean. property name: onlyInSourceRecord"),
+                containsString("An error occurred while copying the property :onlyInSourceRecord"),
                 not(containsString("nablarch.core.beans.BeansException"))
         )));
     }
 
     @Test
-    public void 指定したプロパティを除外してレコードからレコードに値を設定できること() {
+    public void 指定したコンポーネントを除外して_レコードからレコードを生成できること() {
 
         SourceRecord srcRecord = new SourceRecord(
-                10,
+                "10",
                 "test",
                 new Address("111-2222", "東京都江東区"),
                 new InnerRecord(10001, "中田昇"),
@@ -1136,7 +1115,7 @@ public class BeanUtilForRecordTest {
     public void レコードからBeanに値を設定できること() {
 
         SourceRecord srcRecord = new SourceRecord(
-                10,
+                "10",
                 "test",
                 new Address("111-2222", "東京都江東区"),
                 new InnerRecord(10001, "中田昇"),
@@ -1179,6 +1158,62 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
+    public void 指定したコンポーネントのみレコードからBeanに値を設定できること() {
+
+        SourceRecord srcRecord = new SourceRecord(
+                "10",
+                "test",
+                new Address("111-2222", "東京都江東区"),
+                null,
+                null, null, null, null, null, null
+        );
+
+        TestBean dest = new TestBean();
+        dest.sample = 20;
+        dest.onlyInTestBean = "hoge";
+        dest.address = new Address("123-4567", "東京都品川区");
+        dest.innerRecord = new InnerRecord(10001, "中田昇");
+
+        BeanUtil.copyIncludes(srcRecord, dest, "onlyInSourceRecord", "onlyInTestRecord", "innerRecord");
+
+        assertThat(dest.sample, is(20));
+        assertThat(dest.onlyInTestBean, is("hoge"));
+        assertThat(dest.address.postCode, is("123-4567"));
+        assertThat(dest.address.addr, is("東京都品川区"));
+        // CopyOptions.empty().isExcludesNull() == false なので、nullのプロパティもコピーされるはずだが、Nablarch6時点ではではコピーされない。
+        assertThat(dest.innerRecord.id, is(10001));
+        assertThat(dest.innerRecord.name, is("中田昇"));
+    }
+
+    @Test
+    public void 指定したコンポーネントを除外してレコードからBeanに値を設定できること() {
+
+        SourceRecord srcRecord = new SourceRecord(
+                "10",
+                "test",
+                new Address("111-2222", "東京都江東区"),
+                null,
+                null, null, null, null, null, null
+        );
+
+        TestBean dest = new TestBean();
+        dest.sample = 20;
+        dest.onlyInTestBean = "hoge";
+        dest.address = new Address("123-4567", "東京都品川区");
+        dest.innerRecord = new InnerRecord(10001, "中田昇");
+
+        BeanUtil.copyExcludes(srcRecord, dest, "sample", "onlyInSourceRecord", "onlyInTestRecord", "address");
+
+        assertThat(dest.sample, is(20));
+        assertThat(dest.onlyInTestBean, is("hoge"));
+        assertThat(dest.address.postCode, is("123-4567"));
+        assertThat(dest.address.addr, is("東京都品川区"));
+        // CopyOptions.empty().isExcludesNull() == false なので、nullのプロパティもコピーされるはずだが、Nablarch6時点ではではコピーされない。
+        assertThat(dest.innerRecord.id, is(10001));
+        assertThat(dest.innerRecord.name, is("中田昇"));
+    }
+
+    @Test
     public void Nullコンポーネントを除いて_レコードからBeanに値を設定できること() {
 
         SourceRecord srcRecord = new SourceRecord(null, null, new Address("111-2222", "東京都江東区"), null, null, null, null, null, null, null);
@@ -1194,10 +1229,10 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void Beanからレコードに値を設定できること() {
+    public void Beanからレコードを生成できること() {
 
         SourceBean srcBean = new SourceBean();
-        srcBean.setSample(10);
+        srcBean.setSample("10");
         srcBean.setOnlyInSourceBean("test");
         srcBean.setAddress(new Address("111-2222", "東京都江東区"));
         srcBean.setInnerRecord(new InnerRecord(10001, "中田昇"));
@@ -1212,7 +1247,8 @@ public class BeanUtilForRecordTest {
 
         assertThat(dest.sample, is(10));
         assertThat(dest.onlyInTestRecord, is(nullValue()));
-        assertThat(dest.address, is(nullValue()));
+        assertThat(dest.address.postCode, is("111-2222"));
+        assertThat(dest.address.addr, is("東京都江東区"));
         assertThat(dest.innerRecord.id, is(10001));
         assertThat(dest.innerRecord.name, is("中田昇"));
         assertThat(dest.strList.get(0), is("1"));
@@ -1238,7 +1274,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void Map内にプリミティブ型のコンポーネントに対応するパラメタが存在しない場合_デフォルト値で置換されること() {
+    public void Map内にプリミティブ型のコンポーネントに対応するパラメタが存在しない場合_デフォルト値を設定したレコードが生成されること() {
         TestPrimRecord dest = BeanUtil.createAndCopy(TestPrimRecord.class, Map.of(), CopyOptions.empty());
         assertThat(dest.vint, is(0));
         assertThat(dest.vlong, is(0L));
@@ -1251,7 +1287,7 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void Bean内にプリミティブ型のコンポーネントに対応するパラメタもしくはgetterが存在しない場合_デフォルト値で置換されること() {
+    public void Bean内にプリミティブ型のコンポーネントに対応するパラメタもしくはgetterが存在しない場合_デフォルト値を設定したレコードが生成されること() {
         TestPrimRecord dest = BeanUtil.createAndCopy(TestPrimRecord.class, new SourcePrimRecord(), CopyOptions.empty());
         assertThat(dest.vint, is(0));
         assertThat(dest.vlong, is(0L));
@@ -1267,7 +1303,7 @@ public class BeanUtilForRecordTest {
     public void レコードからMapを生成できること() {
 
         SourceRecord srcRecord = new SourceRecord(
-                10,
+                "10",
                 "test",
                 new Address("111-2222", "東京都江東区"),
                 new InnerRecord(10001, "中田昇"),
@@ -1281,7 +1317,7 @@ public class BeanUtilForRecordTest {
 
         Map<String, Object> dest = BeanUtil.createMapAndCopy(srcRecord, CopyOptions.empty());
 
-        assertThat(dest.get("sample"), is(10));
+        assertThat(dest.get("sample"), is("10"));
         assertThat(dest.get("onlyInSourceRecord"), is("test"));
         assertThat(dest.get("address.postCode"), is("111-2222"));
         assertThat(dest.get("address.addr"), is("東京都江東区"));
@@ -1314,7 +1350,7 @@ public class BeanUtilForRecordTest {
     public void 指定したパラメータのみ使用してレコードからMapを生成できること() {
 
         SourceRecord srcRecord = new SourceRecord(
-                10,
+                "10",
                 "test",
                 new Address("111-2222", "東京都江東区"),
                 new InnerRecord(10001, "中田昇"),
@@ -1328,7 +1364,7 @@ public class BeanUtilForRecordTest {
 
         Map<String, Object> dest = BeanUtil.createMapAndCopyIncludes(srcRecord, "sample", "strList", "innerRecordArray", "onlyInSourceRecord");
 
-        assertThat(dest.get("sample"), is(10));
+        assertThat(dest.get("sample"), is("10"));
         assertThat(dest.get("onlyInSourceRecord"), is("test"));
         assertThat(dest.containsKey("address"), is(false));
         assertThat(dest.containsKey("innerRecord"), is(false));
@@ -1349,7 +1385,7 @@ public class BeanUtilForRecordTest {
     public void 指定したパラメータを除外してレコードからMapを生成できること() {
 
         SourceRecord srcRecord = new SourceRecord(
-                10,
+                "10",
                 "test",
                 new Address("111-2222", "東京都江東区"),
                 new InnerRecord(10001, "中田昇"),
@@ -1389,12 +1425,369 @@ public class BeanUtilForRecordTest {
     }
 
     @Test
-    public void レコードからコンポーネント名を指定して値を取得できること() {
-        TestGetPropertyRecord srcRecord = new TestGetPropertyRecord("sample", "25", "20240222");
-        assertThat(BeanUtil.getProperty(srcRecord, "string"), is("sample"));
-        assertThat(BeanUtil.getProperty(srcRecord, "intString", Integer.class), is(25));
-        assertThat(BeanUtil.getProperty(srcRecord, "dateString", java.sql.Date.class), is(java.sql.Date.valueOf("2024-02-22")));
+    public void レコード_to_Map_to_レコードの相互変換ができること() {
 
+        SourceRecord srcRecord = new SourceRecord(
+                "10",
+                "test",
+                new Address("111-2222", "東京都江東区"),
+                new InnerRecord(10001, "中田昇"),
+                List.of("1", "2"),
+                List.of(new Address("111-2222", "東京都新宿区"), new Address("333-4444", "兵庫県神戸市")),
+                List.of(new InnerRecord(10002, "武藤菊夜"), new InnerRecord(10003, "猪野麻天")),
+                new String[]{"3", "4"},
+                new Address[]{new Address("555-6666", "大阪府大阪市"), new Address("777-8888", "福岡県福岡市")},
+                new InnerRecord[]{new InnerRecord(10004, "神田幹太"), new InnerRecord(10005, "森川瑛太")}
+        );
+
+        Map<String, Object> destMap = BeanUtil.createMapAndCopy(srcRecord, CopyOptions.empty());
+
+        assertThat(destMap.get("sample"), is("10"));
+        assertThat(destMap.get("onlyInSourceRecord"), is("test"));
+        assertThat(destMap.get("address.postCode"), is("111-2222"));
+        assertThat(destMap.get("address.addr"), is("東京都江東区"));
+        assertThat(destMap.get("innerRecord.id"), is(10001));
+        assertThat(destMap.get("innerRecord.name"), is("中田昇"));
+        assertThat(((List<?>)destMap.get("strList")).get(0), is("1"));
+        assertThat(((List<?>)destMap.get("strList")).get(1), is("2"));
+        assertThat(((Address)(((List<?>)destMap.get("addressList")).get(0))).postCode, is("111-2222"));
+        assertThat(((Address)(((List<?>)destMap.get("addressList")).get(0))).addr, is("東京都新宿区"));
+        assertThat(((Address)(((List<?>)destMap.get("addressList")).get(1))).postCode, is("333-4444"));
+        assertThat(((Address)(((List<?>)destMap.get("addressList")).get(1))).addr, is("兵庫県神戸市"));
+        assertThat(((InnerRecord)(((List<?>)destMap.get("innerRecordList")).get(0))).id, is(10002));
+        assertThat(((InnerRecord)(((List<?>)destMap.get("innerRecordList")).get(0))).name, is("武藤菊夜"));
+        assertThat(((InnerRecord)(((List<?>)destMap.get("innerRecordList")).get(1))).id, is(10003));
+        assertThat(((InnerRecord)(((List<?>)destMap.get("innerRecordList")).get(1))).name, is("猪野麻天"));
+        assertThat(((String[])destMap.get("strArray"))[0], is("3"));
+        assertThat(((String[])destMap.get("strArray"))[1], is("4"));
+        assertThat(((Address[])destMap.get("addressArray"))[0].postCode, is("555-6666"));
+        assertThat(((Address[])destMap.get("addressArray"))[0].addr, is("大阪府大阪市"));
+        assertThat(((Address[])destMap.get("addressArray"))[1].postCode, is("777-8888"));
+        assertThat(((Address[])destMap.get("addressArray"))[1].addr, is("福岡県福岡市"));
+        assertThat(((InnerRecord[])destMap.get("innerRecordArray"))[0].id, is(10004));
+        assertThat(((InnerRecord[])destMap.get("innerRecordArray"))[0].name, is("神田幹太"));
+        assertThat(((InnerRecord[])destMap.get("innerRecordArray"))[1].id, is(10005));
+        assertThat(((InnerRecord[])destMap.get("innerRecordArray"))[1].name, is("森川瑛太"));
+
+        TestRecord destRecord = BeanUtil.createAndCopy(TestRecord.class, destMap, CopyOptions.empty());
+
+        assertThat(destRecord.sample, is(10));
+        assertThat(destRecord.address.postCode, is("111-2222"));
+        assertThat(destRecord.address.addr, is("東京都江東区"));
+        assertThat(destRecord.innerRecord.id, is(10001));
+        assertThat(destRecord.innerRecord.name, is("中田昇"));
+        assertThat(destRecord.strList.get(0), is("1"));
+        assertThat(destRecord.strList.get(1), is("2"));
+        assertThat(destRecord.addressList.get(0).postCode, is("111-2222"));
+        assertThat(destRecord.addressList.get(0).addr, is("東京都新宿区"));
+        assertThat(destRecord.addressList.get(1).postCode, is("333-4444"));
+        assertThat(destRecord.addressList.get(1).addr, is("兵庫県神戸市"));
+        assertThat(destRecord.innerRecordList.get(0).id, is(10002));
+        assertThat(destRecord.innerRecordList.get(0).name, is("武藤菊夜"));
+        assertThat(destRecord.innerRecordList.get(1).id, is(10003));
+        assertThat(destRecord.innerRecordList.get(1).name, is("猪野麻天"));
+        assertThat(destRecord.strArray[0], is("3"));
+        assertThat(destRecord.strArray[1], is("4"));
+        assertThat(destRecord.addressArray[0].postCode, is("555-6666"));
+        assertThat(destRecord.addressArray[0].addr, is("大阪府大阪市"));
+        assertThat(destRecord.addressArray[1].postCode, is("777-8888"));
+        assertThat(destRecord.addressArray[1].addr, is("福岡県福岡市"));
+        assertThat(destRecord.innerRecordArray[0].id, is(10004));
+        assertThat(destRecord.innerRecordArray[0].name, is("神田幹太"));
+        assertThat(destRecord.innerRecordArray[1].id, is(10005));
+        assertThat(destRecord.innerRecordArray[1].name, is("森川瑛太"));
+    }
+
+    @Test
+    public void Map_to_レコード_to_Mapの相互変換ができること() {
+
+        Map<String, Object> src = Map.ofEntries(
+                Map.entry("sample", 10),
+                Map.entry("address.postCode", "111-2222"),
+                Map.entry("address.addr", "東京都江東区"),
+                Map.entry("innerRecord.id", 10001),
+                Map.entry("innerRecord.name", "中田昇"),
+                Map.entry("strList[0]", "1"),
+                Map.entry("strList[1]", "2"),
+                Map.entry("addressList[0].postCode", "111-2222"),
+                Map.entry("addressList[0].addr", "東京都新宿区"),
+                Map.entry("addressList[1].postCode", "333-4444"),
+                Map.entry("addressList[1].addr", "兵庫県神戸市"),
+                Map.entry("innerRecordList[0].id", 10002),
+                Map.entry("innerRecordList[0].name", "武藤菊夜"),
+                Map.entry("innerRecordList[1].id", 10003),
+                Map.entry("innerRecordList[1].name", "猪野麻天"),
+                Map.entry("strArray[0]", "3"),
+                Map.entry("strArray[1]", "4"),
+                Map.entry("addressArray[0].postCode", "555-6666"),
+                Map.entry("addressArray[0].addr", "大阪府大阪市"),
+                Map.entry("addressArray[1].postCode", "777-8888"),
+                Map.entry("addressArray[1].addr", "福岡県福岡市"),
+                Map.entry("innerRecordArray[0].id", 10004),
+                Map.entry("innerRecordArray[0].name", "神田幹太"),
+                Map.entry("innerRecordArray[1].id", 10005),
+                Map.entry("innerRecordArray[1].name", "森川瑛太")
+        );
+
+        TestRecord destRecord = BeanUtil.createAndCopy(TestRecord.class, src, CopyOptions.empty());
+
+        assertThat(destRecord.sample, is(10));
+        assertThat(destRecord.address.postCode, is("111-2222"));
+        assertThat(destRecord.address.addr, is("東京都江東区"));
+        assertThat(destRecord.innerRecord.id, is(10001));
+        assertThat(destRecord.innerRecord.name, is("中田昇"));
+        assertThat(destRecord.strList.get(0), is("1"));
+        assertThat(destRecord.strList.get(1), is("2"));
+        assertThat(destRecord.addressList.get(0).postCode, is("111-2222"));
+        assertThat(destRecord.addressList.get(0).addr, is("東京都新宿区"));
+        assertThat(destRecord.addressList.get(1).postCode, is("333-4444"));
+        assertThat(destRecord.addressList.get(1).addr, is("兵庫県神戸市"));
+        assertThat(destRecord.innerRecordList.get(0).id, is(10002));
+        assertThat(destRecord.innerRecordList.get(0).name, is("武藤菊夜"));
+        assertThat(destRecord.innerRecordList.get(1).id, is(10003));
+        assertThat(destRecord.innerRecordList.get(1).name, is("猪野麻天"));
+        assertThat(destRecord.strArray[0], is("3"));
+        assertThat(destRecord.strArray[1], is("4"));
+        assertThat(destRecord.addressArray[0].postCode, is("555-6666"));
+        assertThat(destRecord.addressArray[0].addr, is("大阪府大阪市"));
+        assertThat(destRecord.addressArray[1].postCode, is("777-8888"));
+        assertThat(destRecord.addressArray[1].addr, is("福岡県福岡市"));
+        assertThat(destRecord.innerRecordArray[0].id, is(10004));
+        assertThat(destRecord.innerRecordArray[0].name, is("神田幹太"));
+        assertThat(destRecord.innerRecordArray[1].id, is(10005));
+        assertThat(destRecord.innerRecordArray[1].name, is("森川瑛太"));
+
+
+        Map<String, Object> destMap = BeanUtil.createMapAndCopy(destRecord, CopyOptions.empty());
+
+        assertThat(destMap.get("sample"), is(10));
+        assertThat(destMap.get("address.postCode"), is("111-2222"));
+        assertThat(destMap.get("address.addr"), is("東京都江東区"));
+        assertThat(destMap.get("innerRecord.id"), is(10001));
+        assertThat(destMap.get("innerRecord.name"), is("中田昇"));
+        assertThat(((List<?>)destMap.get("strList")).get(0), is("1"));
+        assertThat(((List<?>)destMap.get("strList")).get(1), is("2"));
+        assertThat(((Address)(((List<?>)destMap.get("addressList")).get(0))).postCode, is("111-2222"));
+        assertThat(((Address)(((List<?>)destMap.get("addressList")).get(0))).addr, is("東京都新宿区"));
+        assertThat(((Address)(((List<?>)destMap.get("addressList")).get(1))).postCode, is("333-4444"));
+        assertThat(((Address)(((List<?>)destMap.get("addressList")).get(1))).addr, is("兵庫県神戸市"));
+        assertThat(((InnerRecord)(((List<?>)destMap.get("innerRecordList")).get(0))).id, is(10002));
+        assertThat(((InnerRecord)(((List<?>)destMap.get("innerRecordList")).get(0))).name, is("武藤菊夜"));
+        assertThat(((InnerRecord)(((List<?>)destMap.get("innerRecordList")).get(1))).id, is(10003));
+        assertThat(((InnerRecord)(((List<?>)destMap.get("innerRecordList")).get(1))).name, is("猪野麻天"));
+        assertThat(((String[])destMap.get("strArray"))[0], is("3"));
+        assertThat(((String[])destMap.get("strArray"))[1], is("4"));
+        assertThat(((Address[])destMap.get("addressArray"))[0].postCode, is("555-6666"));
+        assertThat(((Address[])destMap.get("addressArray"))[0].addr, is("大阪府大阪市"));
+        assertThat(((Address[])destMap.get("addressArray"))[1].postCode, is("777-8888"));
+        assertThat(((Address[])destMap.get("addressArray"))[1].addr, is("福岡県福岡市"));
+        assertThat(((InnerRecord[])destMap.get("innerRecordArray"))[0].id, is(10004));
+        assertThat(((InnerRecord[])destMap.get("innerRecordArray"))[0].name, is("神田幹太"));
+        assertThat(((InnerRecord[])destMap.get("innerRecordArray"))[1].id, is(10005));
+        assertThat(((InnerRecord[])destMap.get("innerRecordArray"))[1].name, is("森川瑛太"));
+    }
+
+
+    @Test
+    public void 移送元をMapとするcreateAndCopy_値を変換してレコードを生成できること(){
+        Map<String, Object> src = new HashMap<>();
+        src.put("sample", "123");
+        TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, src);
+
+        assertThat(dest.sample(), is(123));
+    }
+
+    @Test
+    public void 移送元をBeanとするcreateAndCopy_値を変換してレコードを生成できること(){
+        SourceBean src = new SourceBean();
+        src.setSample("123");
+        TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, src);
+        assertThat(dest.sample(), is(123));
+    }
+
+    @Test
+    public void 移送元をMapとするcreateAndCopyIncludes_値を変換してレコードを生成できること(){
+        Map<String, Object> src = new HashMap<>();
+        src.put("sample", "123");
+        TestRecord dest = BeanUtil.createAndCopyIncludes(TestRecord.class, src, "sample");
+
+        assertThat(dest.sample(), is(123));
+    }
+
+    @Test
+    public void 移送元をBeanとするcreateAndCopyIncludes_値を変換してレコードを生成できること(){
+        SourceBean src = new SourceBean();
+        src.setSample("123");
+        TestRecord dest = BeanUtil.createAndCopyIncludes(TestRecord.class, src, "sample");
+        assertThat(dest.sample(), is(123));
+    }
+
+    @Test
+    public void 移送元をMapとするcreateAndCopyExcludes_値を変換してレコードを生成できること(){
+        Map<String, Object> src = new HashMap<>();
+        src.put("sample", "123");
+        TestRecord dest = BeanUtil.createAndCopyExcludes(TestRecord.class, src, "");
+
+        assertThat(dest.sample(), is(123));
+    }
+
+    @Test
+    public void 移送元をBeanとするcreateAndCopyExcludes_値を変換してレコードを生成できること(){
+        SourceBean src = new SourceBean();
+        src.setSample("123");
+        TestRecord dest = BeanUtil.createAndCopyExcludes(TestRecord.class, src, "");
+        assertThat(dest.sample(), is(123));
+    }
+
+    @Test
+    public void 移送元をMapとするcreateAndCopy_nullからなるString配列を渡してもレコードを生成できること() {
+        Map<String, Object> input = Map.of(
+                "sample", new String[] {null}
+        );
+
+        TestRecord actual = BeanUtil.createAndCopy(TestRecord.class, input);
+        assertThat(actual.sample(), is(nullValue()));
+    }
+
+
+    public record WithTimestampRecord(Timestamp timestamp){}
+    @Test
+    public void マイクロ秒を持つTimestampのコンポーネントを設定してレコードを生成できること() {
+        BeanUtilTest.WithTimestamp src = new BeanUtilTest.WithTimestamp();
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        timestamp.setNanos(100000001);
+        src.setTimestamp(timestamp);
+
+        WithTimestampRecord actual = BeanUtil.createAndCopy(WithTimestampRecord.class, src);
+        assertThat(actual.timestamp, is(timestamp));
+    }
+
+
+    @Test
+    public void 移送元をMapとするcreateAndCopy_サロゲートペア値を設定したレコードを生成できること(){
+        Map<String, Object> src = Map.of(
+                "strList[0]", "😁",
+                "strList[1]", "𠀃𠀄𠀅"
+        );
+        TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, src);
+
+        assertThat(dest.strList.get(0), is("😁"));
+        assertThat(dest.strList.get(1), is("𠀃𠀄𠀅"));
+    }
+
+    @Test
+    public void 移送元をBeanとするcreateAndCopy_サロゲートペア値を設定したレコードを生成できること(){
+        SourceBean src = new SourceBean();
+        src.setStrList(List.of("😁", "𠀃𠀄𠀅"));
+
+        TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, src);
+
+        assertThat(dest.strList.get(0), is("😁"));
+        assertThat(dest.strList.get(1), is("𠀃𠀄𠀅"));
+    }
+
+    @Test
+    public void CopyOptionsでincludesPropertiesを指定した場合_指定したコンポーネントのみ設定されること() {
+        SourceBean src = new SourceBean();
+        src.setSample("123");
+        src.setAddress(new Address("111-2233", "Nablarch市"));
+        src.setInnerRecord(new InnerRecord(10, "testname"));
+
+        CopyOptions options = CopyOptions.options().includes("sample", "innerRecord").build();
+        TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, src, options);
+
+        assertThat(dest.sample(), is(123));
+        assertThat(dest.address(), is(nullValue()));
+        assertThat(dest.innerRecord().id(), is(10));
+        assertThat(dest.innerRecord().name(), is("testname"));
+    }
+
+    @Test
+    public void CopyOptionsでexcludesPropertiesを指定した場合_指定したコンポーネントは設定されないこと() {
+        SourceBean src = new SourceBean();
+        src.setSample("123");
+        src.setAddress(new Address("111-2233", "Nablarch市"));
+        src.setInnerRecord(new InnerRecord(10, "testname"));
+
+        CopyOptions options = CopyOptions.options().excludes("sample", "innerRecord").build();
+        TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, src, options);
+
+        assertThat(dest.sample(), is(nullValue()));
+        assertThat(dest.address().addr, is("Nablarch市"));
+        assertThat(dest.address().postCode, is("111-2233"));
+        assertThat(dest.innerRecord(), is(nullValue()));
+    }
+
+    @Test
+    public void CopyOptionsでexcludesNullを指定した場合_Nullコンポーネントを除いてレコードからBeanに値を設定できること() {
+
+        SourceRecord srcRecord = new SourceRecord(null, null, new Address("111-2222", "東京都江東区"), null, null, null, null, null, null, null);
+
+        TestBean testBean = new TestBean();
+        testBean.sample = 10;
+        testBean.address = new Address("333-4444", "東京都新宿区");
+        TestBean dest = BeanUtil.copy(srcRecord, testBean, CopyOptions.options().excludesNull().build());
+
+        assertThat(dest.sample, is(10));
+        assertThat(dest.address.postCode, is("111-2222"));
+        assertThat(dest.address.addr, is("東京都江東区"));
+    }
+
+    public record SelfNestedRecord(String foo, String bar, SelfNestedRecord rec) {}
+    @Test
+    public void ネストしたレコードにはexcludesPropertiesは引き継がれない() {
+        SelfNestedRecord srcChild = new SelfNestedRecord("3", "4", null);
+        SelfNestedRecord srcRoot = new SelfNestedRecord("1","2", srcChild);
+
+        SelfNestedRecord dest = BeanUtil.createAndCopyExcludes(SelfNestedRecord.class, srcRoot, "bar");
+
+        assertThat(dest.foo(), is("1"));
+        assertThat(dest.bar(), is(nullValue()));
+        assertThat(dest.rec(), is(not(sameInstance(srcChild))));
+        assertThat(dest.rec().foo(), is("3"));
+        assertThat(dest.rec().bar(), is("4"));
+    }
+
+    @Test
+    public void ネストしたレコードにはincludesPropertiesは引き継がれない() {
+        SelfNestedRecord srcChild = new SelfNestedRecord("3", "4", null);
+        SelfNestedRecord srcRoot = new SelfNestedRecord("1","2", srcChild);
+
+        SelfNestedRecord dest = BeanUtil.createAndCopyIncludes(SelfNestedRecord.class, srcRoot, "bar", "rec");
+
+        assertThat(dest.foo(), is(nullValue()));
+        assertThat(dest.bar(), is("2"));
+        assertThat(dest.rec(), is(not(sameInstance(srcChild))));
+        assertThat(dest.rec().foo(), is("3"));
+        assertThat(dest.rec().bar(), is("4"));
+    }
+
+    @Test
+    public void ネストしたレコードにもexcludesNullは引き継がれる() {
+
+        SourceRecord srcRecord = new SourceRecord(null, null, new Address("111-2222", null), null, null, null, null, null, null, null);
+
+        TestBean testBean = new TestBean();
+        testBean.sample = 10;
+        testBean.address = new Address("333-4444", "東京都新宿区");
+        TestBean dest = BeanUtil.copy(srcRecord, testBean, CopyOptions.options().excludesNull().build());
+
+        assertThat(dest.sample, is(10));
+        assertThat(dest.address.postCode, is("111-2222"));
+        assertThat(dest.address.addr, is("東京都新宿区"));
+    }
+
+    @Test
+    public void getPropertyメソッドでレコードからコンポーネントの値を取得できること() {
+        SourceRecord src = new SourceRecord("10",null,null,null,null,null,null,null,null,null);
+        assertThat(BeanUtil.getProperty(src, "sample"), is("10"));
+    }
+
+    @Test
+    public void getPropertyメソッドでレコードから値を変換してコンポーネントの値を取得できること() {
+        SourceRecord src = new SourceRecord(null,"25",null,null,null,null,null,null,null,null);
+        assertThat(BeanUtil.getProperty(src, "onlyInSourceRecord", Integer.class), is(25));
+        assertThat(BeanUtil.getProperty(src, "onlyInSourceRecord", null), is("25"));
     }
 
     @Test
@@ -1450,225 +1843,138 @@ public class BeanUtilForRecordTest {
         assertThat(result.getMessage(), is("The target bean class must be a record class."));
     }
 
-
-    public record ItemRecord<D extends Serializable>(List<D> items){}
     @Test
-    public void コンポーネント内の型引数が具体型でないレコードを生成しようとした場合_実行時例外が発生すること() {
-        Map<String, Object> map = Map.of(
-                "items[0].name", "aaa",
-                "items[1].name", "bbb");
-
-        IllegalStateException result = assertThrows(IllegalStateException.class, () -> {
-            BeanUtil.createAndCopy(ItemRecord.class, map);
-        });
-        assertThat(result.getMessage(), is(
-                "BeanUtil does not support type parameter for List type, so the accessor in the concrete class must be overridden. "
-                        + "getter method = [nablarch.core.beans.BeanUtilForRecordTest$ItemRecord#items]"));
-    }
-
-
-    @SuppressWarnings("rawtypes")
-    public record NoGenericTypeRecord(List children){}
-
-    @Test
-    public void Generic型が未指定の場合_BeansExceptionが送出されかつデバッグログが出力されること() {
-        BeanUtil.createAndCopy(NoGenericTypeRecord.class, new HashMap<>(){{
-            put("children[0].name", "aaa");
-        }});
-        assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
-                containsString("must set generics type for property. class: " +
-                        "class nablarch.core.beans.BeanUtilForRecordTest$NoGenericTypeRecord property: children"),
-                containsString("nablarch.core.beans.BeansException"))));
-    }
-
-    public record InvalidNestedRecord(Set<NestedListPropertyTest.Child> children) {
+    public void getRecordComponentsメソッドからレコードコンポーネントを受け取れること() {
+        RecordComponent[] rcs = BeanUtil.getRecordComponents(TestRecord.class);
+        assertThat(rcs.length, is(10));
     }
 
     @Test
-    public void レコードに設定するデータを持つMapのキーが階層構造を持つ場合に_値のコピー先のプロパティの型がListまたは配列ではない場合_実行時例外が送出されること() {
-        BeanUtil.createAndCopy(InvalidNestedRecord.class, Map.of("children[0].name", new String[]{"aaa"}));
-        assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
-                containsString("property type must be List or Array."),
-                containsString("nablarch.core.beans.BeansException"))));
-    }
-
-    public record DateDestRecord(java.util.Date foo,
-                                 java.sql.Date bar,
-                                 Timestamp baz){}
-
-    @Test
-    public void デフォルトコンバータを使用して値を変換できること() {
-        BeanUtilConversionCustomizedTest.Src srcBean = new BeanUtilConversionCustomizedTest.Src();
-        srcBean.setFoo("20180214");
-        srcBean.setBar("20180215");
-        srcBean.setBaz("20180216");
-        CopyOptions copyOptions = CopyOptions.empty();
-        DateDestRecord destRecord = BeanUtil.createAndCopy(DateDestRecord.class, srcBean, copyOptions);
-
-        assertThat(destRecord.foo(), is(date("2018-02-14 00:00:00")));
-        assertThat(destRecord.bar(), is(java.sql.Date.valueOf("2018-02-15")));
-        assertThat(destRecord.baz(), is(Timestamp.valueOf("2018-02-16 00:00:00")));
+    public void getRecordComponentメソッドからレコードコンポーネントを受け取れること() {
+        RecordComponent rc = BeanUtil.getRecordComponent(TestRecord.class, "innerRecord");
+        assertThat(rc.getName(), is("innerRecord"));
     }
 
     @Test
-    public void デフォルトコンバータを使用して値の変換に失敗すること() {
-        BeanUtilConversionCustomizedTest.Src srcBean = new BeanUtilConversionCustomizedTest.Src();
-        srcBean.setFoo("2018/02/14");
-        srcBean.setBar("2018/02/15");
-        srcBean.setBaz("2018/02/16");
-        CopyOptions copyOptions = CopyOptions.empty();
-        DateDestRecord destRecord = BeanUtil.createAndCopy(DateDestRecord.class, srcBean, copyOptions);
-
-        assertThat(destRecord.foo(), is(nullValue()));
-        assertThat(destRecord.bar(), is(nullValue()));
-        assertThat(destRecord.baz(), is(nullValue()));
+    public void getPropertyDescriptorsメソッドにレコードを渡した場合_実行時例外が発生すること () {
+        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> BeanUtil.getPropertyDescriptors(TestRecord.class));
+        assertThat(result.getMessage(), is("The target bean class must not be a record class."));
     }
 
     @Test
-    public void プロパティ名を指定したカスタムコンバーターを使用して値を変換できること() {
-        BeanUtilConversionCustomizedTest.Src srcBean = new BeanUtilConversionCustomizedTest.Src();
-        srcBean.setFoo("2018/02/14");
-        srcBean.setBar("2018/02/15");
-        srcBean.setBaz("2018/02/16");
-        final java.util.Date date = new java.util.Date();
-        final java.sql.Date sqlDate = new java.sql.Date(0);
-        final Timestamp timestamp = new Timestamp(0);
-        CopyOptions copyOptions = CopyOptions.options()
-                .converterByName("foo", java.util.Date.class, value -> date)
-                .converterByName("bar", java.sql.Date.class, value -> sqlDate)
-                .converterByName("baz", Timestamp.class, value -> timestamp)
-                .build();
-        DateDestRecord destRecord = BeanUtil.createAndCopy(DateDestRecord.class, srcBean, copyOptions);
-
-        assertThat(destRecord.foo(), is(sameInstance(date)));
-        assertThat(destRecord.bar(), is(sameInstance(sqlDate)));
-        assertThat(destRecord.baz(), is(sameInstance(timestamp)));
+    public void getPropertyDescriptorメソッドにレコードを渡した場合_実行時例外が発生すること () {
+        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> BeanUtil.getPropertyDescriptor(TestRecord.class, "sample"));
+        assertThat(result.getMessage(), is("The target bean class must not be a record class."));
     }
 
     @Test
-    public void クラスを指定したカスタムコンバーターを使用して値を変換できること() {
-        BeanUtilConversionCustomizedTest.Src srcBean = new BeanUtilConversionCustomizedTest.Src();
-        srcBean.setFoo("2018/02/14");
-        srcBean.setBar("2018/02/15");
-        srcBean.setBaz("2018/02/16");
-        final java.util.Date date = new java.util.Date();
-        final java.sql.Date sqlDate = new java.sql.Date(0);
-        final Timestamp timestamp = new Timestamp(0);
-        CopyOptions copyOptions = CopyOptions.options()
-                .converter(java.util.Date.class, value -> date)
-                .converterByName("bar", java.sql.Date.class, value -> sqlDate)
-                .converterByName("baz", Timestamp.class, value -> timestamp)
-                .build();
-        DateDestRecord destRecord = BeanUtil.createAndCopy(DateDestRecord.class, srcBean, copyOptions);
-
-        assertThat(destRecord.foo(), is(sameInstance(date)));
-        assertThat(destRecord.bar(), is(sameInstance(sqlDate)));
-        assertThat(destRecord.baz(), is(sameInstance(timestamp)));
+    public void getRecordComponentsメソッドにレコードを渡した場合_実行時例外が発生すること () {
+        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> BeanUtil.getRecordComponents(TestBean.class));
+        assertThat(result.getMessage(), is("The target bean class must be a record class."));
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopy_keyがnullの場合は実行時例外が送出されること() {
-        Map<String, Object> srcMap = new HashMap<>(){{put(null, 10);}};
-
-        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () ->
-                BeanUtil.createAndCopy(TestRecord.class, srcMap, CopyOptions.empty()));
-        assertThat(result.getMessage(), is("expression is null or blank."));
+    public void getRecordComponentメソッドにレコードを渡した場合_実行時例外が発生すること () {
+        IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () -> BeanUtil.getRecordComponent(TestBean.class, "sample"));
+        assertThat(result.getMessage(), is("The target bean class must be a record class."));
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopy_valueがnullの場合は成功すること() {
-        Map<String, Object> srcMap = new HashMap<>(){{put("sample", null);}};
-        TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, srcMap, CopyOptions.empty());
-        assertThat(dest.sample(), is(nullValue()));
+    public void getPropertyNamesメソッドからすべてのレコードコンポーネント名を受け取れること() {
+        Set<String> propertyNames = BeanUtil.getPropertyNames(TestRecord.class);
+        assertThat(propertyNames.size(), is(10));
+        assertThat(propertyNames, containsInAnyOrder("sample", "onlyInTestRecord", "address", "innerRecord", "strList", "addressList", "innerRecordList", "strArray", "addressArray", "innerRecordArray"));
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopy_移送元の各プロパティがnullの場合は成功すること() {
-        SourceBean src = new SourceBean();
-
-        TestRecord dest = BeanUtil.createAndCopy(TestRecord.class, src, CopyOptions.empty());
-        assertThat(dest.sample(), is(nullValue()));
+    public void getPropertyTypeメソッドでレコードコンポーネントの型を受け取れること() {
+        Class<?> propertyType = BeanUtil.getPropertyType(TestRecord.class, "innerRecord");
+        assertThat(propertyType.getName(), is("nablarch.core.beans.BeanUtilForRecordTest$InnerRecord"));
     }
 
     @Test
-    public void 移送元をBeanとするcreateAndCopy_コピー元beanがnullの場合はNPEが送出されること() {
-        assertThrows(NullPointerException.class, () ->
-                BeanUtil.createAndCopy(TestRecord.class, (SourceBean) null, CopyOptions.empty()));
+    public void getReadMethodメソッドでレコードコンポーネントのgetterを受け取れること() {
+        Method accessor = BeanUtil.getReadMethod(TestRecord.class, "innerRecord");
+        assertThat(accessor.getName(), is("innerRecord"));
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopyIncludes_プロパティの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
-        Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
-
-        assertThrows(NullPointerException.class, () ->
-                BeanUtil.createAndCopyIncludes(TestRecord.class, srcMap, (String[]) null));
-
+    public void getPropertyメソッドでレコードからString配列のコンポーネントの値を取得できること() {
+        SourceRecord src = new SourceRecord(null,null,null,null,null,null,null,new String[]{"test1", "test2"},null,null);
+        String[] result = (String[])BeanUtil.getProperty(src, "strArray");
+        assertThat(result[0], is("test1"));
+        assertThat(result[1], is("test2"));
     }
 
     @Test
-    public void 移送元をMapとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
-        Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
-
-        TestRecord dest = BeanUtil.createAndCopyIncludes(TestRecord.class, srcMap, (String) null);
-        assertThat(dest.sample(), is(nullValue()));
+    public void getPropertyメソッドでレコードに存在しないコンポーネント名を指定した場合_実行時例外が送出されること() {
+        SourceRecord src = new SourceRecord("10",null,null,null,null,null,null,null,null,null);
+        BeansException result = assertThrows(BeansException.class, () -> BeanUtil.getProperty(src, "invalid"));
+        assertThat(result.getMessage(), is("The property does not exist in the bean or record. property name: invalid"));
     }
+
+
+    public static class BeanWithNoGetterProperty {
+        private String test;
+
+        public String getTest() {
+            return test;
+        }
+
+        public void setTest(String test) {
+            this.test = test;
+        }
+
+        public void setSample(String sample) {
+            // nop
+        }
+    }
+
+    public record RecordForNoGetterProperty(String test, String sample) {}
 
     @Test
-    public void 移送元をMapとするcreateAndCopyExcludes_プロパティの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
-        Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
+    public void 移送元のgetterがないプロパティは値が設定されないこと() {
+        BeanWithNoGetterProperty src = new BeanWithNoGetterProperty();
+        src.setTest("test");
 
-        assertThrows(NullPointerException.class, () ->
-                BeanUtil.createAndCopyExcludes(TestRecord.class, srcMap, (String[]) null));
+        RecordForNoGetterProperty dest = BeanUtil.createAndCopy(RecordForNoGetterProperty.class, src);
+        assertThat(dest.test, is("test"));
+        assertThat(dest.sample, is(nullValue()));
 
     }
+
+
+    public static class BeanWithPrivateGetterProperty {
+        private String test;
+        private String sample;
+
+        public String getTest() {
+            return test;
+        }
+
+        public void setTest(String test) {
+            this.test = test;
+        }
+
+        private String getSample() {
+            return sample;
+        }
+
+        public void setSample(String sample) {
+            this.sample = sample;
+        }
+    }
+
 
     @Test
-    public void 移送元をMapとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
-        Map<String, Object> srcMap = new HashMap<>(){{put("sample", 10);}};
+    public void 移送元のgetterがprivateの場合は値が設定されないこと() {
+        BeanWithNoGetterProperty src = new BeanWithNoGetterProperty();
+        src.setTest("test");
 
-        TestRecord dest = BeanUtil.createAndCopyExcludes(TestRecord.class, srcMap, (String) null);
-        assertThat(dest.sample(), is(10));
-
+        RecordForNoGetterProperty dest = BeanUtil.createAndCopy(RecordForNoGetterProperty.class, src);
+        assertThat(dest.test, is("test"));
+        assertThat(dest.sample, is(nullValue()));
     }
 
-    @Test
-    public void 移送元をBeanとするcreateAndCopyIncludes_プロパティの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
-        SourceBean src = new SourceBean();
-        src.setSample(10);
-
-        assertThrows(NullPointerException.class, () ->
-                BeanUtil.createAndCopyIncludes(TestRecord.class, src, (String[]) null));
-
-    }
-
-    @Test
-    public void 移送元をBeanとするcreateAndCopyIncludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
-        SourceBean src = new SourceBean();
-        src.setSample(10);
-
-        TestRecord dest = BeanUtil.createAndCopyIncludes(TestRecord.class, src, (String) null);
-        assertThat(dest.sample(), is(nullValue()));
-
-    }
-
-    @Test
-    public void 移送元をBeanとするcreateAndCopyExcludes_プロパティの指定がStringの配列にキャストされたnullの場合は実行時例外が送出されること() {
-        SourceBean src = new SourceBean();
-        src.setSample(10);
-
-        assertThrows(NullPointerException.class, () ->
-                BeanUtil.createAndCopyExcludes(TestRecord.class, src, (String[]) null));
-
-    }
-
-    @Test
-    public void 移送元をBeanとするcreateAndCopyExcludes_プロパティの指定がStringにキャストされたnullの場合は成功すること() {
-        SourceBean src = new SourceBean();
-        src.setSample(10);
-
-        TestRecord dest = BeanUtil.createAndCopyExcludes(TestRecord.class, src, (String) null);
-        assertThat(dest.sample(), is(10));
-
-    }
 
 }

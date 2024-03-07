@@ -3,9 +3,10 @@ package nablarch.core.beans;
 import nablarch.core.util.StringUtil;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringJoiner;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +24,7 @@ class PropertyExpression {
     private final ListPropertyInfo listPropertyInfo;
 
     /** リストまたは配列型プロパティのプロパティ名、要素番号を抽出するためのパターン. */
-    private static final Pattern PATTERN = Pattern.compile("(.*)\\[(\\d+)\\]$");
+    private static final Pattern PATTERN = Pattern.compile("(.*)\\[(\\d+)]$");
 
     /** ネストしたプロパティの文字列表現（ドット区切り） */
     private final String rawKey;
@@ -51,7 +52,7 @@ class PropertyExpression {
         if (StringUtil.isNullOrEmpty(expression)) {
             throw new IllegalArgumentException("expression is null or blank.");
         }
-        this.nestedProperties = new LinkedList<String>(Arrays.asList(expression.split("\\.")));
+        this.nestedProperties = new LinkedList<>(Arrays.asList(expression.split("\\.")));
         this.listPropertyInfo = createListPropertyInfo();
         this.rawKey = expression;
     }
