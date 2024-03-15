@@ -1,7 +1,7 @@
 package nablarch.core.beans;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.sql.Timestamp;
 
@@ -17,6 +17,7 @@ import nablarch.test.support.SystemRepositoryResource;
  * @author Taichi Uragami
  *
  */
+
 public class BeanUtilHierarchicalOptionTest {
 
     @Rule

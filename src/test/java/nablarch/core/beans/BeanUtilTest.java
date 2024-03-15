@@ -6,21 +6,20 @@ import nablarch.test.support.log.app.OnMemoryLogWriter;
 import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -29,29 +28,18 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.Matchers.arrayContaining;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author Iwauo Tajima
  */
 public class BeanUtilTest {
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // デフォルト設定で動作させるよう、リポジトリをクリアする。
         SystemRepository.clear();
         OnMemoryLogWriter.clear();
@@ -230,6 +218,7 @@ public class BeanUtilTest {
 
     public static class SrcBean {
         private String sample;
+        @SuppressWarnings("FieldCanBeLocal")
         private List<String> strList;
 
         public SrcBean(String sample){
@@ -333,6 +322,25 @@ public class BeanUtilTest {
     }
 
     @Test
+    public void getPropertyNamesメソッドからすべてのBeanプロパティ名を受け取れること() {
+        Set<String> propertyNames = BeanUtil.getPropertyNames(UserDto.class);
+        assertThat(propertyNames.size(), is(8));
+        assertThat(propertyNames, containsInAnyOrder("age", "firstName", "lastName", "phoneNumbers", "bin", "address", "fullName", "ageInDays"));
+    }
+
+    @Test
+    public void getPropertyTypeメソッドでBeanプロパティの型を受け取れること() {
+        Class<?> propertyType = BeanUtil.getPropertyType(UserDto.class, "phoneNumbers");
+        assertThat(propertyType.getName(), is("[Ljava.lang.String;"));
+    }
+
+    @Test
+    public void getReadMethodメソッドでBeanプロパティのgetterを受け取れること() {
+        Method getter = BeanUtil.getReadMethod(UserDto.class, "fullName");
+        assertThat(getter.getName(), is("getFullName"));
+    }
+
+    @Test
     public void testThatItCanReadPropertyValueFromBeans() {
         UserDto bean = new UserDto();
         bean.setFirstName("Hogeo");
@@ -420,16 +428,15 @@ public class BeanUtilTest {
         }
     }
 
-    @SuppressWarnings("serial")
     @Test
     public void testThatItCanCreateABeanFromMap() {
 
-        UserDto dto = BeanUtil.createAndCopy(UserDto.class, new HashMap<String, Object>() {{
+        UserDto dto = BeanUtil.createAndCopy(UserDto.class, new HashMap<>() {{
             put("firstName", "Rakutaro");
             put("lastName", "Nabu");
             put("age", 34);
             put("unknownProperty", "UNKNOWN");
-            put("bin", new byte[] {0x00, 0x30});
+            put("bin", new byte[]{0x00, 0x30});
         }});
 
         assertEquals("Rakutaro Nabu", dto.getFullName());
@@ -441,7 +448,7 @@ public class BeanUtilTest {
         )));
 
         // サロゲートペア対応
-        dto = BeanUtil.createAndCopy(UserDto.class, new HashMap<String, Object>() {{
+        dto = BeanUtil.createAndCopy(UserDto.class, new HashMap<>() {{
             put("firstName", "𠀃𠀄𠀅");
             put("lastName", "😁");
         }});
@@ -623,7 +630,7 @@ public class BeanUtilTest {
 
     @Test
     public void testCreateAndCopyWhenInvalidBeanClass() {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         try {
             BeanUtil.createAndCopy(StringUtil.class, map);
             fail("must be thrown BeansException");
@@ -1007,12 +1014,12 @@ public class BeanUtilTest {
     @Test
     public void testCreateAndCopyIncludesForMap() {
 
-        Map<String, Object> src = new HashMap<String, Object>(){{
+        Map<String, Object> src = new HashMap<>() {{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
             put("phoneNumbers", new String[]{"111-2222-3333", "444-5555-6666"});
-            put("bin", new byte[] {0x30});
+            put("bin", new byte[]{0x30});
         }};
 
         UserDto dest = BeanUtil.createAndCopyIncludes(UserDto.class, src, "age", "firstName", "phoneNumbers", "bin");
@@ -1025,7 +1032,7 @@ public class BeanUtilTest {
         assertThat(dest.bin, is(new byte[] {0x30}));
 
         // null値のプロパティを指定するケース
-        src = new HashMap<String, Object>(){{
+        src = new HashMap<>() {{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1041,7 +1048,7 @@ public class BeanUtilTest {
         assertThat(dest.bin, is(nullValue()));
 
         // コピー先に存在しないプロパティを指定するケース
-        src = new HashMap<String, Object>(){{
+        src = new HashMap<>() {{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1059,7 +1066,7 @@ public class BeanUtilTest {
         )));
 
         // コピー元に存在しないプロパティを指定するケース
-        src = new HashMap<String, Object>(){{
+        src = new HashMap<>() {{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1087,7 +1094,7 @@ public class BeanUtilTest {
         }
 
         // サロゲートペアを扱うテストケース
-        src = new HashMap<String, Object>(){{
+        src = new HashMap<>() {{
             put("firstName", "😁");
             put("lastName", "😁");
         }};
@@ -1101,7 +1108,7 @@ public class BeanUtilTest {
     @Test
     public void testCreateAndCopyExcludesForMap() {
 
-        Map<String, Object> src = new HashMap<String, Object>(){{
+        Map<String, Object> src = new HashMap<>() {{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1117,7 +1124,7 @@ public class BeanUtilTest {
         assertThat(dest.address, is(nullValue()));
 
         // コピー先に存在しないプロパティを除外指定するケース
-        src = new HashMap<String, Object>(){{
+        src = new HashMap<>() {{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1126,8 +1133,12 @@ public class BeanUtilTest {
 
         dest = BeanUtil.createAndCopyExcludes(UserDto.class, src, "age", "address", "ssn");
 
+        assertThat(dest.age, is(0));
+        assertThat(dest.firstName, is("太朗"));
+        assertThat(dest.lastName, is("山田"));
+
         // コピー先に存在しないプロパティを除外指定しないケース
-        src = new HashMap<String, Object>(){{
+        src = new HashMap<>() {{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1145,7 +1156,7 @@ public class BeanUtilTest {
         )));
 
         // コピー元に存在しないプロパティを指定するケース
-        src = new HashMap<String, Object>(){{
+        src = new HashMap<>() {{
             put("age", 10);
             put("firstName", "太朗");
             put("lastName", "山田");
@@ -1173,7 +1184,7 @@ public class BeanUtilTest {
         }
 
         // サロゲートペアを扱うテストケース
-        src = new HashMap<String, Object>(){{
+        src = new HashMap<>() {{
             put("firstName", "😁");
             put("lastName", "😁");
         }};
@@ -1185,7 +1196,7 @@ public class BeanUtilTest {
     }
 
     @Test(expected = BeansException.class)
-    public void testGetPropertyDescriptorsForException() throws IntrospectionException {
+    public void testGetPropertyDescriptorsForException() {
         // PropertyDescriptor取得時に例外が発生するケース
         try (final MockedStatic<Introspector> mocked = Mockito.mockStatic(Introspector.class)) {
             mocked.when(() -> Introspector.getBeanInfo(UserEntity.class)).thenThrow(new IntrospectionException("test"));
@@ -1194,7 +1205,7 @@ public class BeanUtilTest {
     }
 
     @Test(expected = BeansException.class)
-    public void testGetPropertyDescriptorForException() throws IntrospectionException {
+    public void testGetPropertyDescriptorForException() {
         // PropertyDescriptor取得時に例外が発生するケース
         try (final MockedStatic<Introspector> mocked = Mockito.mockStatic(Introspector.class)) {
             mocked.when(() -> Introspector.getBeanInfo(UserEntity.class)).thenThrow(new IntrospectionException("test"));
@@ -1205,7 +1216,7 @@ public class BeanUtilTest {
     /** ネストしたプロパティにコピーできること。*/
     @Test
     public void testNestedProperties() {
-        Map<String, String[]> req = new HashMap<String, String[]>();
+        Map<String, String[]> req = new HashMap<>();
 
         req.put("address.addr", new String[]{"tokyo"});
         req.put("phoneNumbers", new String[]{"012", "3456", "7890"});
@@ -1221,7 +1232,7 @@ public class BeanUtilTest {
      * BeanからMapが作成できること
      */
     @Test
-    public void testCreateMapAndCopy() throws Exception {
+    public void testCreateMapAndCopy() {
         final UserDto input = new UserDto();
         input.setFirstName("first_name");
         input.setLastName("last_name");
@@ -1231,12 +1242,13 @@ public class BeanUtilTest {
 
         Map<String, Object> actual = BeanUtil.createMapAndCopy(input);
 
+        //noinspection unchecked
         assertThat(actual, allOf(
                 hasEntry("firstName", "first_name"),                            // そのまま移送
                 hasEntry("lastName", "last_name"),
                 hasEntry("fullName", "first_name last_name"),                   // getterでの編集結果が移送
                 hasEntry("phoneNumbers", new String[] {"01", "02", "03"}),      // 配列も移送出来る
-                hasEntry("age", Integer.valueOf(10)),                           // プリミティブを返すgetter
+                hasEntry("age", 10),                           // プリミティブを返すgetter
                 hasEntry("address", null),                                      // 値が設定されていないproperty
                 hasEntry("bin", new byte[] {0x31, 0x33, 0x35})                  // バイト配列もコピーできること
         ));
@@ -1246,7 +1258,7 @@ public class BeanUtilTest {
      * ネストしたプロパティは、キーが「parent.child」となること。
      */
     @Test
-    public void testCreateMapAndCopy_nestedProperty() throws Exception {
+    public void testCreateMapAndCopy_nestedProperty() {
         final UserDto input = new UserDto();
         final Address address = new Address();
         address.setPostCode("1111234");
@@ -1282,7 +1294,7 @@ public class BeanUtilTest {
      * 指定したプロパティを除いてMapにコピーできること。
      */
     @Test
-    public void testCreateMapAndCopy_excludeProperty() throws Exception {
+    public void testCreateMapAndCopy_excludeProperty() {
         final UserDto input = new UserDto();
         final Address address = new Address();
         address.setPostCode("1111234");
@@ -1321,7 +1333,7 @@ public class BeanUtilTest {
      * 指定したプロパティのみMapにコピーできること。
      */
     @Test
-    public void testCreateMapAndCopy_includesProperty() throws Exception {
+    public void testCreateMapAndCopy_includesProperty() {
         final UserDto input = new UserDto();
         final Address address = new Address();
         address.setPostCode("1111234");
@@ -1335,6 +1347,7 @@ public class BeanUtilTest {
         final Map<String, Object> actual = BeanUtil.createMapAndCopyIncludes(input, "address", "fullName",
                 "phoneNumbers", "bin");
 
+        //noinspection unchecked
         assertThat(actual, allOf(
                 hasEntry("fullName", "first last"),
                 hasEntry("address.addr", "住所"),
@@ -1363,7 +1376,7 @@ public class BeanUtilTest {
      * そのBeanの属性はコピーされないこと。
      */
     @Test
-    public void testCreateMapAndCopy_includesProperty_topLevelOnly() throws Exception {
+    public void testCreateMapAndCopy_includesProperty_topLevelOnly() {
         final UserDto input = new UserDto();
         final Address address = new Address();
         address.setPostCode("1111234");
@@ -1385,7 +1398,7 @@ public class BeanUtilTest {
      * MapとBean間の相互変換が出来ること。
      */
     @Test
-    public void testInterconversionOfMapAndBean() throws Exception {
+    public void testInterconversionOfMapAndBean() {
         final UserDto user = new UserDto();
         final Address address = new Address();
         address.setPostCode("1111222");
@@ -1467,7 +1480,7 @@ public class BeanUtilTest {
         dest.setAddressArray(new Address[]{new Address("1", "Tokyo")});
         BeanUtil.setProperty(dest, "addressArray[0].postCode", "2");
 
-        Address address = (Address) dest.getAddressArray()[0];
+        Address address = dest.getAddressArray()[0];
         assertThat(address.getPostCode(), is("2"));
         assertThat(address.getAddr(), is("Tokyo"));
     }
@@ -1484,7 +1497,7 @@ public class BeanUtilTest {
         dest.setAddressArray(new Address[]{});
         BeanUtil.setProperty(dest, "addressArray[0].postCode", "1");
 
-        Address address = (Address) dest.getAddressArray()[0];
+        Address address = dest.getAddressArray()[0];
         assertThat(address.getPostCode(), is("1"));
         assertThat(address.getAddr(), isEmptyOrNullString());
     }
@@ -1510,7 +1523,7 @@ public class BeanUtilTest {
     @Test
     public void testSetPropertyToSpecifiedIndexWhenListSizeIsNotEnough(){
         DestBean dest = new DestBean();
-        dest.setStrList(new ArrayList<String>(1));
+        dest.setStrList(new ArrayList<>(1));
         BeanUtil.setProperty(dest, "strList[1]", "B");
 
         assertThat(dest.getStrList(), contains(null, "B"));
@@ -1524,12 +1537,12 @@ public class BeanUtilTest {
     @Test
     public void testSetPropertyToSpecifiedIndexOfListWhenValueTypeIsObject(){
         DestBean dest = new DestBean();
-        List<Address> list = new ArrayList<Address>();
+        List<Address> list = new ArrayList<>();
         list.add(new Address("1", "Tokyo"));
         dest.setAddressList(list);
         BeanUtil.setProperty(dest, "addressList[0].postCode", "2");
 
-        Address address = (Address) dest.getAddressList().get(0);
+        Address address = dest.getAddressList().get(0);
         assertThat(address.getPostCode(), is("2"));
         assertThat(address.getAddr(), is("Tokyo"));
     }
@@ -1543,10 +1556,10 @@ public class BeanUtilTest {
     @Test
     public void testSetPropertyToSpecifiedIndexWhenValueNotInstantiationAndValueTypeIsObject(){
         DestBean dest = new DestBean();
-        dest.setAddressList(new ArrayList<Address>());
+        dest.setAddressList(new ArrayList<>());
         BeanUtil.setProperty(dest, "addressList[0].postCode", "2");
 
-        Address address = (Address) dest.getAddressList().get(0);
+        Address address = dest.getAddressList().get(0);
         assertThat(address.getPostCode(), is("2"));
         assertThat(address.getAddr(), isEmptyOrNullString());
     }
@@ -1558,7 +1571,7 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyToSpecifiedIndexOfArray(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("strArray[1]", "A");
         DestBean dest = new DestBean();
         dest = BeanUtil.createAndCopy(dest.getClass(), src);
@@ -1574,13 +1587,13 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyNestedPropertyToSpecifiedIndexOfArray(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("addressArray[1].postCode", "123-1234");
         src.put("addressArray[1].addr", "Tokyo");
         DestBean dest = new DestBean();
         dest = BeanUtil.createAndCopy(dest.getClass(), src);
 
-        Address[] address = Arrays.asList(dest.getAddressArray()).toArray(new Address[dest.getAddressArray().length]);
+        Address[] address = dest.getAddressArray().clone();
         assertThat(dest.getAddressArray().length, is(2));
         assertThat(address[0], nullValue());
         assertThat(address[1].getPostCode(), is("123-1234"));
@@ -1594,7 +1607,7 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyToSpecifiedIndexOfList(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("strList[1]", "A");
         DestBean dest = new DestBean();
         dest = BeanUtil.createAndCopy(dest.getClass(), src);
@@ -1610,7 +1623,7 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyNestedPropertyToSpecifiedIndexOfList(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("addressList[1].postCode", "123-1234");
         src.put("addressList[1].addr", "Tokyo");
         DestBean dest = new DestBean();
@@ -1630,7 +1643,7 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyIncludesToSpecifiedIndexOfList(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("strList[1]", "A");
         DestBean dest = new DestBean();
         dest = BeanUtil.createAndCopyIncludes(dest.getClass(), src, "strList[1]");
@@ -1646,7 +1659,7 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyIncludesToSpecifiedIndexOfArray(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("strArray[1]", "A");
         DestBean dest = new DestBean();
         dest = BeanUtil.createAndCopyIncludes(dest.getClass(), src, "strArray[1]");
@@ -1662,7 +1675,7 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyIncludesNestedPropertyToSpecifiedIndexOfList(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("addressList[1].postCode", "123-1234");
         src.put("addressList[1].addr", "Tokyo");
         DestBean dest = new DestBean();
@@ -1682,13 +1695,13 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyIncludesNestedPropertyToSpecifiedIndexOfArray(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("addressArray[1].postCode", "123-1234");
         src.put("addressArray[1].addr", "Tokyo");
         DestBean dest = new DestBean();
         dest = BeanUtil.createAndCopyIncludes(dest.getClass(), src, "addressArray[1].postCode");
 
-        Address[] address = Arrays.asList(dest.getAddressArray()).toArray(new Address[dest.getAddressArray().length]);
+        Address[] address = dest.getAddressArray().clone();
         assertThat(dest.getAddressArray().length, is(2));
         assertThat(address[0], nullValue());
         assertThat(address[1].getPostCode(), is("123-1234"));
@@ -1702,7 +1715,7 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyExcludesToSpecifiedIndexOfList(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("strList[1]", "A");
         DestBean dest = new DestBean();
         dest = BeanUtil.createAndCopyExcludes(dest.getClass(), src, "sample");
@@ -1718,7 +1731,7 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyExcludesToSpecifiedIndexOfArray(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("strArray[1]", "A");
         DestBean dest = new DestBean();
         dest = BeanUtil.createAndCopyExcludes(dest.getClass(), src, "sample");
@@ -1734,13 +1747,13 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyExcludesNestedPropertyToSpecifiedIndexOfArray(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("addressArray[1].postCode", "123-1234");
         src.put("addressArray[1].addr", "Tokyo");
         DestBean dest = new DestBean();
         dest = BeanUtil.createAndCopyExcludes(dest.getClass(), src, "sample");
 
-        Address[] address = Arrays.asList(dest.getAddressArray()).toArray(new Address[dest.getAddressArray().length]);
+        Address[] address = dest.getAddressArray().clone();
         assertThat(dest.getAddressArray().length, is(2));
         assertThat(address[0], nullValue());
         assertThat(address[1].getPostCode(), is("123-1234"));
@@ -1754,7 +1767,7 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyExcludesNestedPropertyToSpecifiedIndexOfList(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("addressList[1].postCode", "123-1234");
         src.put("addressList[1].addr", "Tokyo");
         DestBean dest = new DestBean();
@@ -1849,7 +1862,7 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyMapToBeanForConvertingProperty(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("sample", "123");
         DestBean dest = BeanUtil.createAndCopy(DestBean.class, src);
 
@@ -1878,7 +1891,7 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyIncludesMapToBeanForConvertingProperty(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("sample", 123);
         DestBean dest = BeanUtil.createAndCopyIncludes(DestBean.class, src, "sample");
 
@@ -1907,7 +1920,7 @@ public class BeanUtilTest {
      */
     @Test
     public void testCreateAndCopyExcludesMapToBeanForConvertingProperty(){
-        Map<String, Object> src = new HashMap<String, Object>();
+        Map<String, Object> src = new HashMap<>();
         src.put("sample", "123");
         DestBean dest = BeanUtil.createAndCopyExcludes(DestBean.class, src, "");
 
@@ -1929,8 +1942,8 @@ public class BeanUtilTest {
     }
 
     @Test
-    public void testCopyNullOnlyStringArray() throws Exception {
-        final HashMap<String, Object> input = new HashMap<String, Object>();
+    public void testCopyNullOnlyStringArray() {
+        final HashMap<String, Object> input = new HashMap<>();
         input.put("firstName", new String[] {null});
         input.put("lastName", new String[] {"なまえ"});
 
@@ -1946,7 +1959,7 @@ public class BeanUtilTest {
      * マイクロ秒を持つTimestampがコピー出来ることを検証するケース。
      */
     @Test
-    public void copyTimestampWithMicroSeconds() throws Exception {
+    public void copyTimestampWithMicroSeconds() {
         final WithTimestamp src = new WithTimestamp();
         final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         timestamp.setNanos(100000001);
@@ -2105,6 +2118,6 @@ public class BeanUtilTest {
 
 
     private static Matcher<Map<? extends String, ?>> hasEntry(String key, Object value) {
-        return IsMapContaining.<String, Object>hasEntry(key, value);
+        return IsMapContaining.hasEntry(key, value);
     }
 }

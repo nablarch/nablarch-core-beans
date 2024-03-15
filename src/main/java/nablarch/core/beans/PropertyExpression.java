@@ -22,7 +22,10 @@ class PropertyExpression {
     private final ListPropertyInfo listPropertyInfo;
 
     /** リストまたは配列型プロパティのプロパティ名、要素番号を抽出するためのパターン. */
-    private static final Pattern PATTERN = Pattern.compile("(.*)\\[(\\d+)\\]$");
+    private static final Pattern PATTERN = Pattern.compile("(.*)\\[(\\d+)]$");
+
+    /** ネストしたプロパティの文字列表現（ドット区切り） */
+    private final String rawKey;
 
     /**
      * コンストラクタ。
@@ -35,6 +38,7 @@ class PropertyExpression {
         }
         this.nestedProperties = nestedProperties;
         this.listPropertyInfo = createListPropertyInfo();
+        this.rawKey = String.join(".", nestedProperties);
     }
 
     /**
@@ -46,8 +50,9 @@ class PropertyExpression {
         if (StringUtil.isNullOrEmpty(expression)) {
             throw new IllegalArgumentException("expression is null or blank.");
         }
-        this.nestedProperties = new LinkedList<String>(Arrays.asList(expression.split("\\.")));
+        this.nestedProperties = new LinkedList<>(Arrays.asList(expression.split("\\.")));
         this.listPropertyInfo = createListPropertyInfo();
+        this.rawKey = expression;
     }
 
     /**
@@ -140,6 +145,15 @@ class PropertyExpression {
      */
     String getListPropertyName() {
         return listPropertyInfo.getListPropertyName();
+    }
+
+    /**
+     * {@link PropertyExpression#rawKey}を返却する。
+     *
+     * @return rawKey
+     */
+    String getRawKey() {
+        return rawKey;
     }
 
     /**

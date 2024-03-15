@@ -1,12 +1,12 @@
 package nablarch.core.beans;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import org.junit.Test;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,30 +44,22 @@ public class BeanUtilWithTypeParameterTest {
 
     @Test
     public void testCreateAndCopyForBad() {
-        Map<String, Object> map = new HashMap<String, Object>() {
-            {
-                put("items[0].name", "aaa");
-                put("items[1].name", "bbb");
-            }
-        };
-        try {
-            BeanUtil.createAndCopy(BadSampleForm.class, map);
-            fail("IllegalStateExceptionがスローされるはず");
-        } catch (IllegalStateException e) {
-            assertThat(e.getMessage(), is(
-                    "BeanUtil does not support type parameter for List type, so the getter method in the concrete class must be overridden. "
-            + "getter method = [nablarch.core.beans.BeanUtilWithTypeParameterTest$BadSampleForm#getItems]"));
-        }
+        Map<String, Object> map = Map.of(
+                "items[0].name", "aaa",
+                "items[1].name", "bbb");
+
+        IllegalStateException result = assertThrows(IllegalStateException.class, () -> BeanUtil.createAndCopy(BadSampleForm.class, map));
+        assertThat(result.getMessage(), is(
+                "BeanUtil does not support type parameter for List type, so the getter method in the concrete class must be overridden. "
+                        + "getter method = [nablarch.core.beans.BeanUtilWithTypeParameterTest$BadSampleForm#getItems]"));
     }
 
     @Test
     public void testCreateAndCopyForGood() {
-        Map<String, Object> map = new HashMap<String, Object>() {
-            {
-                put("items[0].name", "aaa");
-                put("items[1].name", "bbb");
-            }
-        };
+        Map<String, Object> map = Map.of(
+                "items[0].name", "aaa",
+                "items[1].name", "bbb");
+
         GoodSampleForm form = BeanUtil.createAndCopy(GoodSampleForm.class, map);
         assertThat(form.getItems().size(), is(2));
         assertThat(form.getItems().get(0).getName(), is("aaa"));

@@ -1,9 +1,5 @@
 package nablarch.core.beans;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -15,7 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 import nablarch.core.beans.converter.BigDecimalConverter;
 import nablarch.core.beans.converter.DateConverter;
@@ -92,7 +90,7 @@ import nablarch.core.util.annotation.Published;
 public final class CopyOptions {
 
     /** {@link CopyOption}アノテーションから構築される{@link CopyOptions}のキャッシュ */
-    private static final WeakHashMap<Class<?>, CopyOptions> FROM_ANNOTATION_CACHE = new WeakHashMap<Class<?>, CopyOptions>();
+    private static final WeakHashMap<Class<?>, CopyOptions> FROM_ANNOTATION_CACHE = new WeakHashMap<>();
     /** 空の{@link CopyOptions} */
     private static final CopyOptions EMPTY = options().build();
     /** クラスに紐づいたコンバーター */
@@ -215,38 +213,32 @@ public final class CopyOptions {
             }
         }
         CopyOptions.Builder builder = CopyOptions.options();
-        try {
-            Map<String, Field> fields = new HashMap<String, Field>();
-            for (Class<?> c = clazz; c != Object.class; c = c.getSuperclass()) {
-                for (Field field : c.getDeclaredFields()) {
-                    String name = field.getName();
-                    if (fields.containsKey(name) == false) {
-                        fields.put(name, field);
-                    }
+        Map<String, Field> fields = new HashMap<>();
+        for (Class<?> c = clazz; c != Object.class; c = c.getSuperclass()) {
+            for (Field field : c.getDeclaredFields()) {
+                String name = field.getName();
+                if (!fields.containsKey(name)) {
+                    fields.put(name, field);
                 }
             }
-            BeanInfo beanInfo = Introspector.getBeanInfo(clazz, Object.class);
-            for (PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {
-                String propertyName = pd.getName();
-                Field field = fields.get(propertyName);
-                if (field == null) {
-                    continue;
-                }
-                CopyOption copyOption = field.getAnnotation(CopyOption.class);
-                if (copyOption == null) {
-                    continue;
-                }
-                if (copyOption.datePattern().length > 0) {
-                    builder.datePatternsByName(propertyName,
-                            Arrays.asList(copyOption.datePattern()));
-                }
-                if (copyOption.numberPattern().length > 0) {
-                    builder.numberPatternsByName(propertyName,
-                            Arrays.asList(copyOption.numberPattern()));
-                }
+        }
+        for (String propertyName : BeanUtil.getPropertyNames(clazz)) {
+            Field field = fields.get(propertyName);
+            if (field == null) {
+                continue;
             }
-        } catch (IntrospectionException e) {
-            throw new BeansException(e);
+            CopyOption copyOption = field.getAnnotation(CopyOption.class);
+            if (copyOption == null) {
+                continue;
+            }
+            if (copyOption.datePattern().length > 0) {
+                builder.datePatternsByName(propertyName,
+                        Arrays.asList(copyOption.datePattern()));
+            }
+            if (copyOption.numberPattern().length > 0) {
+                builder.numberPatternsByName(propertyName,
+                        Arrays.asList(copyOption.numberPattern()));
+            }
         }
         CopyOptions copyOptions = builder.build();
         synchronized (FROM_ANNOTATION_CACHE) {
@@ -254,6 +246,30 @@ public final class CopyOptions {
         }
         return copyOptions;
     }
+
+
+    /**
+     * {@link CopyOptions#includesProperties}および{@link CopyOptions#excludesProperties}で、
+     * 指定した親プロパティ名を持つプロパティから親プロパティ名を削除した新しい{@link CopyOptions}を返す。
+     *
+     * @param propertyName 親プロパティ名
+     * @return 新しい {@link CopyOptions}
+     */
+    CopyOptions reduce(String propertyName) {
+        Collection<String> tmpIncludeProperties = includesProperties.stream()
+                .map(pn -> pn.replace(propertyName + ".", ""))
+                .collect(Collectors.toCollection(HashSet::new));
+        Collection<String> tmpExcludeProperties = excludesProperties.stream()
+                .map(pn -> pn.replace(propertyName + ".", ""))
+                .collect(Collectors.toCollection(HashSet::new));
+        return new CopyOptions(
+                typedConverters,
+                namedConverters,
+                excludesNull,
+                tmpExcludeProperties,
+                tmpIncludeProperties);
+    }
+
 
     /**
      * 他の{@link CopyOptions}をマージする。
@@ -300,7 +316,7 @@ public final class CopyOptions {
         } else if (sub.isEmpty()) {
             return main;
         }
-        HashMap<K, V> merged = new HashMap<K, V>(main.size() + sub.size());
+        HashMap<K, V> merged = new HashMap<>(main.size() + sub.size());
         merged.putAll(sub);
         merged.putAll(main);
         return merged;
@@ -320,7 +336,7 @@ public final class CopyOptions {
         } else if (sub.isEmpty()) {
             return main;
         }
-        HashSet<String> merged = new HashSet<String>(main.size() + sub.size());
+        HashSet<String> merged = new HashSet<>(main.size() + sub.size());
         merged.addAll(main);
         merged.addAll(sub);
         return merged;
@@ -365,8 +381,7 @@ public final class CopyOptions {
             throw new IllegalArgumentException(
                     "Converter is not found for " + clazz.getName() + ".");
         }
-        Object converted = converter.convert(value);
-        return converted;
+        return converter.convert(value);
     }
 
     /**
@@ -392,8 +407,7 @@ public final class CopyOptions {
             throw new IllegalArgumentException(
                     "Converter is not found named by '" + propertyName + "'.");
         }
-        Object converted = converter.convert(value);
-        return converted;
+        return converter.convert(value);
     }
 
     /**
@@ -415,11 +429,8 @@ public final class CopyOptions {
         if (excludesProperties.contains(propertyName)) {
             return false;
         }
-        if (includesProperties.isEmpty() == false
-                && includesProperties.contains(propertyName) == false) {
-            return false;
-        }
-        return true;
+        return includesProperties.isEmpty()
+                || includesProperties.contains(propertyName);
     }
 
     /**
@@ -438,15 +449,15 @@ public final class CopyOptions {
         /** デフォルトの{@link ConvertersProvider} */
         private static final ConvertersProvider DEFAULT_CONVERTERS_PROVIDER = new DefaultConvertersProvider();
         /** クラスに紐づいたコンバーター */
-        private final Map<Class<?>, Converter<?>> typedConverters = new HashMap<Class<?>, Converter<?>>();
+        private final Map<Class<?>, Converter<?>> typedConverters = new HashMap<>();
         /** プロパティ名とクラスに紐づいたコンバーター */
-        private final Map<String, Map<Class<?>, Converter<?>>> namedConverters = new HashMap<String, Map<Class<?>, Converter<?>>>();
+        private final Map<String, Map<Class<?>, Converter<?>>> namedConverters = new HashMap<>();
         /** コピー元プロパティが{@code null}の場合にコピーしないかどうかを決定するフラグ */
         private boolean excludesNull;
         /** コピー対象外のプロパティ名 */
-        private final Collection<String> excludesProperties = new HashSet<String>();
+        private final Collection<String> excludesProperties = new HashSet<>();
         /** コピー対象のプロパティ名 */
-        private final Collection<String> includesProperties = new HashSet<String>();
+        private final Collection<String> includesProperties = new HashSet<>();
 
         /**
          * {@link CopyOptions#options()}でインスタンス化するためコンストラクタをprivateに設定している。
@@ -610,12 +621,7 @@ public final class CopyOptions {
          * @return {@link #namedConverters}から取得された{@link Map}
          */
         private Map<Class<?>, Converter<?>> getOrCreateConverters(String propertyName) {
-            Map<Class<?>, Converter<?>> converters = this.namedConverters.get(propertyName);
-            if (converters == null) {
-                converters = new HashMap<Class<?>, Converter<?>>();
-                this.namedConverters.put(propertyName, converters);
-            }
-            return converters;
+            return this.namedConverters.computeIfAbsent(propertyName, k -> new HashMap<>());
         }
 
         /**
@@ -684,9 +690,7 @@ public final class CopyOptions {
          * @return 自分自身
          */
         public Builder excludes(String... properties) {
-            for (String property : properties) {
-                this.excludesProperties.add(property);
-            }
+            this.excludesProperties.addAll(Arrays.asList(properties));
             return this;
         }
 
@@ -697,9 +701,7 @@ public final class CopyOptions {
          * @return 自分自身
          */
         public Builder includes(String... properties) {
-            for (String property : properties) {
-                this.includesProperties.add(property);
-            }
+            this.includesProperties.addAll(Arrays.asList(properties));
             return this;
         }
 
@@ -725,10 +727,7 @@ public final class CopyOptions {
          */
         private static ConvertersProvider getConvertersProvider() {
             ConvertersProvider provider = SystemRepository.get(CONVERTERS_PROVIDER_NAME);
-            if (provider != null) {
-                return provider;
-            }
-            return DEFAULT_CONVERTERS_PROVIDER;
+            return Objects.requireNonNullElse(provider, DEFAULT_CONVERTERS_PROVIDER);
         }
     }
 
@@ -763,7 +762,7 @@ public final class CopyOptions {
 
         @Override
         public Map<Class<?>, Converter<?>> provideDateConverters(List<String> patterns) {
-            Map<Class<?>, Converter<?>> converters = new HashMap<Class<?>, Converter<?>>();
+            Map<Class<?>, Converter<?>> converters = new HashMap<>();
             converters.put(String.class, new StringConverter(patterns.get(0), null));
             converters.put(java.util.Date.class, new DateConverter(patterns));
             converters.put(java.sql.Date.class, new SqlDateConverter(patterns));
@@ -773,7 +772,7 @@ public final class CopyOptions {
 
         @Override
         public Map<Class<?>, Converter<?>> provideNumberConverters(List<String> patterns) {
-            Map<Class<?>, Converter<?>> converters = new HashMap<Class<?>, Converter<?>>();
+            Map<Class<?>, Converter<?>> converters = new HashMap<>();
             converters.put(String.class, new StringConverter(null, patterns.get(0)));
             converters.put(short.class, new ShortConverter(patterns));
             converters.put(int.class, new IntegerConverter(patterns));
