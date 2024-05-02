@@ -77,19 +77,19 @@ public class StringConverter implements Mergeable<String, StringConverter> {
     @Override
     public String convert(Object value) {
         if (value instanceof String) {
-            return String.class.cast(value);
+            return (String) value;
         } else if (value instanceof Boolean) {
-            return Boolean.class.cast(value) ? "1" : "0";
+            return (Boolean) value ? "1" : "0";
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, String.class);
         } else if (datePattern != null && value instanceof Date) {
-            return DateUtil.formatDate(Date.class.cast(value), datePattern);
+            return DateUtil.formatDate((Date) value, datePattern);
         } else if (numberPattern != null && value instanceof Number) {
             return new DecimalFormat(numberPattern).format(value);
         } else if (formatter != null && value instanceof LocalDate) {
-            return LocalDate.class.cast(value).format(formatter);
+            return ((LocalDate) value).format(formatter);
         } else if (formatter != null && value instanceof LocalDateTime) {
-            return LocalDateTime.class.cast(value).format(formatter);
+            return ((LocalDateTime) value).format(formatter);
         }
         return StringUtil.toString(value);
     }

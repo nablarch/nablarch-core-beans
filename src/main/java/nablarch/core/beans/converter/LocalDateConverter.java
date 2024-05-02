@@ -69,17 +69,17 @@ public class LocalDateConverter implements Converter<LocalDate> {
     @Override
     public LocalDate convert(final Object value) {
         if (value instanceof LocalDate) {
-            return LocalDate.class.cast(value);
+            return (LocalDate) value;
         } else if (value instanceof LocalDateTime) {
-            return LocalDate.from(LocalDateTime.class.cast(value));
+            return LocalDate.from((LocalDateTime) value);
         } else if (value instanceof java.sql.Date) {
             return DateTimeConverterUtil.getLocalDateAsSqlDate((java.sql.Date) value);
         } else if (value instanceof Date) {
-            return DateTimeConverterUtil.getLocalDate(Date.class.cast(value));
+            return DateTimeConverterUtil.getLocalDate((Date) value);
         } else if (value instanceof Calendar) {
-            return DateTimeConverterUtil.getLocalDate(Calendar.class.cast(value));
+            return DateTimeConverterUtil.getLocalDate((Calendar) value);
         } else if (value instanceof String) {
-            return convertFromString(String.class.cast(value));
+            return convertFromString((String) value);
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, LocalDate.class);
         } else {
@@ -88,7 +88,7 @@ public class LocalDateConverter implements Converter<LocalDate> {
     }
 
     private LocalDate convertFromString(String value) {
-        if (formatters.isEmpty() == false) {
+        if (!formatters.isEmpty()) {
             DateTimeParseException lastThrownException = null;
             for (DateTimeFormatter formatter : formatters) {
                 try {

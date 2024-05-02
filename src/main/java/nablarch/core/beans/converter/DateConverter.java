@@ -66,17 +66,17 @@ public class DateConverter implements Converter<Date> {
     @Override
     public Date convert(Object value) {
         if (value instanceof Date) {
-            return new Date(Date.class.cast(value).getTime());
+            return new Date(((Date) value).getTime());
         } else if (value instanceof Calendar) {
-            return Calendar.class.cast(value).getTime();
+            return ((Calendar) value).getTime();
         } else if (value instanceof String) {
-            return convertFromString(String.class.cast(value));
+            return convertFromString((String) value);
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Date.class);
         } else if (value instanceof LocalDateTime) {
-            return DateTimeConverterUtil.getDate(LocalDateTime.class.cast(value));
+            return DateTimeConverterUtil.getDate((LocalDateTime) value);
         } else if (value instanceof LocalDate) {
-            return DateTimeConverterUtil.getDate(LocalDate.class.cast(value));
+            return DateTimeConverterUtil.getDate((LocalDate) value);
         } else {
             throw new ConversionException(Date.class, value);
         }
@@ -99,7 +99,7 @@ public class DateConverter implements Converter<Date> {
      * @return 変換された値
      */
     Date convertFromString(String value) {
-        if (patterns.isEmpty() == false) {
+        if (!patterns.isEmpty()) {
             ParseException lastThrownException = null;
             for (String pattern : patterns) {
                 try {

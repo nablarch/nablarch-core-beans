@@ -64,27 +64,25 @@ public class SqlTimestampConverter implements Converter<Timestamp> {
 
     @Override
     public Timestamp convert(final Object value) {
-        if (value instanceof Timestamp) {
-            final Timestamp src = Timestamp.class.cast(value);
+        if (value instanceof Timestamp src) {
             final Timestamp dest = new Timestamp(src.getTime());
             dest.setNanos(src.getNanos());
             return dest;
         } else if (value instanceof Date) {
             Calendar cal = Calendar.getInstance();
-            cal.setTime(Date.class.cast(value));
+            cal.setTime((Date) value);
             return new Timestamp(cal.getTimeInMillis());
-        } else if (value instanceof Calendar) {
-            Calendar cal = Calendar.class.cast(value);
+        } else if (value instanceof Calendar cal) {
             return new Timestamp(cal.getTimeInMillis());
         } else if (value instanceof String) {
-            Date d = dateConverter.convert(String.class.cast(value));
+            Date d = dateConverter.convert(value);
             return new Timestamp(d.getTime());
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Timestamp.class);
         } else if (value instanceof LocalDate) {
-            return Timestamp.valueOf(LocalDate.class.cast(value).atStartOfDay());
+            return Timestamp.valueOf(((LocalDate) value).atStartOfDay());
         } else if (value instanceof LocalDateTime) {
-            return Timestamp.valueOf(LocalDateTime.class.cast(value));
+            return Timestamp.valueOf((LocalDateTime) value);
         } else {
             throw new ConversionException(Timestamp.class, value);
         }

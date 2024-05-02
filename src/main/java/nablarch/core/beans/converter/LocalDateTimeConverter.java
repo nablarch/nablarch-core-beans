@@ -66,17 +66,17 @@ public class LocalDateTimeConverter implements Converter<LocalDateTime> {
     @Override
     public LocalDateTime convert(final Object value) {
         if (value instanceof LocalDate) {
-            return LocalDateTime.of(LocalDate.class.cast(value), LocalTime.of(0, 0, 0));
+            return LocalDateTime.of((LocalDate) value, LocalTime.of(0, 0, 0));
         } else if (value instanceof LocalDateTime) {
-            return LocalDateTime.class.cast(value);
+            return (LocalDateTime) value;
         } else if (value instanceof java.sql.Date) {
             return DateTimeConverterUtil.getLocalDateTimeAsSqlDate((java.sql.Date) value);
         } else if (value instanceof Date) {
-            return DateTimeConverterUtil.getLocalDateTime(Date.class.cast(value));
+            return DateTimeConverterUtil.getLocalDateTime((Date) value);
         } else if (value instanceof Calendar) {
-            return DateTimeConverterUtil.getLocalDateTime(Calendar.class.cast(value));
+            return DateTimeConverterUtil.getLocalDateTime((Calendar) value);
         } else if (value instanceof String) {
-            return convertFromString(String.class.cast(value));
+            return convertFromString((String) value);
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, LocalDateTime.class);
         } else {
@@ -85,7 +85,7 @@ public class LocalDateTimeConverter implements Converter<LocalDateTime> {
     }
 
     private LocalDateTime convertFromString(String value) {
-        if (formatters.isEmpty() == false) {
+        if (!formatters.isEmpty()) {
             DateTimeParseException lastThrownException = null;
             for (DateTimeFormatter formatter : formatters) {
                 try {
@@ -100,6 +100,6 @@ public class LocalDateTimeConverter implements Converter<LocalDateTime> {
                     "the string was not formatted " + formatters + ". date = " + value + ".",
                     lastThrownException);
         }
-        return DateTimeConverterUtil.getLocalDateTime(String.class.cast(value));
+        return DateTimeConverterUtil.getLocalDateTime(value);
     }
 }

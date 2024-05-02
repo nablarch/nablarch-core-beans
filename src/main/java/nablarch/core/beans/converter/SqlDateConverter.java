@@ -65,15 +65,14 @@ public class SqlDateConverter implements Converter<java.sql.Date> {
     public java.sql.Date convert(Object value) {
         if (value instanceof Date) {
             Calendar cal = Calendar.getInstance();
-            cal.setTime(Date.class.cast(value));
+            cal.setTime((Date) value);
             truncateTime(cal);
             return new java.sql.Date(cal.getTimeInMillis());
-        } else if (value instanceof Calendar) {
-            Calendar cal = Calendar.class.cast(value);
+        } else if (value instanceof Calendar cal) {
             truncateTime(cal);
             return new java.sql.Date(cal.getTimeInMillis());
         } else if (value instanceof String) {
-            Date d = dateConverter.convertFromString(String.class.cast(value));
+            Date d = dateConverter.convertFromString((String) value);
             Calendar cal = Calendar.getInstance();
             cal.setTime(d);
             truncateTime(cal);
@@ -81,9 +80,9 @@ public class SqlDateConverter implements Converter<java.sql.Date> {
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, java.sql.Date.class);
         } else if (value instanceof LocalDate) {
-            return java.sql.Date.valueOf(LocalDate.class.cast(value));
+            return java.sql.Date.valueOf((LocalDate) value);
         } else if (value instanceof LocalDateTime) {
-            return java.sql.Date.valueOf(LocalDateTime.class.cast(value).toLocalDate());
+            return java.sql.Date.valueOf(((LocalDateTime) value).toLocalDate());
         } else {
             throw new ConversionException(java.sql.Date.class, value);
         }

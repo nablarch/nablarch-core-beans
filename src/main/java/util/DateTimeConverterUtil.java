@@ -176,8 +176,7 @@ public final class DateTimeConverterUtil {
      * @return 変換後の{@code java.util.Date}のインスタンス
      */
     public static Date getDate(final LocalDate date) {
-        return Date.from(LocalDate.class.cast(date)
-                                        .atStartOfDay(getDateTimeConverterConfiguration().getSystemZoneId())
-                                        .toInstant());
+        return Date.from(date.atStartOfDay(getDateTimeConverterConfiguration().getSystemZoneId())
+                                      .toInstant());
     }
 }

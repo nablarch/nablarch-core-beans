@@ -130,7 +130,7 @@ public class DateTimeConverterUtilTest {
     
     @Test
     public void getTimestampFromLocalDateTime() throws Exception {
-        assertThat(DateTimeConverterUtil.getDate(LocalDateTime.of(2017, 1, 2, 3, 4, 5, 123456789)),
+        assertThat(DateTimeConverterUtil.getTimestamp(LocalDateTime.of(2017, 1, 2, 3, 4, 5, 123456789)),
                 is(Timestamp.valueOf("2017-01-02 03:04:05.123456789")));
     }
 }
