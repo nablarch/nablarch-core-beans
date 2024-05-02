@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import nablarch.core.beans.ConversionException;
@@ -75,5 +77,38 @@ public class StringConverterTest {
     public void longWithPattern() throws Exception {
         Long value = 1234567890L;
         assertThat(new StringConverter(null, "#,###").convert(value), is("1,234,567,890"));
+    }
+
+    @Test
+    public void LocalDateWithoutPattern() throws Exception {
+        assertThat(sut.convert(LocalDate.of(2018, 2, 19)), is("2018-02-19"));
+    }
+
+    @Test
+    public void LocalDateWithPattern() throws Exception {
+        assertThat(new StringConverter("yyyy/MM/dd", null).convert(LocalDate.of(2018, 2, 19)), is("2018/02/19"));
+    }
+
+    @Test
+    public void LocalDateTimeWithoutPattern() throws Exception {
+        assertThat(sut.convert(LocalDateTime.of(2018, 2, 19, 15, 10)), is("2018-02-19T15:10"));
+    }
+
+    @Test
+    public void LocalDateTimeWithPattern() throws Exception {
+        assertThat(new StringConverter("yyyy/MM/dd", null).convert(LocalDateTime.of(2018, 2, 19, 15, 10)), is("2018/02/19"));
+    }
+
+    @Test
+    public void Merge() {
+        StringConverter mergedSut = sut.merge(new StringConverter("yyyy/MM/dd", null));
+        assertEquals("2018/02/21", mergedSut.convert(LocalDate.of(2018, 2, 21)));
+    }
+
+    @Test
+    public void ReceiverPriorityMerge() {
+        StringConverter mergedSut = new StringConverter("yyyy/MM/dd", null)
+                .merge(new StringConverter("yyyy.MM.dd", null));
+        assertEquals("2018/02/21", mergedSut.convert(LocalDate.of(2018, 2, 21)));
     }
 }

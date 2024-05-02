@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +38,8 @@ public class CopyOptionsTest {
         CopyOptions sut = CopyOptions.options()
                 .datePatternsByName("foo", Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
                 .build();
+        assertThat(sut.hasNamedConverter("foo", LocalDate.class), is(true));
+        assertThat(sut.hasNamedConverter("foo", LocalDateTime.class), is(true));
         assertThat(sut.hasNamedConverter("foo", java.util.Date.class), is(true));
         assertThat(sut.hasNamedConverter("foo", java.sql.Date.class), is(true));
         assertThat(sut.hasNamedConverter("foo", Timestamp.class), is(true));
@@ -129,6 +133,8 @@ public class CopyOptionsTest {
         CopyOptions sut = CopyOptions.options()
                 .datePatterns(Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
                 .build();
+        assertThat(sut.hasTypedConverter(LocalDate.class), is(true));
+        assertThat(sut.hasTypedConverter(LocalDateTime.class), is(true));
         assertThat(sut.hasTypedConverter(java.util.Date.class), is(true));
         assertThat(sut.hasTypedConverter(java.sql.Date.class), is(true));
         assertThat(sut.hasTypedConverter(Timestamp.class), is(true));
