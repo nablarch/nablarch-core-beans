@@ -56,7 +56,7 @@ public class ConversionUtilTest {
         );
         assertEquals(
                 BigDecimal.valueOf(8)
-              , ConversionUtil.convert(BigDecimal.class, Byte.valueOf((byte) 8))
+              , ConversionUtil.convert(BigDecimal.class, (byte) 8)
             );
 
         // convert from String
@@ -180,7 +180,7 @@ public class ConversionUtilTest {
 
         // Number
         assertEquals(1, (int)ConversionUtil.convert(Integer.class, BigDecimal.ONE));
-        assertEquals(1, (int)ConversionUtil.convert(int.class, Long.valueOf(1L)));
+        assertEquals(1, (int)ConversionUtil.convert(int.class, 1L));
 
         // String
         assertEquals(1, (int)ConversionUtil.convert(Integer.class, "1"));
@@ -241,7 +241,7 @@ public class ConversionUtilTest {
         assertEquals(cal.getTime(), ConversionUtil.convert(Date.class, cal));
 
         // null
-        assertEquals(null, ConversionUtil.convert(Date.class, null));
+        assertNull(ConversionUtil.convert(Date.class, null));
 
         // LocalDate
         assertEquals(cal.getTime(), ConversionUtil.convert(Date.class, LocalDate.of(2024, 2, 13)));
@@ -288,7 +288,7 @@ public class ConversionUtilTest {
         assertEquals(new java.sql.Date(cal.getTimeInMillis()), ConversionUtil.convert(java.sql.Date.class, cal));
 
         // null
-        assertEquals(null, ConversionUtil.convert(java.sql.Date.class, null));
+        assertNull(ConversionUtil.convert(java.sql.Date.class, null));
 
         // LocalDate
         assertEquals(new java.sql.Date(cal.getTimeInMillis()), ConversionUtil.convert(java.sql.Date.class, LocalDate.of(2024, 2, 13)));
@@ -335,7 +335,7 @@ public class ConversionUtilTest {
         assertEquals(new Timestamp(cal.getTimeInMillis()), ConversionUtil.convert(Timestamp.class, cal));
 
         // null
-        assertEquals(null, ConversionUtil.convert(Timestamp.class, null));
+        assertNull(ConversionUtil.convert(Timestamp.class, null));
 
         // LocalDate
         assertEquals(new Timestamp(cal.getTimeInMillis()), ConversionUtil.convert(Timestamp.class, LocalDate.of(2024, 2, 13)));
@@ -364,7 +364,7 @@ public class ConversionUtilTest {
 
         // Number
         assertEquals(1L, (long)ConversionUtil.convert(Long.class, BigDecimal.ONE));
-        assertEquals(1L, (long)ConversionUtil.convert(Long.class, Long.valueOf(1L)));
+        assertEquals(1L, (long)ConversionUtil.convert(Long.class, 1L));
 
         // String
         assertEquals(1L, (long)ConversionUtil.convert(Long.class, "1"));
@@ -414,7 +414,7 @@ public class ConversionUtilTest {
 
         // Number
         assertEquals((short)1, (short)ConversionUtil.convert(Short.class, BigDecimal.ONE));
-        assertEquals((short)1, (short)ConversionUtil.convert(short.class, Long.valueOf(1L)));
+        assertEquals((short)1, (short)ConversionUtil.convert(short.class, 1L));
 
         // String
         assertEquals((short)1, (short)ConversionUtil.convert(Short.class, "1"));
@@ -462,7 +462,7 @@ public class ConversionUtilTest {
     @Test
     public void testConverterString() {
         // null
-        assertEquals(null, ConversionUtil.convert(String.class, null));
+        assertNull(ConversionUtil.convert(String.class, null));
 
         // String
         assertEquals("HOGE", ConversionUtil.convert(String.class, "HOGE"));
@@ -471,7 +471,7 @@ public class ConversionUtilTest {
         assertEquals("HOGE", ConversionUtil.convert(String.class, new String[] {"HOGE"}));
         
         // String[] {null}
-        assertEquals(null, ConversionUtil.convert(String.class, new String[] {null}));
+        assertNull(ConversionUtil.convert(String.class, new String[]{null}));
 
         // Number
         assertEquals("12.34", ConversionUtil.convert(String.class, 12.34));
@@ -512,7 +512,7 @@ public class ConversionUtilTest {
         // array of Objects
         assertArrayEquals(
             new String[]{"1", "2", "3"}
-          , ConversionUtil.convert(String[].class, new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3)})
+          , ConversionUtil.convert(String[].class, new Object[]{"1", 2, BigDecimal.valueOf(3)})
         );
 
         // array of primitives
@@ -526,11 +526,11 @@ public class ConversionUtilTest {
             new String[]{"1", "2", "3"}
           , ConversionUtil.convert(
                 String[].class
-              , new ArrayList<Object>(){{
-                  add("1");
-                  add(Integer.valueOf(2));
-                  add(BigDecimal.valueOf(3));
-                }}
+              , new ArrayList<>() {{
+                            add("1");
+                            add(2);
+                            add(BigDecimal.valueOf(3));
+                        }}
             )
         );
 
@@ -554,27 +554,27 @@ public class ConversionUtilTest {
 
         // array of Object
         assertArrayEquals(
-            new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3), null}
-          , ConversionUtil.convert(Object[].class, new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3), null})
+            new Object[]{"1", 2, BigDecimal.valueOf(3), null}
+          , ConversionUtil.convert(Object[].class, new Object[]{"1", 2, BigDecimal.valueOf(3), null})
         );
 
         // array of primitives
         assertArrayEquals(
-            new Object[]{Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3)}
+            new Object[]{1, 2, 3}
           , ConversionUtil.convert(Object[].class, new int[]{1, 2, 3})
         );
 
         // list
         assertArrayEquals(
-            new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3), null}
+            new Object[]{"1", 2, BigDecimal.valueOf(3), null}
           , ConversionUtil.convert(
                 Object[].class
-              , new ArrayList<Object>(){{
-                  add("1");
-                  add(Integer.valueOf(2));
-                  add(BigDecimal.valueOf(3));
-                  add(null);
-                }}
+              , new ArrayList<>() {{
+                            add("1");
+                            add(2);
+                            add(BigDecimal.valueOf(3));
+                            add(null);
+                        }}
             )
         );
 

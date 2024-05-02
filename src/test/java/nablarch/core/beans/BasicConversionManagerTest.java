@@ -80,7 +80,7 @@ public class BasicConversionManagerTest {
     @Test
     public void 日付_パターン指定を空振り() {
         BasicConversionManager sut = new BasicConversionManager();
-        sut.setDatePatterns(Collections.<String> emptyList());
+        sut.setDatePatterns(Collections.emptyList());
         Map<Class<?>, Converter<?>> converters = sut.getConverters();
 
         assertEquals(utilDate("2018-02-21 00:00:00"),
@@ -132,7 +132,7 @@ public class BasicConversionManagerTest {
     @Test
     public void 数値_パターン指定を空振り() {
         BasicConversionManager sut = new BasicConversionManager();
-        sut.setNumberPatterns(Collections.<String> emptyList());
+        sut.setNumberPatterns(Collections.emptyList());
         Map<Class<?>, Converter<?>> converters = sut.getConverters();
 
         assertEquals(12345, converters.get(Integer.class).convert("12345"));

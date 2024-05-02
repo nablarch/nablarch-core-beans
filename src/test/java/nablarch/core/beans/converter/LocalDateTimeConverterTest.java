@@ -3,6 +3,7 @@ package nablarch.core.beans.converter;
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
 import nablarch.core.util.DateUtil;
+import org.hamcrest.MatcherAssert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -19,7 +20,6 @@ import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 /**
  * {@link LocalDateTimeConverter}のテスト
@@ -47,8 +47,8 @@ public class LocalDateTimeConverterTest {
             Object value = testParams[0];
             LocalDateTime expected = (LocalDateTime) testParams[1];
 
-            Converter converter = new LocalDateTimeConverter();
-            assertThat(converter.convert(value), is(expected));
+            Converter<LocalDateTime> converter = new LocalDateTimeConverter();
+            MatcherAssert.assertThat(converter.convert(value), is(expected));
         }
     }
 
@@ -63,7 +63,7 @@ public class LocalDateTimeConverterTest {
         @Theory
         public void test(Object value) {
             expectedException.expect(DateTimeParseException.class);
-            Converter converter = new LocalDateTimeConverter();
+            Converter<LocalDateTime> converter = new LocalDateTimeConverter();
             converter.convert(value);
         }
     }
@@ -79,7 +79,7 @@ public class LocalDateTimeConverterTest {
         @Theory
         public void test(Object value) {
             expectedException.expect(ConversionException.class);
-            Converter converter = new LocalDateTimeConverter();
+            Converter<LocalDateTime> converter = new LocalDateTimeConverter();
             converter.convert(value);
         }
     }

@@ -5,8 +5,8 @@ import nablarch.core.util.DateUtil;
 import nablarch.core.util.StringUtil;
 import nablarch.test.support.log.app.OnMemoryLogWriter;
 import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsMapContaining;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
@@ -1986,14 +1986,14 @@ public class BeanUtilTest {
 
         WithLocalDateTimeDestClass dest = BeanUtil.createAndCopy(WithLocalDateTimeDestClass.class, src);
 
-        Assert.assertThat(dest.getName(), is("Taro"));
-        Assert.assertThat(dest.getDate1(), is(LocalDate.of(2017, 6, 13)));
-        Assert.assertThat(dest.getDateTime1(), is(LocalDateTime.of(2017, 6, 13, 11, 30, 15)));
-        Assert.assertThat(dest.getDate2(), is(LocalDate.of(2017, 6, 14)));
-        Assert.assertThat(dest.getDateTime2(), is(LocalDateTime.of(2017, 6, 14, 15, 45, 20)));
-        Assert.assertThat(dest.getDate3(), is(LocalDate.of(2017, 6, 15)));
-        Assert.assertThat(dest.getDateTime3(), is(LocalDateTime.of(2017, 6, 22, 10, 22, 30, 100000000)));
-        Assert.assertThat(dest.getDateTimes(), is(Arrays.asList(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 2))));
+        MatcherAssert.assertThat(dest.getName(), is("Taro"));
+        MatcherAssert.assertThat(dest.getDate1(), is(LocalDate.of(2017, 6, 13)));
+        MatcherAssert.assertThat(dest.getDateTime1(), is(LocalDateTime.of(2017, 6, 13, 11, 30, 15)));
+        MatcherAssert.assertThat(dest.getDate2(), is(LocalDate.of(2017, 6, 14)));
+        MatcherAssert.assertThat(dest.getDateTime2(), is(LocalDateTime.of(2017, 6, 14, 15, 45, 20)));
+        MatcherAssert.assertThat(dest.getDate3(), is(LocalDate.of(2017, 6, 15)));
+        MatcherAssert.assertThat(dest.getDateTime3(), is(LocalDateTime.of(2017, 6, 22, 10, 22, 30, 100000000)));
+        MatcherAssert.assertThat(dest.getDateTimes(), is(Arrays.asList(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 2))));
     }
 
     @Test
