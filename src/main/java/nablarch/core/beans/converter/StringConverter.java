@@ -1,6 +1,9 @@
 package nablarch.core.beans.converter;
 
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import nablarch.core.beans.ConversionException;
@@ -43,12 +46,15 @@ public class StringConverter implements Mergeable<String, StringConverter> {
     /** 数値パターン */
     private final String numberPattern;
 
+    private final DateTimeFormatter formatter;
+
     /**
      * デフォルトコンストラクタ。
      */
     public StringConverter() {
         this.datePattern = null;
         this.numberPattern = null;
+        this.formatter = null;
     }
 
     /**
@@ -58,8 +64,14 @@ public class StringConverter implements Mergeable<String, StringConverter> {
      * @param numberPattern 数値パターン
      */
     public StringConverter(String datePattern, String numberPattern) {
+        this(datePattern, numberPattern,
+        datePattern != null ? DateTimeFormatter.ofPattern(datePattern) : null);
+    }
+
+    private StringConverter(String datePattern, String numberPattern, DateTimeFormatter formatter) {
         this.datePattern = datePattern;
         this.numberPattern = numberPattern;
+        this.formatter = formatter;
     }
 
     @Override
@@ -74,6 +86,10 @@ public class StringConverter implements Mergeable<String, StringConverter> {
             return DateUtil.formatDate(Date.class.cast(value), datePattern);
         } else if (numberPattern != null && value instanceof Number) {
             return new DecimalFormat(numberPattern).format(value);
+        } else if (formatter != null && value instanceof LocalDate) {
+            return LocalDate.class.cast(value).format(formatter);
+        } else if (formatter != null && value instanceof LocalDateTime) {
+            return LocalDateTime.class.cast(value).format(formatter);
         }
         return StringUtil.toString(value);
     }
@@ -82,6 +98,7 @@ public class StringConverter implements Mergeable<String, StringConverter> {
     public StringConverter merge(StringConverter other) {
         return new StringConverter(
                 datePattern != null ? datePattern : other.datePattern,
-                numberPattern != null ? numberPattern : other.numberPattern);
+                numberPattern != null ? numberPattern : other.numberPattern,
+                formatter != null ? formatter : other.formatter);
     }
 }

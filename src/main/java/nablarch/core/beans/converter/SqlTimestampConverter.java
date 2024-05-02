@@ -1,6 +1,8 @@
 package nablarch.core.beans.converter;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +28,12 @@ import nablarch.core.beans.Converter;
  * <b>文字列型の配列</b>：<br>
  * 要素数が1であれば、その要素を{@code java.sql.Timestamp}オブジェクトに変換して返却する。
  * 要素数が1以外であれば、{@link ConversionException}を送出する。
+ * <p/>
+ * <b>日付型({@code java.time.LocalDate})</b>：<br>
+ * 同一日付を表す{@code java.sql.Timestamp}オブジェクトを返却する。
+ * <p/>
+ * <b>日時型({@code java.time.LocalDateTime})</b>：<br>
+ * 同一日付・時刻を表す{@code java.sql.Timestamp}オブジェクトを返却する。
  * <p/>
  * <b>上記以外</b>：<br>
  * {@link ConversionException}を送出する。
@@ -73,6 +81,10 @@ public class SqlTimestampConverter implements Converter<Timestamp> {
             return new Timestamp(d.getTime());
         } else if (value instanceof String[]) {
             return SingleValueExtracter.toSingleValue((String[]) value, this, Timestamp.class);
+        } else if (value instanceof LocalDate) {
+            return Timestamp.valueOf(LocalDate.class.cast(value).atStartOfDay());
+        } else if (value instanceof LocalDateTime) {
+            return Timestamp.valueOf(LocalDateTime.class.cast(value));
         } else {
             throw new ConversionException(Timestamp.class, value);
         }
