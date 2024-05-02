@@ -1,4 +1,4 @@
-package util;
+package nablarch.core.util;
 
 import nablarch.core.repository.SystemRepository;
 import nablarch.core.util.annotation.Published;

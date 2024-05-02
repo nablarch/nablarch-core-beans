@@ -2,7 +2,7 @@ package nablarch.core.beans.converter;
 
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
-import util.DateTimeConverterUtil;
+import nablarch.core.util.DateTimeConverterUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -4,8 +4,6 @@ import nablarch.core.repository.SystemRepository;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import util.BasicDateTimeConverterConfiguration;
-import util.DateTimeConverterUtil;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
