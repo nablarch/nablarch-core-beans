@@ -1986,14 +1986,14 @@ public class BeanUtilTest {
 
         WithLocalDateTimeDestClass dest = BeanUtil.createAndCopy(WithLocalDateTimeDestClass.class, src);
 
-        MatcherAssert.assertThat(dest.getName(), is("Taro"));
-        MatcherAssert.assertThat(dest.getDate1(), is(LocalDate.of(2017, 6, 13)));
-        MatcherAssert.assertThat(dest.getDateTime1(), is(LocalDateTime.of(2017, 6, 13, 11, 30, 15)));
-        MatcherAssert.assertThat(dest.getDate2(), is(LocalDate.of(2017, 6, 14)));
-        MatcherAssert.assertThat(dest.getDateTime2(), is(LocalDateTime.of(2017, 6, 14, 15, 45, 20)));
-        MatcherAssert.assertThat(dest.getDate3(), is(LocalDate.of(2017, 6, 15)));
-        MatcherAssert.assertThat(dest.getDateTime3(), is(LocalDateTime.of(2017, 6, 22, 10, 22, 30, 100000000)));
-        MatcherAssert.assertThat(dest.getDateTimes(), is(Arrays.asList(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 2))));
+        assertThat(dest.getName(), is("Taro"));
+        assertThat(dest.getDate1(), is(LocalDate.of(2017, 6, 13)));
+        assertThat(dest.getDateTime1(), is(LocalDateTime.of(2017, 6, 13, 11, 30, 15)));
+        assertThat(dest.getDate2(), is(LocalDate.of(2017, 6, 14)));
+        assertThat(dest.getDateTime2(), is(LocalDateTime.of(2017, 6, 14, 15, 45, 20)));
+        assertThat(dest.getDate3(), is(LocalDate.of(2017, 6, 15)));
+        assertThat(dest.getDateTime3(), is(LocalDateTime.of(2017, 6, 22, 10, 22, 30, 100000000)));
+        assertThat(dest.getDateTimes(), is(Arrays.asList(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 2))));
     }
 
     @Test

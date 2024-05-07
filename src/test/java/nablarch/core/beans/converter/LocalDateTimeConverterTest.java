@@ -3,7 +3,7 @@ package nablarch.core.beans.converter;
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
 import nablarch.core.util.DateUtil;
-import org.hamcrest.MatcherAssert;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -48,7 +48,7 @@ public class LocalDateTimeConverterTest {
             LocalDateTime expected = (LocalDateTime) testParams[1];
 
             Converter<LocalDateTime> converter = new LocalDateTimeConverter();
-            MatcherAssert.assertThat(converter.convert(value), is(expected));
+            assertThat(converter.convert(value), is(expected));
         }
     }
 
