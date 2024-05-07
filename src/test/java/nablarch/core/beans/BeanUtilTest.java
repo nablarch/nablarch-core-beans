@@ -5,7 +5,6 @@ import nablarch.core.util.DateUtil;
 import nablarch.core.util.StringUtil;
 import nablarch.test.support.log.app.OnMemoryLogWriter;
 import org.hamcrest.Matcher;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.Before;
 import org.junit.Test;
