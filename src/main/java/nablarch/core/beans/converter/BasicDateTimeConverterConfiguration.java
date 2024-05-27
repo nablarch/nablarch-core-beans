@@ -1,4 +1,4 @@
-package nablarch.core.util;
+package nablarch.core.beans.converter;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;

@@ -1,4 +1,4 @@
-package nablarch.core.util;
+package nablarch.core.beans.converter;
 
 import nablarch.core.util.annotation.Published;
 

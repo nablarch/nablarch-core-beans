@@ -12,7 +12,6 @@ import java.util.List;
 import nablarch.core.beans.ConversionException;
 import nablarch.core.beans.Converter;
 import nablarch.core.util.DateUtil;
-import nablarch.core.util.DateTimeConverterUtil;
 
 /**
  * {@code java.util.Date}型への変換を行う {@link Converter} 。
