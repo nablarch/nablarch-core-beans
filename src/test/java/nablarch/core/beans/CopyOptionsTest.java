@@ -128,13 +128,28 @@ public class CopyOptionsTest {
         CopyOptions sut = CopyOptions.options()
                 .datePatterns(Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
                 .build();
+
         assertThat(sut.hasTypedConverter(LocalDate.class), is(true));
+        assertThat((LocalDate) sut.convertByType(LocalDate.class, date("2018-02-14 00:00:00")), is(LocalDate.of(2018, 2, 14)));
+
         assertThat(sut.hasTypedConverter(LocalDateTime.class), is(true));
+        assertThat((LocalDateTime) sut.convertByType(LocalDateTime.class, date("2018-02-14 00:00:00")), is(LocalDateTime.of(2018, 2, 14, 0, 0)));
+
         assertThat(sut.hasTypedConverter(java.util.Date.class), is(true));
+        assertThat((java.util.Date) sut.convertByType(java.util.Date.class, date("2018-02-14 00:00:00")), is(date("2018-02-14 00:00:00")));
+
         assertThat(sut.hasTypedConverter(java.sql.Date.class), is(true));
+        assertThat((java.sql.Date) sut.convertByType(java.sql.Date.class, date("2018-02-14 00:00:00")), is(date("2018-02-14 00:00:00")));
+
         assertThat(sut.hasTypedConverter(Timestamp.class), is(true));
+        assertThat((Timestamp) sut.convertByType(Timestamp.class, date("2018-02-14 00:00:00")), is(Timestamp.valueOf("2018-02-14 00:00:00")));
+
         assertThat(sut.hasTypedConverter(String.class), is(true));
+        assertThat((String) sut.convertByType(String.class, date("2018-02-14 00:00:00")), is("2018/02/14"));
+
         assertThat(sut.hasTypedConverter(Object.class), is(false));
+
+
     }
 
     @Test
@@ -142,14 +157,31 @@ public class CopyOptionsTest {
         CopyOptions sut = CopyOptions.options()
                 .numberPatterns(Arrays.asList("#,###", "#,###,###"))
                 .build();
+
         assertThat(sut.hasTypedConverter(short.class), is(true));
+        assertThat((short) sut.convertByType(Short.class, 32500), is((short) 32500));
+
         assertThat(sut.hasTypedConverter(int.class), is(true));
+        assertThat((int) sut.convertByType(int.class, 2147483647), is(2147483647));
+
         assertThat(sut.hasTypedConverter(long.class), is(true));
+        assertThat((long) sut.convertByType(long.class, 32500), is(32500L));
+
         assertThat(sut.hasTypedConverter(Short.class), is(true));
+        assertThat((Short) sut.convertByType(Short.class, 32500), is(Short.valueOf("32500")));
+
         assertThat(sut.hasTypedConverter(Integer.class), is(true));
+        assertThat((Integer) sut.convertByType(Integer.class, 32500), is(Integer.valueOf("32500")));
+
         assertThat(sut.hasTypedConverter(Long.class), is(true));
+        assertThat((Long) sut.convertByType(Long.class, 32500), is(Long.valueOf("32500")));
+
         assertThat(sut.hasTypedConverter(BigDecimal.class), is(true));
+        assertThat((BigDecimal) sut.convertByType(BigDecimal.class, 32500), is(BigDecimal.valueOf(32500L)));
+
         assertThat(sut.hasTypedConverter(String.class), is(true));
+        assertThat((String) sut.convertByType(String.class, 1234567890), is("1,234,567,890"));
+
         assertThat(sut.hasTypedConverter(Object.class), is(false));
     }
 
@@ -171,23 +203,6 @@ public class CopyOptionsTest {
                 .converter(Object.class, mockConverter)
                 .build();
         assertThat(sut.convertByType(Object.class, "test"), is(sameInstance(mockValue)));
-    }
-
-    @Test
-    public void convertByTypeToStringWithDatePattern() {
-        CopyOptions sut = CopyOptions.options()
-                .datePattern("yyyy/MM/dd")
-                .build();
-        assertThat((String) sut.convertByType(String.class, date("2018-02-14 00:00:00")),
-                is("2018/02/14"));
-    }
-
-    @Test
-    public void convertByTypeToStringWithNumberPattern() {
-        CopyOptions sut = CopyOptions.options()
-                .numberPattern("#,###")
-                .build();
-        assertThat((String) sut.convertByType(String.class, 1234567890), is("1,234,567,890"));
     }
 
     @Test
