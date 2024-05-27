@@ -6,8 +6,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -51,7 +51,7 @@ public class BasicConversionManagerTest {
     @Test
     public void 日付_パターン指定() {
         BasicConversionManager sut = new BasicConversionManager();
-        sut.setDatePatterns(Arrays.asList("yyyy/MM/dd", "yyyy/MM/dd HH:mm"));
+        sut.setDatePatterns(List.of("yyyy/MM/dd", "yyyy/MM/dd HH:mm"));
         Map<Class<?>, Converter<?>> converters = sut.getConverters();
 
         assertEquals(LocalDate.of(2018, 2, 21),

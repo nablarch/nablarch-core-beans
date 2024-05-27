@@ -2143,7 +2143,7 @@ public class BeanUtilTest {
         }
     }
 
-    public static class WithLocalDateTimeSrcClass {
+    private static class WithLocalDateTimeSrcClass {
         private String name;
         private LocalDate date1;
         private LocalDateTime dateTime1;
