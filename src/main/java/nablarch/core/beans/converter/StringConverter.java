@@ -65,7 +65,7 @@ public class StringConverter implements Mergeable<String, StringConverter> {
      */
     public StringConverter(String datePattern, String numberPattern) {
         this(datePattern, numberPattern,
-        datePattern != null ? DateTimeFormatter.ofPattern(datePattern) : null);
+                datePattern != null ? DateTimeFormatter.ofPattern(datePattern) : null);
     }
 
     private StringConverter(String datePattern, String numberPattern, DateTimeFormatter formatter) {
