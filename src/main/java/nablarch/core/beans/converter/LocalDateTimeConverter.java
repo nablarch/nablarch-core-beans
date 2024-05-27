@@ -65,20 +65,20 @@ public class LocalDateTimeConverter implements Converter<LocalDateTime> {
 
     @Override
     public LocalDateTime convert(final Object value) {
-        if (value instanceof LocalDate) {
-            return LocalDateTime.of((LocalDate) value, LocalTime.of(0, 0, 0));
-        } else if (value instanceof LocalDateTime) {
-            return (LocalDateTime) value;
-        } else if (value instanceof java.sql.Date) {
-            return DateTimeConverterUtil.getLocalDateTimeAsSqlDate((java.sql.Date) value);
-        } else if (value instanceof Date) {
-            return DateTimeConverterUtil.getLocalDateTime((Date) value);
-        } else if (value instanceof Calendar) {
-            return DateTimeConverterUtil.getLocalDateTime((Calendar) value);
-        } else if (value instanceof String) {
-            return convertFromString((String) value);
-        } else if (value instanceof String[]) {
-            return SingleValueExtracter.toSingleValue((String[]) value, this, LocalDateTime.class);
+        if (value instanceof LocalDate localDate) {
+            return LocalDateTime.of(localDate, LocalTime.of(0, 0, 0));
+        } else if (value instanceof LocalDateTime localDateTime) {
+            return localDateTime;
+        } else if (value instanceof java.sql.Date sqlDate) {
+            return DateTimeConverterUtil.getLocalDateTimeAsSqlDate(sqlDate);
+        } else if (value instanceof Date date) {
+            return DateTimeConverterUtil.getLocalDateTime(date);
+        } else if (value instanceof Calendar cal) {
+            return DateTimeConverterUtil.getLocalDateTime(cal);
+        } else if (value instanceof String str) {
+            return convertFromString(str);
+        } else if (value instanceof String[] strArray) {
+            return SingleValueExtracter.toSingleValue(strArray, this, LocalDateTime.class);
         } else {
             throw new ConversionException(LocalDate.class, value);
         }

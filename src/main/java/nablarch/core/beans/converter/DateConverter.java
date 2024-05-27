@@ -65,18 +65,18 @@ public class DateConverter implements Converter<Date> {
 
     @Override
     public Date convert(Object value) {
-        if (value instanceof Date) {
-            return new Date(((Date) value).getTime());
-        } else if (value instanceof Calendar) {
-            return ((Calendar) value).getTime();
-        } else if (value instanceof String) {
-            return convertFromString((String) value);
-        } else if (value instanceof String[]) {
-            return SingleValueExtracter.toSingleValue((String[]) value, this, Date.class);
-        } else if (value instanceof LocalDateTime) {
-            return DateTimeConverterUtil.getDate((LocalDateTime) value);
-        } else if (value instanceof LocalDate) {
-            return DateTimeConverterUtil.getDate((LocalDate) value);
+        if (value instanceof Date date) {
+            return new Date(date.getTime());
+        } else if (value instanceof Calendar cal) {
+            return cal.getTime();
+        } else if (value instanceof String str) {
+            return convertFromString(str);
+        } else if (value instanceof String[] strArray) {
+            return SingleValueExtracter.toSingleValue(strArray, this, Date.class);
+        } else if (value instanceof LocalDateTime localDateTime) {
+            return DateTimeConverterUtil.getDate(localDateTime);
+        } else if (value instanceof LocalDate localDate) {
+            return DateTimeConverterUtil.getDate(localDate);
         } else {
             throw new ConversionException(Date.class, value);
         }

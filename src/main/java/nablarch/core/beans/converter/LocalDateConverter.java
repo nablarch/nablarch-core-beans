@@ -68,20 +68,20 @@ public class LocalDateConverter implements Converter<LocalDate> {
 
     @Override
     public LocalDate convert(final Object value) {
-        if (value instanceof LocalDate) {
-            return (LocalDate) value;
-        } else if (value instanceof LocalDateTime) {
-            return LocalDate.from((LocalDateTime) value);
-        } else if (value instanceof java.sql.Date) {
-            return DateTimeConverterUtil.getLocalDateAsSqlDate((java.sql.Date) value);
-        } else if (value instanceof Date) {
-            return DateTimeConverterUtil.getLocalDate((Date) value);
-        } else if (value instanceof Calendar) {
-            return DateTimeConverterUtil.getLocalDate((Calendar) value);
-        } else if (value instanceof String) {
-            return convertFromString((String) value);
-        } else if (value instanceof String[]) {
-            return SingleValueExtracter.toSingleValue((String[]) value, this, LocalDate.class);
+        if (value instanceof LocalDate localDate) {
+            return localDate;
+        } else if (value instanceof LocalDateTime localDateTime) {
+            return LocalDate.from(localDateTime);
+        } else if (value instanceof java.sql.Date sqlDate) {
+            return DateTimeConverterUtil.getLocalDateAsSqlDate(sqlDate);
+        } else if (value instanceof Date date) {
+            return DateTimeConverterUtil.getLocalDate(date);
+        } else if (value instanceof Calendar cal) {
+            return DateTimeConverterUtil.getLocalDate(cal);
+        } else if (value instanceof String str) {
+            return convertFromString(str);
+        } else if (value instanceof String[] strArray) {
+            return SingleValueExtracter.toSingleValue(strArray, this, LocalDate.class);
         } else {
             throw new ConversionException(LocalDate.class, value);
         }

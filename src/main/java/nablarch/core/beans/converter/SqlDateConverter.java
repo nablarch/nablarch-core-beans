@@ -63,26 +63,26 @@ public class SqlDateConverter implements Converter<java.sql.Date> {
 
     @Override
     public java.sql.Date convert(Object value) {
-        if (value instanceof Date) {
+        if (value instanceof Date date) {
             Calendar cal = Calendar.getInstance();
-            cal.setTime((Date) value);
+            cal.setTime(date);
             truncateTime(cal);
             return new java.sql.Date(cal.getTimeInMillis());
         } else if (value instanceof Calendar cal) {
             truncateTime(cal);
             return new java.sql.Date(cal.getTimeInMillis());
-        } else if (value instanceof String) {
-            Date d = dateConverter.convertFromString((String) value);
+        } else if (value instanceof String strArray) {
+            Date d = dateConverter.convertFromString(strArray);
             Calendar cal = Calendar.getInstance();
             cal.setTime(d);
             truncateTime(cal);
             return new java.sql.Date(cal.getTimeInMillis());
-        } else if (value instanceof String[]) {
-            return SingleValueExtracter.toSingleValue((String[]) value, this, java.sql.Date.class);
-        } else if (value instanceof LocalDate) {
-            return java.sql.Date.valueOf((LocalDate) value);
-        } else if (value instanceof LocalDateTime) {
-            return java.sql.Date.valueOf(((LocalDateTime) value).toLocalDate());
+        } else if (value instanceof String[] strArray) {
+            return SingleValueExtracter.toSingleValue(strArray, this, java.sql.Date.class);
+        } else if (value instanceof LocalDate localDate) {
+            return java.sql.Date.valueOf(localDate);
+        } else if (value instanceof LocalDateTime localDateTime) {
+            return java.sql.Date.valueOf(localDateTime.toLocalDate());
         } else {
             throw new ConversionException(java.sql.Date.class, value);
         }
