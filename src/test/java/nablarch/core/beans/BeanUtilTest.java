@@ -1,6 +1,7 @@
 package nablarch.core.beans;
 
 import nablarch.core.repository.SystemRepository;
+import nablarch.core.util.DateUtil;
 import nablarch.core.util.StringUtil;
 import nablarch.test.support.log.app.OnMemoryLogWriter;
 import org.hamcrest.Matcher;
@@ -14,12 +15,11 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -1968,6 +1968,33 @@ public class BeanUtilTest {
         assertThat(actual.timestamp, is(timestamp));
     }
 
+    /**
+     *  LocalDate型、LocalDateTime型がコピーできることを検証するケース。
+     */
+    @Test
+    public void copyLocalDateTimeAndLocalDate() {
+        WithLocalDateTimeSrcClass src = new WithLocalDateTimeSrcClass();
+        src.setName("Taro");
+        src.setDate1(LocalDate.of(2017, 6, 13));
+        src.setDateTime1(LocalDateTime.of(2017, 6, 13, 11, 30, 15));
+        src.setDate2(new Date(DateUtil.getDate("20170614").getTime()));
+        src.setDateTime2(new Timestamp(DateUtil.getParsedDate("20170614154520", "yyyyMMddHHmmss").getTime()));
+        src.setDate3("20170615");
+        src.setDateTime3("2017-06-22T10:22:30.100Z");
+        src.setDateTimes(Arrays.asList(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 2)));
+
+        WithLocalDateTimeDestClass dest = BeanUtil.createAndCopy(WithLocalDateTimeDestClass.class, src);
+
+        assertThat(dest.getName(), is("Taro"));
+        assertThat(dest.getDate1(), is(LocalDate.of(2017, 6, 13)));
+        assertThat(dest.getDateTime1(), is(LocalDateTime.of(2017, 6, 13, 11, 30, 15)));
+        assertThat(dest.getDate2(), is(LocalDate.of(2017, 6, 14)));
+        assertThat(dest.getDateTime2(), is(LocalDateTime.of(2017, 6, 14, 15, 45, 20)));
+        assertThat(dest.getDate3(), is(LocalDate.of(2017, 6, 15)));
+        assertThat(dest.getDateTime3(), is(LocalDateTime.of(2017, 6, 22, 10, 22, 30, 100000000)));
+        assertThat(dest.getDateTimes(), is(Arrays.asList(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 2))));
+    }
+
     @Test
     public void CopyOptionsでincludesPropertiesを指定する() {
         SelfNestedBean srcRoot = new SelfNestedBean();
@@ -2116,8 +2143,159 @@ public class BeanUtilTest {
         }
     }
 
+    private static class WithLocalDateTimeSrcClass {
+        private String name;
+        private LocalDate date1;
+        private LocalDateTime dateTime1;
+        private Date date2;
+        private Timestamp dateTime2;
+        private String date3;
+        private String dateTime3;
+        private List<LocalDate> dateTimes;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public LocalDate getDate1() {
+            return date1;
+        }
+
+        public void setDate1(LocalDate date1) {
+            this.date1 = date1;
+        }
+
+        public LocalDateTime getDateTime1() {
+            return dateTime1;
+        }
+
+        public void setDateTime1(LocalDateTime dateTime1) {
+            this.dateTime1 = dateTime1;
+        }
+
+        public Date getDate2() {
+            return date2;
+        }
+
+        public void setDate2(Date date2) {
+            this.date2 = date2;
+        }
+
+        public Timestamp getDateTime2() {
+            return dateTime2;
+        }
+
+        public void setDateTime2(Timestamp dateTime2) {
+            this.dateTime2 = dateTime2;
+        }
+
+        public String getDate3() {
+            return date3;
+        }
+
+        public void setDate3(String date3) {
+            this.date3 = date3;
+        }
+
+        public String getDateTime3() {
+            return dateTime3;
+        }
+
+        public void setDateTime3(String dateTime3) {
+            this.dateTime3 = dateTime3;
+        }
+
+        public List<LocalDate> getDateTimes() {
+            return dateTimes;
+        }
+
+        public void setDateTimes(final List<LocalDate> dateTimes) {
+            this.dateTimes = dateTimes;
+        }
+    }
+
+
+    public static class WithLocalDateTimeDestClass {
+        private String name;
+        private LocalDate date1;
+        private LocalDateTime dateTime1;
+        private LocalDate date2;
+        private LocalDateTime dateTime2;
+        private LocalDate date3;
+        private LocalDateTime dateTime3;
+        private List<LocalDate> dateTimes;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public LocalDate getDate1() {
+            return date1;
+        }
+
+        public void setDate1(LocalDate date1) {
+            this.date1 = date1;
+        }
+
+        public LocalDateTime getDateTime1() {
+            return dateTime1;
+        }
+
+        public void setDateTime1(LocalDateTime dateTime1) {
+            this.dateTime1 = dateTime1;
+        }
+
+        public LocalDate getDate2() {
+            return date2;
+        }
+
+        public void setDate2(LocalDate date2) {
+            this.date2 = date2;
+        }
+
+        public LocalDateTime getDateTime2() {
+            return dateTime2;
+        }
+
+        public void setDateTime2(LocalDateTime dateTime2) {
+            this.dateTime2 = dateTime2;
+        }
+
+        public LocalDate getDate3() {
+            return date3;
+        }
+
+        public void setDate3(LocalDate date3) {
+            this.date3 = date3;
+        }
+
+        public LocalDateTime getDateTime3() {
+            return dateTime3;
+        }
+
+        public void setDateTime3(LocalDateTime dateTime3) {
+            this.dateTime3 = dateTime3;
+        }
+
+        public List<LocalDate> getDateTimes() {
+            return dateTimes;
+        }
+
+        public void setDateTimes(final List<LocalDate> dateTimes) {
+            this.dateTimes = dateTimes;
+        }
+    }
 
     private static Matcher<Map<? extends String, ?>> hasEntry(String key, Object value) {
         return IsMapContaining.hasEntry(key, value);
     }
 }
+

@@ -4,13 +4,16 @@ import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 
 /**
- * {@link BasicConversionManagerFactory}のテスト。
+ * {@link BasicConversionManager}のテスト。
  * 
  * @author Taichi Uragami
  *
@@ -22,6 +25,10 @@ public class BasicConversionManagerTest {
         BasicConversionManager sut = new BasicConversionManager();
         Map<Class<?>, Converter<?>> converters = sut.getConverters();
 
+        assertEquals(LocalDate.of(2018, 2, 21),
+                converters.get(LocalDate.class).convert("20180221"));
+        assertEquals(LocalDateTime.of(2018, 2, 21, 0, 0),
+                converters.get(LocalDateTime.class).convert("2018-02-21T00:00:00Z"));
         assertEquals(utilDate("2018-02-21 00:00:00"),
                 converters.get(java.util.Date.class).convert("20180221"));
         assertEquals(sqlDate("2018-02-21"),
@@ -29,6 +36,10 @@ public class BasicConversionManagerTest {
         assertEquals(timestamp("2018-02-21 00:00:00"),
                 converters.get(Timestamp.class).convert("20180221"));
 
+        assertEquals("2018-02-21",
+                converters.get(String.class).convert(LocalDate.of(2018, 2, 21)));
+        assertEquals("2018-02-21T00:00",
+                converters.get(String.class).convert(LocalDateTime.of(2018, 2, 21, 0, 0)));
         assertEquals("Wed Feb 21 00:00:00 JST 2018",
                 converters.get(String.class).convert(utilDate("2018-02-21 00:00:00")));
         assertEquals("2018-02-21",
@@ -40,9 +51,13 @@ public class BasicConversionManagerTest {
     @Test
     public void 日付_パターン指定() {
         BasicConversionManager sut = new BasicConversionManager();
-        sut.setDatePatterns(Collections.singletonList("yyyy/MM/dd"));
+        sut.setDatePatterns(List.of("yyyy/MM/dd", "yyyy/MM/dd HH:mm"));
         Map<Class<?>, Converter<?>> converters = sut.getConverters();
 
+        assertEquals(LocalDate.of(2018, 2, 21),
+                converters.get(LocalDate.class).convert("2018/02/21"));
+        assertEquals(LocalDateTime.of(2018, 2, 21, 0, 0),
+                converters.get(LocalDateTime.class).convert("2018/02/21 00:00"));
         assertEquals(utilDate("2018-02-21 00:00:00"),
                 converters.get(java.util.Date.class).convert("2018/02/21"));
         assertEquals(sqlDate("2018-02-21"),
@@ -50,6 +65,10 @@ public class BasicConversionManagerTest {
         assertEquals(timestamp("2018-02-21 00:00:00"),
                 converters.get(Timestamp.class).convert("2018/02/21"));
 
+        assertEquals("2018/02/21",
+                converters.get(String.class).convert(LocalDate.of(2018, 2, 21)));
+        assertEquals("2018/02/21",
+                converters.get(String.class).convert(LocalDateTime.of(2018, 2, 21, 0, 0)));
         assertEquals("2018/02/21",
                 converters.get(String.class).convert(utilDate("2018-02-21 00:00:00")));
         assertEquals("2018/02/21",
@@ -61,7 +80,7 @@ public class BasicConversionManagerTest {
     @Test
     public void 日付_パターン指定を空振り() {
         BasicConversionManager sut = new BasicConversionManager();
-        sut.setDatePatterns(Collections.<String> emptyList());
+        sut.setDatePatterns(Collections.emptyList());
         Map<Class<?>, Converter<?>> converters = sut.getConverters();
 
         assertEquals(utilDate("2018-02-21 00:00:00"),
@@ -113,7 +132,7 @@ public class BasicConversionManagerTest {
     @Test
     public void 数値_パターン指定を空振り() {
         BasicConversionManager sut = new BasicConversionManager();
-        sut.setNumberPatterns(Collections.<String> emptyList());
+        sut.setNumberPatterns(Collections.emptyList());
         Map<Class<?>, Converter<?>> converters = sut.getConverters();
 
         assertEquals(12345, converters.get(Integer.class).convert("12345"));

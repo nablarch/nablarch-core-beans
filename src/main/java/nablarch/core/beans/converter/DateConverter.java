@@ -2,6 +2,8 @@ package nablarch.core.beans.converter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -26,6 +28,12 @@ import nablarch.core.util.DateUtil;
  * <b>文字列型の配列</b>：<br>
  * 要素数が1であれば、その要素を{@code java.util.Date}オブジェクトに変換して返却する。
  * 要素数が1以外であれば、{@link ConversionException}を送出する。
+ * <p/>
+ * <b>日付型({@code java.time.LocalDate})</b>：<br>
+ * 同一日付を表す{@code java.util.Date}オブジェクトを返却する。
+ * <p/>
+ * <b>日時型({@code java.time.LocalDateTime})</b>：<br>
+ * 同一日付を表す{@code java.util.Date}オブジェクトを返却する。
  * <p/>
  * <b>上記以外</b>：<br>
  * {@link ConversionException}を送出する。
@@ -56,14 +64,18 @@ public class DateConverter implements Converter<Date> {
 
     @Override
     public Date convert(Object value) {
-        if (value instanceof Date) {
-            return new Date(Date.class.cast(value).getTime());
-        } else if (value instanceof Calendar) {
-            return Calendar.class.cast(value).getTime();
-        } else if (value instanceof String) {
-            return convertFromString(String.class.cast(value));
-        } else if (value instanceof String[]) {
-            return SingleValueExtracter.toSingleValue((String[]) value, this, Date.class);
+        if (value instanceof Date date) {
+            return new Date(date.getTime());
+        } else if (value instanceof Calendar cal) {
+            return cal.getTime();
+        } else if (value instanceof String str) {
+            return convertFromString(str);
+        } else if (value instanceof String[] strArray) {
+            return SingleValueExtracter.toSingleValue(strArray, this, Date.class);
+        } else if (value instanceof LocalDateTime localDateTime) {
+            return DateTimeConverterUtil.getDate(localDateTime);
+        } else if (value instanceof LocalDate localDate) {
+            return DateTimeConverterUtil.getDate(localDate);
         } else {
             throw new ConversionException(Date.class, value);
         }
@@ -86,7 +98,7 @@ public class DateConverter implements Converter<Date> {
      * @return 変換された値
      */
     Date convertFromString(String value) {
-        if (patterns.isEmpty() == false) {
+        if (!patterns.isEmpty()) {
             ParseException lastThrownException = null;
             for (String pattern : patterns) {
                 try {

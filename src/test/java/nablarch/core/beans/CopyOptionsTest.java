@@ -1,10 +1,11 @@
 package nablarch.core.beans;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import nablarch.core.beans.CopyOptions.ConvertersProvider;
 import nablarch.core.beans.converter.DateConverter;
@@ -36,6 +38,8 @@ public class CopyOptionsTest {
         CopyOptions sut = CopyOptions.options()
                 .datePatternsByName("foo", Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
                 .build();
+        assertThat(sut.hasNamedConverter("foo", LocalDate.class), is(true));
+        assertThat(sut.hasNamedConverter("foo", LocalDateTime.class), is(true));
         assertThat(sut.hasNamedConverter("foo", java.util.Date.class), is(true));
         assertThat(sut.hasNamedConverter("foo", java.sql.Date.class), is(true));
         assertThat(sut.hasNamedConverter("foo", Timestamp.class), is(true));
@@ -75,12 +79,7 @@ public class CopyOptionsTest {
     @Test
     public void convertByName() {
         final Object mockValue = new Object();
-        Converter<Object> mockConverter = new Converter<Object>() {
-            @Override
-            public Object convert(Object value) {
-                return mockValue;
-            }
-        };
+        Converter<Object> mockConverter = value -> mockValue;
         CopyOptions sut = CopyOptions.options()
                 .converterByName("foo", Object.class, mockConverter)
                 .build();
@@ -129,11 +128,28 @@ public class CopyOptionsTest {
         CopyOptions sut = CopyOptions.options()
                 .datePatterns(Arrays.asList("yyyy/MM/dd", "yyyy-MM-dd"))
                 .build();
+
+        assertThat(sut.hasTypedConverter(LocalDate.class), is(true));
+        assertThat((LocalDate) sut.convertByType(LocalDate.class, date("2018-02-14 00:00:00")), is(LocalDate.of(2018, 2, 14)));
+
+        assertThat(sut.hasTypedConverter(LocalDateTime.class), is(true));
+        assertThat((LocalDateTime) sut.convertByType(LocalDateTime.class, date("2018-02-14 00:00:00")), is(LocalDateTime.of(2018, 2, 14, 0, 0)));
+
         assertThat(sut.hasTypedConverter(java.util.Date.class), is(true));
+        assertThat((java.util.Date) sut.convertByType(java.util.Date.class, date("2018-02-14 00:00:00")), is(date("2018-02-14 00:00:00")));
+
         assertThat(sut.hasTypedConverter(java.sql.Date.class), is(true));
+        assertThat((java.sql.Date) sut.convertByType(java.sql.Date.class, date("2018-02-14 00:00:00")), is(date("2018-02-14 00:00:00")));
+
         assertThat(sut.hasTypedConverter(Timestamp.class), is(true));
+        assertThat((Timestamp) sut.convertByType(Timestamp.class, date("2018-02-14 00:00:00")), is(Timestamp.valueOf("2018-02-14 00:00:00")));
+
         assertThat(sut.hasTypedConverter(String.class), is(true));
+        assertThat((String) sut.convertByType(String.class, date("2018-02-14 00:00:00")), is("2018/02/14"));
+
         assertThat(sut.hasTypedConverter(Object.class), is(false));
+
+
     }
 
     @Test
@@ -141,25 +157,37 @@ public class CopyOptionsTest {
         CopyOptions sut = CopyOptions.options()
                 .numberPatterns(Arrays.asList("#,###", "#,###,###"))
                 .build();
+
         assertThat(sut.hasTypedConverter(short.class), is(true));
+        assertThat((short) sut.convertByType(Short.class, 32500), is((short) 32500));
+
         assertThat(sut.hasTypedConverter(int.class), is(true));
+        assertThat((int) sut.convertByType(int.class, 2147483647), is(2147483647));
+
         assertThat(sut.hasTypedConverter(long.class), is(true));
+        assertThat((long) sut.convertByType(long.class, 32500), is(32500L));
+
         assertThat(sut.hasTypedConverter(Short.class), is(true));
+        assertThat((Short) sut.convertByType(Short.class, 32500), is(Short.valueOf("32500")));
+
         assertThat(sut.hasTypedConverter(Integer.class), is(true));
+        assertThat((Integer) sut.convertByType(Integer.class, 32500), is(Integer.valueOf("32500")));
+
         assertThat(sut.hasTypedConverter(Long.class), is(true));
+        assertThat((Long) sut.convertByType(Long.class, 32500), is(Long.valueOf("32500")));
+
         assertThat(sut.hasTypedConverter(BigDecimal.class), is(true));
+        assertThat((BigDecimal) sut.convertByType(BigDecimal.class, 32500), is(BigDecimal.valueOf(32500L)));
+
         assertThat(sut.hasTypedConverter(String.class), is(true));
+        assertThat((String) sut.convertByType(String.class, 1234567890), is("1,234,567,890"));
+
         assertThat(sut.hasTypedConverter(Object.class), is(false));
     }
 
     @Test
     public void converter() {
-        Converter<BigDecimal> converter = new Converter<BigDecimal>() {
-            @Override
-            public BigDecimal convert(Object value) {
-                return null;
-            }
-        };
+        Converter<BigDecimal> converter = value -> null;
         CopyOptions sut = CopyOptions.options()
                 .converter(BigDecimal.class, converter)
                 .build();
@@ -170,33 +198,11 @@ public class CopyOptionsTest {
     @Test
     public void convertByType() {
         final Object mockValue = new Object();
-        Converter<Object> mockConverter = new Converter<Object>() {
-            @Override
-            public Object convert(Object value) {
-                return mockValue;
-            }
-        };
+        Converter<Object> mockConverter = value -> mockValue;
         CopyOptions sut = CopyOptions.options()
                 .converter(Object.class, mockConverter)
                 .build();
         assertThat(sut.convertByType(Object.class, "test"), is(sameInstance(mockValue)));
-    }
-
-    @Test
-    public void convertByTypeToStringWithDatePattern() {
-        CopyOptions sut = CopyOptions.options()
-                .datePattern("yyyy/MM/dd")
-                .build();
-        assertThat((String) sut.convertByType(String.class, date("2018-02-14 00:00:00")),
-                is("2018/02/14"));
-    }
-
-    @Test
-    public void convertByTypeToStringWithNumberPattern() {
-        CopyOptions sut = CopyOptions.options()
-                .numberPattern("#,###")
-                .build();
-        assertThat((String) sut.convertByType(String.class, 1234567890), is("1,234,567,890"));
     }
 
     @Test
@@ -340,7 +346,7 @@ public class CopyOptionsTest {
     }
 
     @Test
-    public void ConvertersProviderをカスタマイズした日付パターン() throws Exception {
+    public void ConvertersProviderをカスタマイズした日付パターン() {
         MockConvertersProvider provider = new MockConvertersProvider();
         resource.addComponent("convertersProvider", provider);
 
@@ -350,7 +356,7 @@ public class CopyOptionsTest {
     }
 
     @Test
-    public void ConvertersProviderをカスタマイズした数値パターン() throws Exception {
+    public void ConvertersProviderをカスタマイズした数値パターン() {
         MockConvertersProvider provider = new MockConvertersProvider();
         resource.addComponent("convertersProvider", provider);
 
@@ -377,7 +383,7 @@ public class CopyOptionsTest {
     }
 
     @Test
-    public void アノテーションから構築されたCopyOptionsはキャッシュされる() throws Exception {
+    public void アノテーションから構築されたCopyOptionsはキャッシュされる() {
         CopyOptions copyOptions1 = CopyOptions.fromAnnotation(AnnotatedBean.class);
         CopyOptions copyOptions2 = CopyOptions.fromAnnotation(AnnotatedBean.class);
         assertThat(copyOptions1 == copyOptions2, is(true));
@@ -429,13 +435,13 @@ public class CopyOptionsTest {
 
         @Override
         public Map<Class<?>, Converter<?>> provideDateConverters(List<String> patterns) {
-            return Collections.<Class<?>, Converter<?>> singletonMap(Object.class,
+            return Collections.singletonMap(Object.class,
                     mockDateConverter);
         }
 
         @Override
         public Map<Class<?>, Converter<?>> provideNumberConverters(List<String> patterns) {
-            return Collections.<Class<?>, Converter<?>> singletonMap(Object.class,
+            return Collections.singletonMap(Object.class,
                     mockNumberConverter);
         }
     }
