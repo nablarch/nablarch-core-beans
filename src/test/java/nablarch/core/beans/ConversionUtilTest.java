@@ -360,6 +360,102 @@ public class ConversionUtilTest {
     }
 
     @Test
+    public void testConvertLocalDate() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(2024, Calendar.FEBRUARY, 13, 0, 0, 0);
+        cal.clear(Calendar.MILLISECOND);
+        LocalDate localDate = LocalDate.of(2024, 2, 13);
+
+        // String
+        assertEquals(localDate, ConversionUtil.convert(LocalDate.class, "20240213"));
+
+        // String[]
+        assertEquals(localDate, ConversionUtil.convert(LocalDate.class, new String[]{"20240213"}));
+
+        // String[] {null}
+        assertNull(ConversionUtil.convert(LocalDate.class, new String[] {null}));
+
+        // Date
+        assertEquals(localDate, ConversionUtil.convert(LocalDate.class, cal.getTime()));
+
+
+        // Calendar
+        assertEquals(localDate, ConversionUtil.convert(LocalDate.class, cal));
+
+        // null
+        assertNull(ConversionUtil.convert(LocalDate.class, null));
+
+        // LocalDate
+        assertEquals(localDate, ConversionUtil.convert(LocalDate.class, LocalDate.of(2024, 2, 13)));
+
+        // LocalDateTime
+        assertEquals(localDate, ConversionUtil.convert(LocalDate.class, LocalDateTime.of(2024, 2, 13, 0, 0, 0)));
+
+        try {
+            ConversionUtil.convert(LocalDate.class, new String[] {"20240213", "20240212"});
+            fail();
+        } catch (Throwable e) {
+            assertTrue(e instanceof ConversionException);
+        }
+
+        // unsupported type
+        try {
+            ConversionUtil.convert(LocalDate.class, System.currentTimeMillis());
+            fail();
+        } catch (Throwable e) {
+            assertTrue(e instanceof ConversionException);
+        }
+    }
+
+    @Test
+    public void testConvertLocalDateTime() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(2024, Calendar.FEBRUARY, 13, 10, 22, 30);
+        cal.clear(Calendar.MILLISECOND);
+        LocalDateTime localDateTime =  LocalDateTime.of(2024, 2, 13, 10, 22, 30);
+
+        // String
+        assertEquals(localDateTime, ConversionUtil.convert(LocalDateTime.class, "2024-02-13T10:22:30.000Z"));
+
+        // String[]
+        assertEquals(localDateTime, ConversionUtil.convert(LocalDateTime.class, new String[]{"2024-02-13T10:22:30.000Z"}));
+
+        // String[] {null}
+        assertNull(ConversionUtil.convert(LocalDateTime.class, new String[] {null}));
+
+        // Date
+        assertEquals(localDateTime, ConversionUtil.convert(LocalDateTime.class, cal.getTime()));
+
+
+        // Calendar
+        assertEquals(localDateTime, ConversionUtil.convert(LocalDateTime.class, cal));
+
+        // null
+        assertNull(ConversionUtil.convert(LocalDateTime.class, null));
+
+        // LocalDate
+        assertEquals(LocalDateTime.of(2024, 2, 13, 0, 0), ConversionUtil.convert(LocalDateTime.class, LocalDate.of(2024, 2, 13)));
+
+        // LocalDateTime
+        assertEquals(localDateTime, ConversionUtil.convert(LocalDateTime.class, localDateTime));
+
+        try {
+            ConversionUtil.convert(LocalDateTime.class, new String[] {"20240213", "20240212"});
+            fail();
+        } catch (Throwable e) {
+            assertTrue(e instanceof ConversionException);
+        }
+
+        // unsupported type
+        try {
+            ConversionUtil.convert(LocalDateTime.class, System.currentTimeMillis());
+            fail();
+        } catch (Throwable e) {
+            assertTrue(e instanceof ConversionException);
+        }
+    }
+
+    @Test
     public void testConvertLong() {
 
         // Number

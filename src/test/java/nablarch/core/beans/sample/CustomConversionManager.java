@@ -3,6 +3,8 @@ package nablarch.core.beans.sample;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,6 +18,8 @@ import nablarch.core.beans.converter.BigDecimalConverter;
 import nablarch.core.beans.converter.BooleanConverter;
 import nablarch.core.beans.converter.DateConverter;
 import nablarch.core.beans.converter.IntegerConverter;
+import nablarch.core.beans.converter.LocalDateConverter;
+import nablarch.core.beans.converter.LocalDateTimeConverter;
 import nablarch.core.beans.converter.LongConverter;
 import nablarch.core.beans.converter.ObjectArrayConverter;
 import nablarch.core.beans.converter.ShortConverter;
@@ -52,6 +56,8 @@ public class CustomConversionManager implements ConversionManager {
         converterMap.put(Date.class, new DateConverter());
         converterMap.put(java.sql.Date.class, new SqlDateConverter());
         converterMap.put(Timestamp.class, new SqlTimestampConverter());
+        converterMap.put(LocalDate.class, new LocalDateConverter());
+        converterMap.put(LocalDateTime.class, new LocalDateTimeConverter());
 
         // PJ固有のコンバータ
         converterMap.put(BigInteger.class, new CustomConverter());
