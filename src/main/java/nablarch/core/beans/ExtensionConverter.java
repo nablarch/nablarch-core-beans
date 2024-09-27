@@ -1,5 +1,7 @@
 package nablarch.core.beans;
 
+import nablarch.core.util.annotation.Published;
+
 /**
  * 拡張の型変換インタフェース。
  * <p>
@@ -8,6 +10,7 @@ package nablarch.core.beans;
  * @param <T> 型変換後に返す型
  * @author siosio
  */
+@Published(tag = "architect")
 public interface ExtensionConverter<T> {
 
     /**

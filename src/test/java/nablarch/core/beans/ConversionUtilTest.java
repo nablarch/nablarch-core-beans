@@ -9,6 +9,8 @@ import static org.junit.Assert.fail;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -54,7 +56,7 @@ public class ConversionUtilTest {
         );
         assertEquals(
                 BigDecimal.valueOf(8)
-              , ConversionUtil.convert(BigDecimal.class, Byte.valueOf((byte) 8))
+              , ConversionUtil.convert(BigDecimal.class, (byte) 8)
             );
 
         // convert from String
@@ -178,7 +180,7 @@ public class ConversionUtilTest {
 
         // Number
         assertEquals(1, (int)ConversionUtil.convert(Integer.class, BigDecimal.ONE));
-        assertEquals(1, (int)ConversionUtil.convert(int.class, Long.valueOf(1L)));
+        assertEquals(1, (int)ConversionUtil.convert(int.class, 1L));
 
         // String
         assertEquals(1, (int)ConversionUtil.convert(Integer.class, "1"));
@@ -220,14 +222,14 @@ public class ConversionUtilTest {
     @Test
     public void testConvertDate() {
         Calendar cal = Calendar.getInstance();
-        cal.set(1192, Calendar.FEBRUARY, 13, 0, 0, 0);
+        cal.set(2024, Calendar.FEBRUARY, 13, 0, 0, 0);
         cal.clear(Calendar.MILLISECOND);
 
         // String
-        assertEquals(cal.getTime(), ConversionUtil.convert(Date.class, "11920213"));
+        assertEquals(cal.getTime(), ConversionUtil.convert(Date.class, "20240213"));
 
         // String[]
-        assertEquals(cal.getTime(), ConversionUtil.convert(Date.class, new String[] {"11920213"}));
+        assertEquals(cal.getTime(), ConversionUtil.convert(Date.class, new String[] {"20240213"}));
 
         assertNull(ConversionUtil.convert(Date.class, new String[] {null}));
 
@@ -239,10 +241,16 @@ public class ConversionUtilTest {
         assertEquals(cal.getTime(), ConversionUtil.convert(Date.class, cal));
 
         // null
-        assertEquals(null, ConversionUtil.convert(Date.class, null));
+        assertNull(ConversionUtil.convert(Date.class, null));
+
+        // LocalDate
+        assertEquals(cal.getTime(), ConversionUtil.convert(Date.class, LocalDate.of(2024, 2, 13)));
+
+        // LocalDateTime
+        assertEquals(cal.getTime(), ConversionUtil.convert(Date.class, LocalDateTime.of(2024, 2, 13, 0, 0, 0)));
 
         try {
-            ConversionUtil.convert(Date.class, new String[] {"11920213", "11920212"});
+            ConversionUtil.convert(Date.class, new String[] {"20240213", "20240212"});
             fail();
         } catch (Throwable e) {
             assertTrue(e instanceof ConversionException);
@@ -260,14 +268,14 @@ public class ConversionUtilTest {
     @Test
     public void testConvertSqlDate() {
         Calendar cal = Calendar.getInstance();
-        cal.set(1192, Calendar.FEBRUARY, 13, 0, 0, 0);
+        cal.set(2024, Calendar.FEBRUARY, 13, 0, 0, 0);
         cal.clear(Calendar.MILLISECOND);
 
         // String
-        assertEquals(new java.sql.Date(cal.getTimeInMillis()), ConversionUtil.convert(java.sql.Date.class, "11920213"));
+        assertEquals(new java.sql.Date(cal.getTimeInMillis()), ConversionUtil.convert(java.sql.Date.class, "20240213"));
 
         // String[]
-        assertEquals(new java.sql.Date(cal.getTimeInMillis()), ConversionUtil.convert(java.sql.Date.class, new String[]{"11920213"}));
+        assertEquals(new java.sql.Date(cal.getTimeInMillis()), ConversionUtil.convert(java.sql.Date.class, new String[]{"20240213"}));
         
         // String[] {null}
         assertNull(ConversionUtil.convert(java.sql.Date.class, new String[] {null}));
@@ -280,10 +288,16 @@ public class ConversionUtilTest {
         assertEquals(new java.sql.Date(cal.getTimeInMillis()), ConversionUtil.convert(java.sql.Date.class, cal));
 
         // null
-        assertEquals(null, ConversionUtil.convert(java.sql.Date.class, null));
+        assertNull(ConversionUtil.convert(java.sql.Date.class, null));
+
+        // LocalDate
+        assertEquals(new java.sql.Date(cal.getTimeInMillis()), ConversionUtil.convert(java.sql.Date.class, LocalDate.of(2024, 2, 13)));
+
+        // LocalDateTime
+        assertEquals(new java.sql.Date(cal.getTimeInMillis()), ConversionUtil.convert(java.sql.Date.class, LocalDateTime.of(2024, 2, 13, 0, 0, 0)));
 
         try {
-            ConversionUtil.convert(java.sql.Date.class, new String[] {"11920213", "11920212"});
+            ConversionUtil.convert(java.sql.Date.class, new String[] {"20240213", "20240212"});
             fail();
         } catch (Throwable e) {
             assertTrue(e instanceof ConversionException);
@@ -301,14 +315,14 @@ public class ConversionUtilTest {
     @Test
     public void testConvertTimestamp() {
         Calendar cal = Calendar.getInstance();
-        cal.set(1192, Calendar.FEBRUARY, 13, 0, 0, 0);
+        cal.set(2024, Calendar.FEBRUARY, 13, 0, 0, 0);
         cal.clear(Calendar.MILLISECOND);
 
         // String
-        assertEquals(new Timestamp(cal.getTimeInMillis()), ConversionUtil.convert(Timestamp.class, "11920213"));
+        assertEquals(new Timestamp(cal.getTimeInMillis()), ConversionUtil.convert(Timestamp.class, "20240213"));
 
         // String[]
-        assertEquals(new Timestamp(cal.getTimeInMillis()), ConversionUtil.convert(Timestamp.class, new String[]{"11920213"}));
+        assertEquals(new Timestamp(cal.getTimeInMillis()), ConversionUtil.convert(Timestamp.class, new String[]{"20240213"}));
         
         // String[] {null}
         assertNull(ConversionUtil.convert(Timestamp.class, new String[] {null}));
@@ -321,10 +335,16 @@ public class ConversionUtilTest {
         assertEquals(new Timestamp(cal.getTimeInMillis()), ConversionUtil.convert(Timestamp.class, cal));
 
         // null
-        assertEquals(null, ConversionUtil.convert(Timestamp.class, null));
+        assertNull(ConversionUtil.convert(Timestamp.class, null));
+
+        // LocalDate
+        assertEquals(new Timestamp(cal.getTimeInMillis()), ConversionUtil.convert(Timestamp.class, LocalDate.of(2024, 2, 13)));
+
+        // LocalDateTime
+        assertEquals(new Timestamp(cal.getTimeInMillis()), ConversionUtil.convert(Timestamp.class, LocalDateTime.of(2024, 2, 13, 0, 0, 0)));
 
         try {
-            ConversionUtil.convert(Timestamp.class, new String[] {"11920213", "11920212"});
+            ConversionUtil.convert(Timestamp.class, new String[] {"20240213", "20240212"});
             fail();
         } catch (Throwable e) {
             assertTrue(e instanceof ConversionException);
@@ -340,11 +360,107 @@ public class ConversionUtilTest {
     }
 
     @Test
+    public void testConvertLocalDate() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(2024, Calendar.FEBRUARY, 13, 0, 0, 0);
+        cal.clear(Calendar.MILLISECOND);
+        LocalDate localDate = LocalDate.of(2024, 2, 13);
+
+        // String
+        assertEquals(localDate, ConversionUtil.convert(LocalDate.class, "20240213"));
+
+        // String[]
+        assertEquals(localDate, ConversionUtil.convert(LocalDate.class, new String[]{"20240213"}));
+
+        // String[] {null}
+        assertNull(ConversionUtil.convert(LocalDate.class, new String[] {null}));
+
+        // Date
+        assertEquals(localDate, ConversionUtil.convert(LocalDate.class, cal.getTime()));
+
+
+        // Calendar
+        assertEquals(localDate, ConversionUtil.convert(LocalDate.class, cal));
+
+        // null
+        assertNull(ConversionUtil.convert(LocalDate.class, null));
+
+        // LocalDate
+        assertEquals(localDate, ConversionUtil.convert(LocalDate.class, LocalDate.of(2024, 2, 13)));
+
+        // LocalDateTime
+        assertEquals(localDate, ConversionUtil.convert(LocalDate.class, LocalDateTime.of(2024, 2, 13, 0, 0, 0)));
+
+        try {
+            ConversionUtil.convert(LocalDate.class, new String[] {"20240213", "20240212"});
+            fail();
+        } catch (Throwable e) {
+            assertTrue(e instanceof ConversionException);
+        }
+
+        // unsupported type
+        try {
+            ConversionUtil.convert(LocalDate.class, System.currentTimeMillis());
+            fail();
+        } catch (Throwable e) {
+            assertTrue(e instanceof ConversionException);
+        }
+    }
+
+    @Test
+    public void testConvertLocalDateTime() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(2024, Calendar.FEBRUARY, 13, 10, 22, 30);
+        cal.clear(Calendar.MILLISECOND);
+        LocalDateTime localDateTime =  LocalDateTime.of(2024, 2, 13, 10, 22, 30);
+
+        // String
+        assertEquals(localDateTime, ConversionUtil.convert(LocalDateTime.class, "2024-02-13T10:22:30.000Z"));
+
+        // String[]
+        assertEquals(localDateTime, ConversionUtil.convert(LocalDateTime.class, new String[]{"2024-02-13T10:22:30.000Z"}));
+
+        // String[] {null}
+        assertNull(ConversionUtil.convert(LocalDateTime.class, new String[] {null}));
+
+        // Date
+        assertEquals(localDateTime, ConversionUtil.convert(LocalDateTime.class, cal.getTime()));
+
+
+        // Calendar
+        assertEquals(localDateTime, ConversionUtil.convert(LocalDateTime.class, cal));
+
+        // null
+        assertNull(ConversionUtil.convert(LocalDateTime.class, null));
+
+        // LocalDate
+        assertEquals(LocalDateTime.of(2024, 2, 13, 0, 0), ConversionUtil.convert(LocalDateTime.class, LocalDate.of(2024, 2, 13)));
+
+        // LocalDateTime
+        assertEquals(localDateTime, ConversionUtil.convert(LocalDateTime.class, localDateTime));
+
+        try {
+            ConversionUtil.convert(LocalDateTime.class, new String[] {"20240213", "20240212"});
+            fail();
+        } catch (Throwable e) {
+            assertTrue(e instanceof ConversionException);
+        }
+
+        // unsupported type
+        try {
+            ConversionUtil.convert(LocalDateTime.class, System.currentTimeMillis());
+            fail();
+        } catch (Throwable e) {
+            assertTrue(e instanceof ConversionException);
+        }
+    }
+
+    @Test
     public void testConvertLong() {
 
         // Number
         assertEquals(1L, (long)ConversionUtil.convert(Long.class, BigDecimal.ONE));
-        assertEquals(1L, (long)ConversionUtil.convert(Long.class, Long.valueOf(1L)));
+        assertEquals(1L, (long)ConversionUtil.convert(Long.class, 1L));
 
         // String
         assertEquals(1L, (long)ConversionUtil.convert(Long.class, "1"));
@@ -394,7 +510,7 @@ public class ConversionUtilTest {
 
         // Number
         assertEquals((short)1, (short)ConversionUtil.convert(Short.class, BigDecimal.ONE));
-        assertEquals((short)1, (short)ConversionUtil.convert(short.class, Long.valueOf(1L)));
+        assertEquals((short)1, (short)ConversionUtil.convert(short.class, 1L));
 
         // String
         assertEquals((short)1, (short)ConversionUtil.convert(Short.class, "1"));
@@ -442,7 +558,7 @@ public class ConversionUtilTest {
     @Test
     public void testConverterString() {
         // null
-        assertEquals(null, ConversionUtil.convert(String.class, null));
+        assertNull(ConversionUtil.convert(String.class, null));
 
         // String
         assertEquals("HOGE", ConversionUtil.convert(String.class, "HOGE"));
@@ -451,7 +567,7 @@ public class ConversionUtilTest {
         assertEquals("HOGE", ConversionUtil.convert(String.class, new String[] {"HOGE"}));
         
         // String[] {null}
-        assertEquals(null, ConversionUtil.convert(String.class, new String[] {null}));
+        assertNull(ConversionUtil.convert(String.class, new String[]{null}));
 
         // Number
         assertEquals("12.34", ConversionUtil.convert(String.class, 12.34));
@@ -459,6 +575,12 @@ public class ConversionUtilTest {
         // Boolean
         assertEquals("1", ConversionUtil.convert(String.class, true));
         assertEquals("0", ConversionUtil.convert(String.class, Boolean.FALSE));
+
+        // LocalDate
+        assertEquals("2024-05-01", ConversionUtil.convert(String.class, LocalDate.of(2024, 5, 1)));
+
+        // LocalDateTime
+        assertEquals("2024-05-01T15:10", ConversionUtil.convert(String.class, LocalDateTime.of(2024, 5, 1, 15, 10)));
 
         try {
             ConversionUtil.convert(String.class, new String[] {"1", "2"});
@@ -486,7 +608,7 @@ public class ConversionUtilTest {
         // array of Objects
         assertArrayEquals(
             new String[]{"1", "2", "3"}
-          , ConversionUtil.convert(String[].class, new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3)})
+          , ConversionUtil.convert(String[].class, new Object[]{"1", 2, BigDecimal.valueOf(3)})
         );
 
         // array of primitives
@@ -500,11 +622,11 @@ public class ConversionUtilTest {
             new String[]{"1", "2", "3"}
           , ConversionUtil.convert(
                 String[].class
-              , new ArrayList<Object>(){{
-                  add("1");
-                  add(Integer.valueOf(2));
-                  add(BigDecimal.valueOf(3));
-                }}
+              , new ArrayList<>() {{
+                            add("1");
+                            add(2);
+                            add(BigDecimal.valueOf(3));
+                        }}
             )
         );
 
@@ -528,27 +650,27 @@ public class ConversionUtilTest {
 
         // array of Object
         assertArrayEquals(
-            new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3), null}
-          , ConversionUtil.convert(Object[].class, new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3), null})
+            new Object[]{"1", 2, BigDecimal.valueOf(3), null}
+          , ConversionUtil.convert(Object[].class, new Object[]{"1", 2, BigDecimal.valueOf(3), null})
         );
 
         // array of primitives
         assertArrayEquals(
-            new Object[]{Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3)}
+            new Object[]{1, 2, 3}
           , ConversionUtil.convert(Object[].class, new int[]{1, 2, 3})
         );
 
         // list
         assertArrayEquals(
-            new Object[]{"1", Integer.valueOf(2), BigDecimal.valueOf(3), null}
+            new Object[]{"1", 2, BigDecimal.valueOf(3), null}
           , ConversionUtil.convert(
                 Object[].class
-              , new ArrayList<Object>(){{
-                  add("1");
-                  add(Integer.valueOf(2));
-                  add(BigDecimal.valueOf(3));
-                  add(null);
-                }}
+              , new ArrayList<>() {{
+                            add("1");
+                            add(2);
+                            add(BigDecimal.valueOf(3));
+                            add(null);
+                        }}
             )
         );
 

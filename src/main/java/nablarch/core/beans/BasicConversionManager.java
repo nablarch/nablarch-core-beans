@@ -2,6 +2,8 @@ package nablarch.core.beans;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -16,6 +18,8 @@ import nablarch.core.beans.converter.BytesConverter;
 import nablarch.core.beans.converter.DateConverter;
 import nablarch.core.beans.converter.IntegerConverter;
 import nablarch.core.beans.converter.ListExtensionConverter;
+import nablarch.core.beans.converter.LocalDateConverter;
+import nablarch.core.beans.converter.LocalDateTimeConverter;
 import nablarch.core.beans.converter.LongConverter;
 import nablarch.core.beans.converter.ObjectArrayConverter;
 import nablarch.core.beans.converter.SetExtensionConverter;
@@ -44,7 +48,7 @@ public class BasicConversionManager implements ConversionManager {
      * コンストラクタ。
      */
     public BasicConversionManager() {
-        final Map<Class<?>, Converter<?>> convertMap = new HashMap<Class<?>, Converter<?>>();
+        final Map<Class<?>, Converter<?>> convertMap = new HashMap<>();
         convertMap.put(Boolean.class, new BooleanConverter());
         convertMap.put(boolean.class, new BooleanConverter());
         convertMap.put(Integer.class, new IntegerConverter());
@@ -60,10 +64,12 @@ public class BasicConversionManager implements ConversionManager {
         convertMap.put(Date.class, new DateConverter());
         convertMap.put(java.sql.Date.class, new SqlDateConverter());
         convertMap.put(Timestamp.class, new SqlTimestampConverter());
+        convertMap.put(LocalDate.class, new LocalDateConverter());
+        convertMap.put(LocalDateTime.class, new LocalDateTimeConverter());
         convertMap.put(byte[].class, new BytesConverter());
         converters = Collections.unmodifiableMap(convertMap);
 
-        final List<ExtensionConverter<?>> extensionConverterList = new ArrayList<ExtensionConverter<?>>();
+        final List<ExtensionConverter<?>> extensionConverterList = new ArrayList<>();
         extensionConverterList.add(new ListExtensionConverter());
         extensionConverterList.add(new SetExtensionConverter());
         extensionConverterList.add(new ArrayExtensionConverter());
@@ -90,16 +96,18 @@ public class BasicConversionManager implements ConversionManager {
         if (patterns.isEmpty()) {
             return;
         }
-        HashMap<Class<?>, Converter<?>> convertMap = new HashMap<Class<?>, Converter<?>>(
+        HashMap<Class<?>, Converter<?>> convertMap = new HashMap<>(
                 converters);
+        convertMap.put(LocalDate.class, new LocalDateConverter(patterns));
+        convertMap.put(LocalDateTime.class, new LocalDateTimeConverter(patterns));
         convertMap.put(Date.class, new DateConverter(patterns));
         convertMap.put(java.sql.Date.class, new SqlDateConverter(patterns));
         convertMap.put(Timestamp.class, new SqlTimestampConverter(patterns));
 
         StringConverter stringConverter = new StringConverter(patterns.get(0), null);
         Converter<?> converter = convertMap.get(String.class);
-        if (converter != null && converter instanceof StringConverter) {
-            stringConverter = StringConverter.class.cast(converter).merge(stringConverter);
+        if (converter instanceof StringConverter) {
+            stringConverter = ((StringConverter) converter).merge(stringConverter);
         }
         convertMap.put(String.class, stringConverter);
 
@@ -115,7 +123,7 @@ public class BasicConversionManager implements ConversionManager {
         if (patterns.isEmpty()) {
             return;
         }
-        HashMap<Class<?>, Converter<?>> convertMap = new HashMap<Class<?>, Converter<?>>(
+        HashMap<Class<?>, Converter<?>> convertMap = new HashMap<>(
                 converters);
         convertMap.put(Integer.class, new IntegerConverter(patterns));
         convertMap.put(int.class, new IntegerConverter(patterns));
@@ -127,8 +135,8 @@ public class BasicConversionManager implements ConversionManager {
 
         StringConverter stringConverter = new StringConverter(null, patterns.get(0));
         Converter<?> converter = convertMap.get(String.class);
-        if (converter != null && converter instanceof StringConverter) {
-            stringConverter = StringConverter.class.cast(converter).merge(stringConverter);
+        if (converter instanceof StringConverter) {
+            stringConverter = ((StringConverter) converter).merge(stringConverter);
         }
         convertMap.put(String.class, stringConverter);
 
