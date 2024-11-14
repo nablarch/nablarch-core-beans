@@ -31,8 +31,8 @@ public class BasicConversionManagerTest {
                 converters.get(LocalDate.class).convert("20180221"));
         assertEquals(LocalDateTime.of(2018, 2, 21, 0, 0),
                 converters.get(LocalDateTime.class).convert("2018-02-21T00:00:00Z"));
-        assertEquals(OffsetDateTime.of(2018, 2, 21, 0, 0, 0 , 0, ZoneOffset.UTC),
-                converters.get(OffsetDateTime.class).convert("2018-02-21T00:00:00Z"));
+        assertEquals(OffsetDateTime.of(2018, 2, 21, 0, 0, 0 , 0, ZoneOffset.ofHours(9)),
+                converters.get(OffsetDateTime.class).convert("2018-02-21T00:00:00+09:00"));
         assertEquals(utilDate("2018-02-21 00:00:00"),
                 converters.get(java.util.Date.class).convert("20180221"));
         assertEquals(sqlDate("2018-02-21"),
@@ -44,8 +44,8 @@ public class BasicConversionManagerTest {
                 converters.get(String.class).convert(LocalDate.of(2018, 2, 21)));
         assertEquals("2018-02-21T00:00",
                 converters.get(String.class).convert(LocalDateTime.of(2018, 2, 21, 0, 0)));
-        assertEquals("2018-02-21T00:00Z",
-                converters.get(String.class).convert(OffsetDateTime.of(2018, 2, 21, 0, 0, 0, 0, ZoneOffset.UTC)));
+        assertEquals("2018-02-21T00:00+09:00",
+                converters.get(String.class).convert(OffsetDateTime.of(2018, 2, 21, 0, 0, 0, 0, ZoneOffset.ofHours(9))));
 
         assertEquals("Wed Feb 21 00:00:00 JST 2018",
                 converters.get(String.class).convert(utilDate("2018-02-21 00:00:00")));

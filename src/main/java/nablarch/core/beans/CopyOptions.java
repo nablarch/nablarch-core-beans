@@ -19,9 +19,14 @@ import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
 import nablarch.core.beans.converter.BigDecimalConverter;
+import nablarch.core.beans.converter.DateConverter;
 import nablarch.core.beans.converter.IntegerConverter;
+import nablarch.core.beans.converter.LocalDateConverter;
+import nablarch.core.beans.converter.LocalDateTimeConverter;
 import nablarch.core.beans.converter.LongConverter;
+import nablarch.core.beans.converter.OffsetDateTimeConverter;
 import nablarch.core.beans.converter.ShortConverter;
+import nablarch.core.beans.converter.SqlDateConverter;
 import nablarch.core.beans.converter.SqlTimestampConverter;
 import nablarch.core.beans.converter.StringConverter;
 import nablarch.core.repository.SystemRepository;
