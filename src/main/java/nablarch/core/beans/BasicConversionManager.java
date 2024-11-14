@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -22,6 +23,7 @@ import nablarch.core.beans.converter.LocalDateConverter;
 import nablarch.core.beans.converter.LocalDateTimeConverter;
 import nablarch.core.beans.converter.LongConverter;
 import nablarch.core.beans.converter.ObjectArrayConverter;
+import nablarch.core.beans.converter.OffsetDateTimeConverter;
 import nablarch.core.beans.converter.SetExtensionConverter;
 import nablarch.core.beans.converter.ShortConverter;
 import nablarch.core.beans.converter.SqlDateConverter;
@@ -66,6 +68,7 @@ public class BasicConversionManager implements ConversionManager {
         convertMap.put(Timestamp.class, new SqlTimestampConverter());
         convertMap.put(LocalDate.class, new LocalDateConverter());
         convertMap.put(LocalDateTime.class, new LocalDateTimeConverter());
+        convertMap.put(OffsetDateTime.class, new OffsetDateTimeConverter());
         convertMap.put(byte[].class, new BytesConverter());
         converters = Collections.unmodifiableMap(convertMap);
 
@@ -100,6 +103,7 @@ public class BasicConversionManager implements ConversionManager {
                 converters);
         convertMap.put(LocalDate.class, new LocalDateConverter(patterns));
         convertMap.put(LocalDateTime.class, new LocalDateTimeConverter(patterns));
+        convertMap.put(OffsetDateTime.class, new OffsetDateTimeConverter(patterns));
         convertMap.put(Date.class, new DateConverter(patterns));
         convertMap.put(java.sql.Date.class, new SqlDateConverter(patterns));
         convertMap.put(Timestamp.class, new SqlTimestampConverter(patterns));

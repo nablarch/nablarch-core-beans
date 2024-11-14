@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,7 +18,12 @@ import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
-import nablarch.core.beans.converter.*;
+import nablarch.core.beans.converter.BigDecimalConverter;
+import nablarch.core.beans.converter.IntegerConverter;
+import nablarch.core.beans.converter.LongConverter;
+import nablarch.core.beans.converter.ShortConverter;
+import nablarch.core.beans.converter.SqlTimestampConverter;
+import nablarch.core.beans.converter.StringConverter;
 import nablarch.core.repository.SystemRepository;
 import nablarch.core.util.annotation.Published;
 
@@ -761,6 +767,7 @@ public final class CopyOptions {
             converters.put(String.class, new StringConverter(patterns.get(0), null));
             converters.put(LocalDate.class, new LocalDateConverter(patterns));
             converters.put(LocalDateTime.class, new LocalDateTimeConverter(patterns));
+            converters.put(OffsetDateTime.class, new OffsetDateTimeConverter(patterns));
             converters.put(java.util.Date.class, new DateConverter(patterns));
             converters.put(java.sql.Date.class, new SqlDateConverter(patterns));
             converters.put(Timestamp.class, new SqlTimestampConverter(patterns));

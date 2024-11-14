@@ -28,6 +28,15 @@ public interface DateTimeConverterConfiguration {
     DateTimeFormatter getDateTimeFormatter();
 
     /**
+     * オフセット付き日時向けのフォーマッタ
+     *
+     * @return オフセット付き日時向けの{@code java.time.format.DateTimeFormatter}のインスタンス
+     */
+    default DateTimeFormatter getOffsetDateTimeFormatter() {
+        return DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+    }
+
+    /**
      * システムが依存する{@code java.time.ZoneId}を取得する
      *
      * @return システムが依存するで管理している{@code java.time.ZoneId}

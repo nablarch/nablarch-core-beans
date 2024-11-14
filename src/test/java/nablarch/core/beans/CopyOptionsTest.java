@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +42,7 @@ public class CopyOptionsTest {
                 .build();
         assertThat(sut.hasNamedConverter("foo", LocalDate.class), is(true));
         assertThat(sut.hasNamedConverter("foo", LocalDateTime.class), is(true));
+        assertThat(sut.hasNamedConverter("foo", OffsetDateTime.class), is(true));
         assertThat(sut.hasNamedConverter("foo", java.util.Date.class), is(true));
         assertThat(sut.hasNamedConverter("foo", java.sql.Date.class), is(true));
         assertThat(sut.hasNamedConverter("foo", Timestamp.class), is(true));
@@ -134,6 +137,9 @@ public class CopyOptionsTest {
 
         assertThat(sut.hasTypedConverter(LocalDateTime.class), is(true));
         assertThat(sut.convertByType(LocalDateTime.class, date("2018-02-14 00:00:00")), is(LocalDateTime.of(2018, 2, 14, 0, 0)));
+
+        assertThat(sut.hasTypedConverter(OffsetDateTime.class), is(true));
+        assertThat(sut.convertByType(OffsetDateTime.class, date("2018-02-14 00:00:00")), is(OffsetDateTime.of(2018, 2, 14, 0, 0, 0, 0, ZoneOffset.ofHours(9))));
 
         assertThat(sut.hasTypedConverter(java.util.Date.class), is(true));
         assertThat(sut.convertByType(java.util.Date.class, date("2018-02-14 00:00:00")), is(date("2018-02-14 00:00:00")));

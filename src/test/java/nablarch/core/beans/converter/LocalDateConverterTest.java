@@ -15,6 +15,8 @@ import org.junit.runner.RunWith;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 
@@ -37,6 +39,7 @@ public class LocalDateConverterTest {
                 {"20170601", LocalDate.of(2017, 6, 1)},
                 {LocalDate.of(2017, 6, 12), LocalDate.of(2017, 6, 12)},
                 {LocalDateTime.of(2017, 6, 13, 12, 30, 15), LocalDate.of(2017, 6, 13)},
+                {OffsetDateTime.of(2017, 6, 13, 12, 30, 15, 0, ZoneOffset.ofHours(9)), LocalDate.of(2017, 6, 13)},
                 {DateUtil.getParsedDate("20170621000000000", "yyyyMMddHHmmssSSS"), LocalDate.of(2017, 6, 21)},
                 {DateUtil.getParsedDate("20170622235011300", "yyyyMMddHHmmssSSS"), LocalDate.of(2017, 6, 22)},
                 {newSqlDate("19490402000000", "yyyyMMddHHmmss"), LocalDate.of(1949, 4, 2)}

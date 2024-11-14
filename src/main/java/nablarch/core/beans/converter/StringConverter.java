@@ -3,6 +3,7 @@ package nablarch.core.beans.converter;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -90,6 +91,8 @@ public class StringConverter implements Mergeable<String, StringConverter> {
             return localDate.format(formatter);
         } else if (formatter != null && value instanceof LocalDateTime localDateTime) {
             return localDateTime.format(formatter);
+        } else if (formatter != null && value instanceof OffsetDateTime offsetDateTime) {
+            return offsetDateTime.format(formatter);
         }
         return StringUtil.toString(value);
     }

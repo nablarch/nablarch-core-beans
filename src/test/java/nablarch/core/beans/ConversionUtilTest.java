@@ -11,6 +11,8 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -249,6 +251,9 @@ public class ConversionUtilTest {
         // LocalDateTime
         assertEquals(cal.getTime(), ConversionUtil.convert(Date.class, LocalDateTime.of(2024, 2, 13, 0, 0, 0)));
 
+        // OffsetDateTime
+        assertEquals(cal.getTime(), ConversionUtil.convert(Date.class, OffsetDateTime.of(2024, 2, 13, 0, 0, 0, 0, ZoneOffset.ofHours(9))));
+
         try {
             ConversionUtil.convert(Date.class, new String[] {"20240213", "20240212"});
             fail();
@@ -296,6 +301,9 @@ public class ConversionUtilTest {
         // LocalDateTime
         assertEquals(new java.sql.Date(cal.getTimeInMillis()), ConversionUtil.convert(java.sql.Date.class, LocalDateTime.of(2024, 2, 13, 0, 0, 0)));
 
+        // OffsetDateTime
+        assertEquals(new java.sql.Date(cal.getTimeInMillis()), ConversionUtil.convert(java.sql.Date.class, OffsetDateTime.of(2024, 2, 13, 0, 0, 0, 0, ZoneOffset.UTC)));
+
         try {
             ConversionUtil.convert(java.sql.Date.class, new String[] {"20240213", "20240212"});
             fail();
@@ -342,6 +350,9 @@ public class ConversionUtilTest {
 
         // LocalDateTime
         assertEquals(new Timestamp(cal.getTimeInMillis()), ConversionUtil.convert(Timestamp.class, LocalDateTime.of(2024, 2, 13, 0, 0, 0)));
+
+        // OffsetDateTime
+        assertEquals(new Timestamp(cal.getTimeInMillis()), ConversionUtil.convert(Timestamp.class, OffsetDateTime.of(2024, 2, 13, 0, 0, 0, 0, ZoneOffset.ofHours(9))));
 
         try {
             ConversionUtil.convert(Timestamp.class, new String[] {"20240213", "20240212"});
