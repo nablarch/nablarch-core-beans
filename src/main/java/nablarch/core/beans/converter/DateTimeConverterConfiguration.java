@@ -12,20 +12,23 @@ import java.time.format.DateTimeFormatter;
  */
 @Published(tag = "architect")
 public interface DateTimeConverterConfiguration {
-
     /**
      * 日付向けのフォーマッタ
      *
      * @return 日付向けの{@code java.time.format.DateTimeFormatter}のインスタンス
      */
-    DateTimeFormatter getDateFormatter();
+    default DateTimeFormatter getDateFormatter() {
+        return DateTimeFormatter.BASIC_ISO_DATE;
+    }
 
     /**
      * 日時向けのフォーマッタ
      *
      * @return 日時向けの{@code java.time.format.DateTimeFormatter}のインスタンス
      */
-    DateTimeFormatter getDateTimeFormatter();
+    default DateTimeFormatter getDateTimeFormatter() {
+        return DateTimeFormatter.ISO_INSTANT;
+    }
 
     /**
      * オフセット付き日時向けのフォーマッタ
@@ -41,5 +44,7 @@ public interface DateTimeConverterConfiguration {
      *
      * @return システムが依存するで管理している{@code java.time.ZoneId}
      */
-    ZoneId getSystemZoneId();
+    default ZoneId getSystemZoneId() {
+        return ZoneId.systemDefault();
+    }
 }
