@@ -44,7 +44,5 @@ public interface DateTimeConverterConfiguration {
      *
      * @return システムが依存するで管理している{@code java.time.ZoneId}
      */
-    default ZoneId getSystemZoneId() {
-        return ZoneId.systemDefault();
-    }
+    ZoneId getSystemZoneId();
 }
