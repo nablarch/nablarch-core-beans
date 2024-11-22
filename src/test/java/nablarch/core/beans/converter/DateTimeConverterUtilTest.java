@@ -10,6 +10,8 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Collections;
@@ -101,7 +103,7 @@ public class DateTimeConverterUtilTest {
     }
 
     @Test
-    public void getLocalDAteTimeFromCalendar() {
+    public void getLocalDateTimeFromCalendar() {
         final Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, 2017);
         calendar.set(Calendar.MONTH, Calendar.JUNE);
@@ -116,6 +118,51 @@ public class DateTimeConverterUtilTest {
     }
 
     @Test
+    public void getOffsetDateTimeFromString() {
+        assertThat(DateTimeConverterUtil.getOffsetDateTime("2017-01-02T03:04:05Z"),
+                is(OffsetDateTime.of(2017, 1, 2, 3, 4, 5, 0, ZoneOffset.UTC)));
+
+
+        SystemRepository.load(() -> Collections.singletonMap("dateTimeConfiguration", new BasicDateTimeConverterConfiguration() {
+            @Override
+            public DateTimeFormatter getOffsetDateTimeFormatter() {
+                return DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm:ssZ");
+            }
+        }));
+        assertThat(DateTimeConverterUtil.getOffsetDateTime("2014/01/02 11:22:33+0900"),
+                is(OffsetDateTime.of(2014, 1, 2, 11, 22, 33, 0, ZoneOffset.ofHours(9))));
+    }
+
+    @Test
+    public void getOffsetDateTimeFromUtilDate() {
+        final Timestamp timestamp = Timestamp.valueOf("2017-01-02 03:04:05");
+        assertThat(DateTimeConverterUtil.getOffsetDateTime(new Date(timestamp.getTime())),
+                is(OffsetDateTime.of(2017, 1, 2, 3, 4, 5, 0, ZoneOffset.ofHours(9))));
+    }
+
+    @Test
+    public void getOffsetDateTimeAsSqlDate() {
+        final Timestamp timestamp = Timestamp.valueOf("2017-12-02 03:04:05");
+        assertThat(DateTimeConverterUtil.getOffsetDateTimeAsSqlDate(new java.sql.Date(timestamp.getTime())),
+                is(OffsetDateTime.of(2017, 12, 2, 0, 0, 0, 0, ZoneOffset.ofHours(9))));
+    }
+
+    @Test
+    public void getOffsetDateTimeFromCalendar() {
+        final Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, 2017);
+        calendar.set(Calendar.MONTH, Calendar.JUNE);
+        calendar.set(Calendar.DAY_OF_MONTH, 15);
+        calendar.set(Calendar.HOUR_OF_DAY, 22);
+        calendar.set(Calendar.MINUTE, 30);
+        calendar.set(Calendar.SECOND, 35);
+        calendar.set(Calendar.MILLISECOND, 100);
+
+        assertThat(DateTimeConverterUtil.getOffsetDateTime(calendar),
+                is(OffsetDateTime.of(2017, 6, 15, 22, 30, 35, 100000000, ZoneOffset.ofHours(9))));
+    }
+
+    @Test
     public void getDateFromLocalDate() {
         assertThat(DateTimeConverterUtil.getDate(LocalDate.of(2017, 11, 12)),
                 is(DateUtil.getDate("20171112")));
@@ -126,10 +173,22 @@ public class DateTimeConverterUtilTest {
         assertThat(DateTimeConverterUtil.getDate(LocalDateTime.of(2017, 1, 2, 3, 4, 5, 123456789)),
                 is(DateUtil.getParsedDate("2017/01/02 03:04:05.123", "yyyy/MM/dd hh:mm:ss.SSS")));
     }
+
+    @Test
+    public void getDateFromOffsetDateTime() {
+        assertThat(DateTimeConverterUtil.getDate(OffsetDateTime.of(2017, 1, 2, 3, 4, 5, 123456789, ZoneOffset.ofHours(9))),
+                is(DateUtil.getParsedDate("2017/01/02 03:04:05.123+0900", "yyyy/MM/dd hh:mm:ss.SSSZ")));
+    }
     
     @Test
     public void getTimestampFromLocalDateTime() {
         assertThat(DateTimeConverterUtil.getTimestamp(LocalDateTime.of(2017, 1, 2, 3, 4, 5, 123456789)),
+                is(Timestamp.valueOf("2017-01-02 03:04:05.123456789")));
+    }
+
+    @Test
+    public void getTimestampFromOffsetDateTime() {
+        assertThat(DateTimeConverterUtil.getTimestamp(OffsetDateTime.of(2017, 1, 2, 3, 4, 5, 123456789, ZoneOffset.ofHours(9))),
                 is(Timestamp.valueOf("2017-01-02 03:04:05.123456789")));
     }
 }

@@ -3,6 +3,7 @@ package nablarch.core.beans.converter;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -83,6 +84,8 @@ public class SqlTimestampConverter implements Converter<Timestamp> {
             return Timestamp.valueOf(localDate.atStartOfDay());
         } else if (value instanceof LocalDateTime localDateTime) {
             return Timestamp.valueOf(localDateTime);
+        } else if (value instanceof OffsetDateTime offsetDateTime) {
+            return DateTimeConverterUtil.getTimestamp(offsetDateTime);
         } else {
             throw new ConversionException(Timestamp.class, value);
         }
