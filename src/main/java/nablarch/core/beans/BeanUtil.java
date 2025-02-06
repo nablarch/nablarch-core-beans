@@ -755,8 +755,13 @@ public final class BeanUtil {
         }
 
         for (Map.Entry<String, Map<String, Object>> entry : groupedMap.entrySet()) {
-            PropertyExpression expression = new PropertyExpression(entry.getKey());
-            setProperty(bean, expression, entry.getValue(), mergedCopyOptions);
+            try {
+                PropertyExpression expression = new PropertyExpression(entry.getKey());
+                setProperty(bean, expression, entry.getValue(), mergedCopyOptions);
+            } catch (BeansException bex) {
+                LOGGER.logDebug(
+                        "An error occurred while writing to the property :" + entry.getKey());
+            }
         }
     }
 
