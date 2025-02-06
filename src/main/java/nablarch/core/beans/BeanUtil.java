@@ -995,7 +995,6 @@ public final class BeanUtil {
 
                 if (propertyType.isArray()) {
                     Class<?> componentType = propertyType.getComponentType();
-                    // Object array = propertyMap.computeIfAbsent(propertyName, (key) -> Array.newInstance(componentType, expression.getListIndex() + 1));
                     Object array = propertyMap.getOrDefault(propertyName, Array.newInstance(componentType, expression.getListIndex() + 1));
                     array = initializeArray(array, componentType, expression.getListIndex());
                     int index = expression.getListIndex();

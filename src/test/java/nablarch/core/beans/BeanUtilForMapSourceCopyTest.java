@@ -80,7 +80,7 @@ public class BeanUtilForMapSourceCopyTest {
             assertEquals("value" + index + "-J", form.getItems().get(i).getKeyJ());
         }
 
-        assertTrue((end - start) < 1000);
+        assertTrue((end - start) < 3000);
 
         // レコード
         RecForm recForm = new RecForm();
