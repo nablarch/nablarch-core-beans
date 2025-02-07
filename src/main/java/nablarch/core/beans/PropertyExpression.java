@@ -27,18 +27,23 @@ class PropertyExpression {
     /** ネストしたプロパティの文字列表現（ドット区切り） */
     private final String rawKey;
 
+    /** ネストしたときの親部分の文字列表現（ドット区切り） */
+    private final String parentKey;
+
     /**
      * コンストラクタ。
      *
+     * @param parentKey ネストしたときの親部分
      * @param nestedProperties ネストしたプロパティ
      */
-    private PropertyExpression(List<String> nestedProperties) {
+    private PropertyExpression(String parentKey, List<String> nestedProperties) {
         if (nestedProperties.isEmpty()) {
             throw new IllegalArgumentException("invalid.");
         }
         this.nestedProperties = nestedProperties;
         this.listPropertyInfo = createListPropertyInfo();
         this.rawKey = String.join(".", nestedProperties);
+        this.parentKey = parentKey;
     }
 
     /**
@@ -53,6 +58,7 @@ class PropertyExpression {
         this.nestedProperties = new LinkedList<>(Arrays.asList(expression.split("\\.")));
         this.listPropertyInfo = createListPropertyInfo();
         this.rawKey = expression;
+        this.parentKey = "";
     }
 
     /**
@@ -109,7 +115,8 @@ class PropertyExpression {
      */
     PropertyExpression rest() {
         List<String> rest = nestedProperties.subList(1, nestedProperties.size());
-        return new PropertyExpression(rest);
+        String parent = this.parentKey.isEmpty() ? nestedProperties.get(0) : this.parentKey + "." + nestedProperties.get(0);
+        return new PropertyExpression(parent, rest);
     }
 
     /**
@@ -154,6 +161,15 @@ class PropertyExpression {
      */
     String getRawKey() {
         return rawKey;
+    }
+
+    /**
+     * {@link PropertyExpression#parentKey}を返却する。
+     *
+     * @return parentKey
+     */
+    String getParentKey() {
+        return parentKey;
     }
 
     /**
