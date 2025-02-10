@@ -119,6 +119,14 @@ class PropertyExpression {
         return new PropertyExpression(parent, rest);
     }
 
+    PropertyExpression sibling(String propertyName) {
+        return new PropertyExpression(this.parentKey, List.of(propertyName.split("\\.")));
+    }
+
+    PropertyExpression leaf() {
+        return new PropertyExpression(this.parentKey, List.of(nestedProperties.get(nestedProperties.size() - 1)));
+    }
+
     /**
      * 単純なプロパティか判定する.<br/>
      * @return リストまたは配列のプロパティではない場合、真
