@@ -213,25 +213,25 @@ public final class BeanUtil {
      *
      * @param bean Beanオブジェクト
      * @param expression プロパティを表すオブジェクト
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
+     * @param copyOptions コピーの設定
      * @throws BeansException インスタンス生成に失敗した場合
      * @throws IllegalArgumentException 引数の{@code bean}がレコードの場合
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     private static void setProperty(Object bean, PropertyExpression expression, Map<String, ?> map, CopyOptions copyOptions) {
 
         if (bean.getClass().isRecord()) {
             throw new IllegalArgumentException("The target bean must not be a record.");
         }
-        final String propertyName = expression.isListOrArray() ?
-                expression.getListPropertyName() : expression.getRoot();
 
         List<Map<String,Object>> separatedList = getSeparatedlist(map);
-        Iterator<Boolean> it = List.of(true, false).iterator();
-        separatedList.forEach(srcMap -> {
 
-            boolean isNode = it.next();
+        for (int i = 0; i< 2; i++) {
+            boolean isNode = i == 0;
+            Map<String, Object> srcMap = separatedList.get(i);
+
             if (srcMap.isEmpty()) {
-                return;
+                continue;
             }
             if (expression.isSimpleProperty() && isNode) {
                 setPropertyValue(bean, expression.getRoot(), srcMap.get(expression.getRawKey()));
@@ -245,204 +245,10 @@ public final class BeanUtil {
                     throw new BeansException("property type must be List or Array.");
                 }
             } else {
-                setObjectProperty(bean, expression, map, copyOptions);
-            }
-        });
-
-//        Map<String, Map<String, Object>> groupMap = new HashMap<>();
-//
-//        boolean allError = true;
-//        for (Map.Entry<String, ?> entry : map.entrySet()) {
-//            //System.out.println("-parent: " + propertyExpression.getParentKey() + "/property: " + propertyExpression.getRawKey()  + "/key: " + entry.getKey());
-//            PropertyExpression keyExpression = propertyExpression.sibling(entry.getKey());
-//
-////            if (keyExpression.isSimpleProperty() && keyExpression.isNode()) {
-////                setPropertyValue(bean, keyExpression.getRoot(), map.get(keyExpression.getRawKey()));
-////            } else if (keyExpression.isListOrArray()) {
-////                Class<?> propertyType = getPropertyType(bean.getClass(), propertyName);
-////                if (propertyType.isArray()) {
-////                    if (keyExpression.isNode()) {
-////                        setArrayProperty(bean, keyExpression, map);
-////                    }
-////                } else if (List.class.isAssignableFrom(propertyType)) {
-////                    if (keyExpression.isNode()) {
-////                        setListProperty(bean, keyExpression, map);
-////                    }
-////                } else {
-////                    throw new BeansException("property type must be List or Array.");
-////                }
-////            }
-//            try {
-//                if (keyExpression.isSimpleProperty() && keyExpression.isNode()) {
-//                    setPropertyValue(bean, keyExpression.getRoot(), map.get(keyExpression.getRawKey()));
-//                } else if (keyExpression.isListOrArray()) {
-//                    Class<?> propertyType = getPropertyType(bean.getClass(), propertyName);
-//                    if (propertyType.isArray()) {
-////                        if (keyExpression.isNode()) {
-////                            setArrayProperty(bean, keyExpression, map, copyOptions);
-////                        }
-//                        setArrayProperty(bean, keyExpression, map, copyOptions);
-//                    } else if (List.class.isAssignableFrom(propertyType)) {
-//                        if (keyExpression.isNode()) {
-//                            setListProperty(bean, keyExpression, map);
-//                        }
-//                    } else {
-//                        throw new BeansException("property type must be List or Array.");
-//                    }
-//                }
-//                allError = false;
-//            } catch (BeansException bex) {
-//                // TODO tuiki
-//                LOGGER.logDebug(
-//                        //
-//                        "An error occurred while writing to the property :" + entry.getKey());
-//            }
-//
-//            if (!keyExpression.isNode()) {
-//                // ex aaa.bbb.ccc   map    aaa.bbb.ccc, aaa.bbb.ccc
-//                PropertyExpression restEx = keyExpression.rest();
-//                //System.out.println("  parent: " + restEx.getParentKey() + " root: " + restEx.getRoot());
-//                groupMap.computeIfAbsent(restEx.getParentKey() + "." + restEx.getRoot(), (key) -> new HashMap<>())
-//                        .put(restEx.getRawKey(), entry.getValue());
-//            }
-//        }
-//
-//        if (groupMap.isEmpty()) {
-//            if (allError) {
-//                throw new BeansException("delay");
-//            }
-//            return;
-//        }
-//
-//        Object propertyObject = getProperty(bean, propertyName);
-//        Object destObject;
-//
-//        Class<?> propertyType = getPropertyType(bean.getClass(), propertyName);
-//        if (propertyType.isArray()) {
-//            Class<?> componentType = propertyType.getComponentType();
-//            propertyObject = initializeArray(propertyObject, componentType, propertyExpression.getListIndex());
-//            if (componentType.isRecord()) {
-//                Map<String, Object> recordMap = new HashMap<>();
-//                groupMap.forEach((key, value) -> recordMap.putAll(value));
-//                Array.set(propertyObject, propertyExpression.getListIndex(),
-//                        createRecord(componentType, recordMap, copyOptions.reduce(propertyExpression.getRoot())));
-//                setPropertyValue(bean, propertyName, propertyObject, CopyOptions.empty());
-//                return;
-//            } else {
-//                destObject = Array.get(propertyObject, propertyExpression.getListIndex());
-//                if (destObject == null) {
-//                    destObject = createInstance(componentType);
-//                    Array.set(propertyObject, propertyExpression.getListIndex(), destObject);
-//                }
-//            }
-//        } else if (List.class.isAssignableFrom(propertyType)) {
-//
-//            int index = propertyExpression.getListIndex();
-//            List list = initializeList(propertyObject, index);
-//            propertyObject = list;
-//
-//            Class<?> genericType = getGenericType(bean, propertyName);
-//            if (genericType.isRecord()) {
-//                Map<String, Object> recordMap = new HashMap<>();
-//                groupMap.forEach((key, value) -> recordMap.putAll(value));
-//                list.set(index, createRecord(genericType, recordMap, copyOptions.reduce(propertyExpression.getRoot())));
-//                setPropertyValue(bean, propertyName, list, CopyOptions.empty());
-//                return;
-//            } else {
-//                destObject = list.get(index);
-//                if (destObject == null) {
-//                    destObject = createInstance(genericType);
-//                    list.set(index, destObject);
-//                }
-//            }
-//        } else if (propertyType.isRecord()) {
-//            Map<String, Object> recordMap = new HashMap<>();
-//            groupMap.forEach((key, value) -> recordMap.putAll(value));
-//            setRecordProperty(bean, propertyName, recordMap, copyOptions);
-//            return;
-//        } else {
-//            propertyObject = Objects.requireNonNullElse(propertyObject, createInstance(propertyType));
-//            destObject = propertyObject;
-//            setPropertyValue(bean, propertyName, propertyObject, CopyOptions.empty());
-//        }
-//
-//        allError = true;
-//        for (Map.Entry<String, Map<String, Object>> entry : groupMap.entrySet()) {
-//            try {
-//                PropertyExpression nestedPropertyExpression = new PropertyExpression(entry.getKey());
-//                setProperty(destObject, nestedPropertyExpression.leaf(), entry.getValue(), copyOptions.reduce(nestedPropertyExpression.getRoot()));
-//                allError = false;
-//            } catch (BeansException bex) {
-//                LOGGER.logDebug(
-//                        "An error occurred while copyingthe property :" + entry.getKey());
-//            }
-//        }
-//        if (allError) {
-//            throw new BeansException("delay");
-//        }
-//        setPropertyValue(bean, propertyName, propertyObject, CopyOptions.empty());
-    }
-
-    /**
-     * 配列を初期化する。
-     *
-     * @param array 配列
-     * @param componentType 配列の型
-     * @param index 配列の要素数
-     * @return 初期化した配列
-     */
-    @SuppressWarnings("SuspiciousSystemArraycopy")
-    private static Object initializeArray(Object array, Class<?> componentType, int index) {
-        if (array == null) {
-            return Array.newInstance(componentType, index + 1);
-        } else if (Array.getLength(array) <= index) {
-            // 長さが足りない場合、詰めなおす
-            Object retArray = Array.newInstance(componentType, index + 1);
-            System.arraycopy(array, 0, retArray, 0, Array.getLength(array));
-            return retArray;
-        }
-
-        return array;
-    }
-
-    /**
-     * リストを初期化する。
-     *
-     * @param list リスト
-     * @param index リストの要素数
-     * @return 初期化したリスト
-     */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private static List initializeList(Object list, int index) {
-        List retList = list == null ? new ArrayList<>() : (List)list;
-        if (index >= retList.size()) {
-            for (int i = retList.size(); i <= index; i++) {
-                // 間を埋める。
-                retList.add(null);
+                setObjectProperty(bean, expression, srcMap, copyOptions);
             }
         }
 
-        return retList;
-    }
-
-    /**
-     * {@link Object}のプロパティにレコード型の値を設定する。
-     *
-     * @param bean Beanオブジェクト
-     * @param propertyName プロパティ名
-     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
-     * @param copyOptions コピーの設定
-     */
-    private static void setRecordProperty(Object bean, String propertyName, Map<String, ?> map, CopyOptions copyOptions) {
-        Class<?> propertyType = getPropertyType(bean.getClass(), propertyName);
-
-        Object nested = getProperty(bean, propertyName);
-        if (propertyType.isRecord()) {
-            if (nested != null) {
-                return;
-            }
-            setPropertyValue(bean, propertyName, createRecord(propertyType, map, copyOptions.reduce(propertyName)));
-        }
     }
 
     /**
@@ -463,7 +269,7 @@ public final class BeanUtil {
                 return;
             }
             // setPropertyValue(bean, propertyName, createRecord(propertyType, getReducedMap(propertyName, map), copyOptions.reduce(propertyName)));
-            setPropertyValue(bean, propertyName, createRecord(propertyType, getReducedMap2(map), copyOptions.reduce(propertyName)));
+            setPropertyValue(bean, propertyName, createRecord(propertyType, getReducedMap(propertyName, map), copyOptions.reduce(propertyName)));
         } else {
             if (nested == null) {
                 nested = createInstance(propertyType);
@@ -480,7 +286,12 @@ public final class BeanUtil {
             }
             for (Map.Entry<String, Map<String, Object>> groupMapEntry : groupMap.entrySet()) {
                 PropertyExpression nestedExpression = new PropertyExpression(groupMapEntry.getKey());
-                setProperty(nested, nestedExpression.leaf(), groupMapEntry.getValue(), copyOptions.reduce(propertyName));
+                try {
+                    setProperty(nested, nestedExpression.leaf(), groupMapEntry.getValue(), copyOptions.reduce(propertyName));
+                } catch(BeansException bex) {
+                    LOGGER.logDebug(
+                            "An error occurred while writing to the property :" + nestedExpression.getAbsoluteRawKey());
+                }
             }
 //            setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(propertyName));
         }
@@ -492,6 +303,8 @@ public final class BeanUtil {
      * @param bean Beanオブジェクト
      * @param expression プロパティを表すオブジェクト
      * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
+     * @param copyOptions コピーの設定
+     * @param isNode プロパティがノードかどうか
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static void setListProperty(Object bean, PropertyExpression expression, Map<String, ?> map, CopyOptions copyOptions,
@@ -518,11 +331,13 @@ public final class BeanUtil {
             // これ以上ネストしない場合
             Object propertyValue = map.get(expression.getRawKey());
             list.set(index, ConversionUtil.convert(genericType, propertyValue));
+            setPropertyValue(bean, expression.getListPropertyName(), list);
         } else {
             // ネストしたオブジェクトである場合
             if (genericType.isRecord()) {
-                list.set(index, createRecord(genericType, getReducedMap2(map), copyOptions.reduce(expression.getRoot())));
+                list.set(index, createRecord(genericType, getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot())));
 
+                setPropertyValue(bean, expression.getListPropertyName(), list);
             } else {
                 Object obj = list.get(index);
                 if (obj == null) {
@@ -538,23 +353,18 @@ public final class BeanUtil {
                 }
                 for (Map.Entry<String, Map<String, Object>> groupMapEntry : groupMap.entrySet()) {
                     PropertyExpression nestedExpression = new PropertyExpression(groupMapEntry.getKey());
-                    setProperty(obj, nestedExpression.leaf(), groupMapEntry.getValue(), copyOptions.reduce(expression.getRoot()));
-                    list.set(index, obj);
+                    try {
+                        setProperty(obj, nestedExpression.leaf(), groupMapEntry.getValue(), copyOptions.reduce(expression.getRoot()));
+                        list.set(index, obj);
+                        setPropertyValue(bean, expression.getListPropertyName(), list);
+                    } catch (BeansException bex) {
+                        LOGGER.logDebug(
+                                "An error occurred while writing to the property :" + nestedExpression.getAbsoluteRawKey());
+                    }
                 }
-//                setProperty(obj, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot()));
-//                list.set(index, obj);
             }
         }
 
-        setPropertyValue(bean, expression.getListPropertyName(), list);
-//        setPropertyValue(bean, expression.getListPropertyName(), list);
-//
-//        Class<?> genericType = getGenericType(bean, propertyName);
-//
-//        Object propertyValue = map.get(expression.getRawKey());
-//        list.set(index, ConversionUtil.convert(genericType, propertyValue));
-//
-//        setPropertyValue(bean, expression.getListPropertyName(), list);
     }
 
     /**
@@ -563,10 +373,12 @@ public final class BeanUtil {
      * @param bean Beanオブジェクト
      * @param expression プロパティを表すオブジェクト
      * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
+     * @param copyOptions コピーの設定
+     * @param isNode プロパティがノードかどうか
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
     private static void setArrayProperty(Object bean, PropertyExpression expression, Map<String, ?> map,
-            CopyOptions copyOptions, boolean isNode) {
+                                         CopyOptions copyOptions, boolean isNode) {
 
         Class<?> componentType = getPropertyType(bean.getClass(), expression.getListPropertyName()).getComponentType();
         String propertyName = expression.getListPropertyName();
@@ -587,10 +399,12 @@ public final class BeanUtil {
             // これ以上ネストしない場合
             Object propertyValue = map.get(expression.getRawKey());
             Array.set(array, index, ConversionUtil.convert(componentType, propertyValue));
+            setPropertyValue(bean, propertyName, array);
         } else {
             // ネストしたオブジェクトである場合
             if (componentType.isRecord()) {
-                Array.set(array, index, createRecord(componentType, getReducedMap2(map), copyOptions.reduce(expression.getRoot())));
+                Array.set(array, index, createRecord(componentType, getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot())));
+                setPropertyValue(bean, propertyName, array);
             } else {
                 Object nested = Array.get(array, index);
                 if (nested == null) {
@@ -606,20 +420,18 @@ public final class BeanUtil {
                 }
                 for (Map.Entry<String, Map<String, Object>> groupMapEntry : groupMap.entrySet()) {
                     PropertyExpression nestedExpression = new PropertyExpression(groupMapEntry.getKey());
-                    setProperty(nested, nestedExpression.leaf(), groupMapEntry.getValue(), copyOptions.reduce(expression.getRoot()));
-                    Array.set(array, index, nested);
+                    try {
+                        setProperty(nested, nestedExpression.leaf(), groupMapEntry.getValue(), copyOptions.reduce(expression.getRoot()));
+                        Array.set(array, index, nested);
+                        setPropertyValue(bean, propertyName, array);
+                    } catch(BeansException bex) {
+                        LOGGER.logDebug(
+                                "An error occurred while writing to the property :" + nestedExpression.getAbsoluteRawKey());
+                    }
                 }
-                //setProperty(nested, expression.rest(), getReducedMap2(map), copyOptions.reduce(expression.getRoot()));
-                //Array.set(array, index, nested);
             }
         }
 
-        setPropertyValue(bean, propertyName, array);
-//
-//        Object propertyValue = map.get(expression.getRawKey());
-//        Array.set(array, index, ConversionUtil.convert(componentType, propertyValue));
-//
-//        setPropertyValue(bean, propertyName, array);
     }
 
     /**
@@ -804,7 +616,8 @@ public final class BeanUtil {
      * @throws IllegalArgumentException 引数の{@code bean}がレコードの場合
      */
     private static void setProperty(Object bean, String propertyName, Map<String, ?> map, CopyOptions copyOptions) {
-        setProperty(bean, new PropertyExpression(propertyName), map, copyOptions);
+        PropertyExpression pe = new PropertyExpression(propertyName);
+        setProperty(bean, new PropertyExpression(pe.getRoot()), map, copyOptions);
     }
 
     /**
@@ -880,7 +693,7 @@ public final class BeanUtil {
      *   {@code beanClass}のコンストラクタ実行時に問題が発生した場合。
      */
     public static <T> T createAndCopy(final Class<T> beanClass, final Map<String, ?> map,
-            final CopyOptions copyOptions) {
+                                      final CopyOptions copyOptions) {
 
         if(beanClass.isRecord()) {
             return createRecord(beanClass, map, copyOptions);
@@ -907,7 +720,7 @@ public final class BeanUtil {
      * @throws IllegalArgumentException 引数の{@code beanClass}がレコードクラスの場合
      */
     public static <T> void copy(Class<? extends T> beanClass, final T bean, final Map<String, ?> map,
-            final CopyOptions copyOptions) {
+                                final CopyOptions copyOptions) {
 
         if (beanClass.isRecord()) {
             throw new IllegalArgumentException("The target bean class must not be a record class.");
@@ -936,7 +749,7 @@ public final class BeanUtil {
                 }
             } catch (BeansException bex) {
                 LOGGER.logDebug(
-                        "x1 An error occurred while writing to the property :" + entry.getKey());
+                        "An error occurred while writing to the property :" + entry.getKey());
             }
         }
 
@@ -945,45 +758,9 @@ public final class BeanUtil {
                 PropertyExpression expression = new PropertyExpression(entry.getKey());
                 setProperty(bean, expression, entry.getValue(), mergedCopyOptions);
             } catch (BeansException bex) {
-                bex.printStackTrace();
                 LOGGER.logDebug(
-                        "xAn error occurred while writing to the property :" + entry.getKey());
+                        "An error occurred while writing to the property :" + entry.getKey());
             }
-        }
-    }
-
-    /**
-     * {@link Map}からBeanインスタンスへコピーを行う。
-     * パラメータmapにはネストしたプロパティが設定される想定。
-     *
-     * @param bean 移送先Beanインスタンス
-     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
-     * @param copyOptions コピーの設定
-     */
-    private static void setBean(Object bean, Map<String, ?> map, CopyOptions copyOptions) {
-
-        Map<String, Map<String, Object>> groupMap = new HashMap<>();
-        for (Map.Entry<String, ?> entry: map.entrySet()) {
-            PropertyExpression expression = new PropertyExpression(entry.getKey());
-            groupMap.computeIfAbsent(expression.getRoot(), (key)->new HashMap<>())
-                    .put(entry.getKey(), entry.getValue());
-        }
-
-        boolean allError = true;
-        for (Map.Entry<String, Map<String, Object>> entry: groupMap.entrySet()) {
-            PropertyExpression expression = new PropertyExpression(entry.getKey());
-            String objectKey = entry.getValue().keySet().stream().iterator().next();
-            try {
-                setProperty(bean, expression, entry.getValue(), copyOptions);
-                allError = false;
-            } catch (BeansException bex) {
-                if (!"delay".equals(bex.getMessage())) {
-                    LOGGER.logDebug("set An error occurred while copying the property :" + expression.getRawKey() + "." + objectKey + " original exception: " + bex);
-                }
-            }
-        }
-        if (allError) {
-            throw new BeansException("delay");
         }
     }
 
@@ -1017,7 +794,7 @@ public final class BeanUtil {
             // srcBeanに対応するプロパティが存在しないか、アクセサが存在しない場合はスキップ
             final Method accessor;
             try {
-            accessor = getReadMethod(srcBean.getClass(), propertyName);
+                accessor = getReadMethod(srcBean.getClass(), propertyName);
                 if (accessor == null) {
                     if (parameterTypes[i].isPrimitive()) {
                         args[i] = PRIM_DEFAULT_VALUES.get(parameterTypes[i]);
@@ -1125,16 +902,13 @@ public final class BeanUtil {
         return result;
     }
 
-    static Map<String, Object> getReducedMap2(Map<String, ?> map) {
-        Map<String, Object> result = new HashMap<>();
-        for(Map.Entry<String, ?> entry : map.entrySet()) {
-            PropertyExpression key = new PropertyExpression(entry.getKey());
-            result.put(key.rest().getRawKey(), entry.getValue());
-        }
-        return result;
-    }
-
-    static List<Map<String,Object>> getSeparatedlist(Map<String, ?> map) {
+    /**
+     * 移送元のマップをプロパティがノードであるマップとネストしたマップに分けてリストにして返却する。
+     *
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
+     * @return 分割されたマップのリスト
+     */
+    private static List<Map<String,Object>> getSeparatedlist(Map<String, ?> map) {
         Map<String, Object> nodeMap = new HashMap<>();
         Map<String, Object> nestedMap = new HashMap<>();
 
@@ -1158,7 +932,6 @@ public final class BeanUtil {
      * @param copyOptions コピーの設定
      * @return レコードを生成するためのプロパティ値を格納したマップ
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     private static Map<String, ?> createPropertyMap(Class<?> beanClass, Map<String, ?> map, CopyOptions copyOptions) {
         if (map == null) {
             return Collections.emptyMap();
@@ -1169,123 +942,72 @@ public final class BeanUtil {
         final CopyOptions mergedCopyOptions = copyOptions
                 .merge(CopyOptions.fromAnnotation(beanClass));
 
-        // map.key のrootをキーとしてgroupingしたMapを作成しておく
-        Map<String, Map<String, Object>> groupMap = new HashMap<>();
-        map.forEach((key, value) -> {
-            PropertyExpression expression = new PropertyExpression(key);
-            groupMap.computeIfAbsent(expression.getRoot(), (k) -> new HashMap<>())
-                    .put(key, value);
-        });
-        for(Map.Entry<String, ?> entry : map.entrySet()) {
-            String propertyName = entry.getKey();
-            Object propertyValue = entry.getValue();
-            PropertyExpression expression = new PropertyExpression(propertyName);
+        List<Map<String, Object>> separatedMapList = getSeparatedlist(map);
 
-            if (!mergedCopyOptions.isTargetProperty(propertyName)) {
+        for (int i = 0; i < 2; i++) {
+            boolean isNode = i == 0;
+            Map<String, Object> separatedMap = separatedMapList.get(i);
+
+            if (separatedMap.isEmpty()) {
                 continue;
             }
-            try {
-                if (expression.isSimpleProperty() && expression.isNode()) {
-                    String propertyRoot = expression.getRoot();
-                    propertyMap.put(propertyRoot, createPropertyValue(beanClass, propertyRoot, propertyValue, copyOptions));
-                } else if (expression.isListOrArray()) {
-                    Class<?> propertyType = getPropertyType(beanClass, expression.getListPropertyName());
-                    if (propertyType.isArray()) {
-//                        if (expression.isNode()) {
-//                            setArrayPropertyToMap(beanClass, expression, propertyMap, map);
-//                        }
-                        Map<String, ?> reducedMap = groupMap.get(expression.getRoot());
-                        setArrayPropertyToMap(beanClass, expression, propertyMap, reducedMap, copyOptions);
-                    } else if (List.class.isAssignableFrom(propertyType)) {
-//                        if (keyExpression.isNode()) {
-//                            setListPropertyToMap(beanClass, keyExpression, propertyMap, map);
-//                        }
-                        Map<String, ?> reducedMap = groupMap.get(expression.getRoot());
-                        setListPropertyToMap(beanClass, expression, propertyMap, reducedMap);
-                    } else {
-                        throw new BeansException("property type must be List or Array.");
-                    }
-                } else {
-                    Map<String, ?> reducedMap = groupMap.get(expression.getRoot());
-                    setObjectPropertyToMap(beanClass, expression, propertyMap, reducedMap, copyOptions);
-                }
 
-//                if (!expression.isNode()) {
-//                    groupMap.computeIfAbsent(expression.getRoot(), (key) -> new HashMap<>())
-//                            .put(expression.rest().getRawKey(), entry.getValue());
-//                }
-//
-            } catch (BeansException bex) {
-                LOGGER.logDebug("An error occurred while copying the property :" + propertyName + " original exception: " + bex);
-            }
+            // map.key のrootをキーとしてgroupingしたMapを作成しておく
+            Map<String, Map<String, Object>> groupMap = new HashMap<>();
+            separatedMap.forEach((key, value) -> {
+                if (!mergedCopyOptions.isTargetProperty(key)) {
+                    return;
+                }
+                PropertyExpression expression = new PropertyExpression(key);
+                groupMap.computeIfAbsent(expression.getRoot(), (k) -> new HashMap<>())
+                        .put(key, value);
+            });
+
+            groupMap.forEach((property, srcMap) -> {
+
+                PropertyExpression expression = new PropertyExpression(property);
+
+                createPropertyMapInner(beanClass, expression, propertyMap, srcMap, mergedCopyOptions, isNode);
+            });
+
         }
 
-//        if (groupMap.isEmpty()) {
-//            return propertyMap;
-//        }
-//
-//        for (Map.Entry<String, Map<String, Object>> entry: groupMap.entrySet()) {
-//
-//            // System.out.println("entrykey: " + entry.getKey() + " key: " + entry.getValue());
-//            PropertyExpression expression = new PropertyExpression(entry.getKey());
-//            String propertyName = expression.isListOrArray() ? expression.getListPropertyName()
-//                    : expression.getRoot();
-//            String objectKey = entry.getValue().keySet().stream().iterator().next();
-//            try {
-//                Class<?> propertyType = getPropertyType(beanClass, propertyName);
-//
-//                if (propertyType.isArray()) {
-//                    Class<?> componentType = propertyType.getComponentType();
-//                    Object array = propertyMap.getOrDefault(propertyName, Array.newInstance(componentType, expression.getListIndex() + 1));
-//                    array = initializeArray(array, componentType, expression.getListIndex());
-//                    int index = expression.getListIndex();
-//
-//                    if (componentType.isRecord()) {
-//                        Array.set(array, index, createRecord(componentType, entry.getValue(), copyOptions.reduce(expression.getRoot())));
-//                    } else {
-//                        Object nested = Array.get(array, index);
-//                        if (nested == null) {
-//                            nested = createInstance(componentType);
-//                        }
-//                        setBean(nested, entry.getValue(), copyOptions.reduce(expression.getRoot()));
-//                        Array.set(array, index, nested);
-//                    }
-//                    propertyMap.put(propertyName, array);
-//                } else if (List.class.isAssignableFrom(propertyType)) {
-//
-//                    List list = (List)propertyMap.getOrDefault(propertyName, new ArrayList<>());
-//                    int index = expression.getListIndex();
-//
-//                    list = initializeList(list, index);
-//
-//                    Class<?> genericType = getGenericTypeForRecord(beanClass, propertyName);
-//
-//                    if (genericType.isRecord()) {
-//                        list.set(index, createRecord(genericType, entry.getValue(), copyOptions.reduce(expression.getRoot())));
-//                    } else {
-//                        Object nested = list.get(index);
-//                        if (nested == null) {
-//                            nested = createInstance(genericType);
-//                        }
-//                        setBean(nested, entry.getValue(), copyOptions.reduce(expression.getRoot()));
-//                        list.set(index, nested);
-//                    }
-//                    propertyMap.put(propertyName, list);
-//
-//                } else if (propertyType.isRecord()) {
-//                    propertyMap.put(propertyName, createRecord(propertyType, entry.getValue(), copyOptions.reduce(expression.getRoot())));
-//                } else {
-//                    Object nested = propertyMap.getOrDefault(propertyName, createInstance(propertyType));
-//                    setBean(nested, entry.getValue(), copyOptions.reduce(expression.getRoot()));
-//                    propertyMap.put(propertyName, nested);
-//                }
-//
-//            } catch (BeansException bex) {
-//                LOGGER.logDebug("An error occurred while copying the property :" + expression.getRawKey() + "." + objectKey + " original exception: " + bex);
-//            }
-//        }
-
         return propertyMap;
+    }
+
+    /**
+     * レコードを生成するためのプロパティ値を与えられたマップに格納する。
+     *
+     * @param beanClass レコードのClass
+     * @param expression 設定するオブジェクトを表すPropertyExpression
+     * @param propertyMap レコードを生成するためのプロパティ値を格納するためのマップ
+     * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
+     * @param copyOptions コピーの設定
+     * @param isNode プロパティがノードかどうか
+     */
+    private static void createPropertyMapInner(Class<?> beanClass, PropertyExpression expression, Map<String, Object> propertyMap, Map<String, ?> map, CopyOptions copyOptions, boolean isNode) {
+
+        try {
+            if (expression.isSimpleProperty() && isNode) {
+                String propertyRoot = expression.getRoot();
+                Object propertyValue = map.get(expression.getRawKey());
+                propertyMap.put(propertyRoot, createPropertyValue(beanClass, propertyRoot, propertyValue, copyOptions));
+            } else if (expression.isListOrArray()) {
+                Class<?> propertyType = getPropertyType(beanClass, expression.getListPropertyName());
+                if (propertyType.isArray()) {
+                    setArrayPropertyToMap(beanClass, expression, propertyMap, map, copyOptions, isNode);
+                } else if (List.class.isAssignableFrom(propertyType)) {
+                    setListPropertyToMap(beanClass, expression, propertyMap, map, copyOptions, isNode);
+                } else {
+                    throw new BeansException("property type must be List or Array.");
+                }
+            } else {
+                setObjectPropertyToMap(beanClass, expression, propertyMap, map, copyOptions);
+            }
+
+        } catch (BeansException bex) {
+            LOGGER.logDebug("An error occurred while copying the property :" + expression.getRawKey() + " original exception: " + bex);
+        }
     }
 
     /**
@@ -1304,10 +1026,24 @@ public final class BeanUtil {
         if (propertyType.isRecord()) {
             propertyMap.computeIfAbsent(propertyName, k -> createRecord(propertyType, getReducedMap(propertyName, map), copyOptions.reduce(propertyName)));
         } else {
-            // TODO loop
             Object nested = propertyMap.getOrDefault(propertyName, createInstance(propertyType));
-            setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(propertyName));
-            propertyMap.put(propertyName, nested);
+
+            Map<String, Map<String, Object>> groupMap = new HashMap<>();
+            for (Map.Entry<String, ?> mapEntry : map.entrySet()) {
+                PropertyExpression keyAbsoluteExpression = expression.sibling(mapEntry.getKey());
+                PropertyExpression restExpression = keyAbsoluteExpression.rest();
+                groupMap.computeIfAbsent(restExpression.getParentKey() + "." + restExpression.getRoot(),
+                        (key) -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
+            }
+            for (Map.Entry<String, Map<String, Object>> groupMapEntry : groupMap.entrySet()) {
+                PropertyExpression nestedExpression = new PropertyExpression(groupMapEntry.getKey());
+                try {
+                    setProperty(nested, nestedExpression.leaf(), groupMapEntry.getValue(), copyOptions.reduce(propertyName));
+                    propertyMap.put(propertyName, nested);
+                } catch (BeansException bex) {
+                    LOGGER.logDebug("An error occurred while copying the property :" + nestedExpression.getRawKey() + " original exception: " + bex);
+                }
+            }
         }
     }
 
@@ -1318,10 +1054,11 @@ public final class BeanUtil {
      * @param expression 設定する配列を表すPropertyExpression
      * @param propertyMap プロパティ値を格納したマップ
      * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
+     * @param isNode プロパティがノードかどうか
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
     private static void setArrayPropertyToMap(Class<?> beanClass, PropertyExpression expression, Map<String, Object> propertyMap,
-                                              Map<String, ?> map, CopyOptions copyOptions) {
+                                              Map<String, ?> map, CopyOptions copyOptions, boolean isNode) {
         String listPropertyName = expression.getListPropertyName();
         Class<?> propertyType = getPropertyType(beanClass, listPropertyName);
         Class<?> componentType = propertyType.getComponentType();
@@ -1336,31 +1073,43 @@ public final class BeanUtil {
             System.arraycopy(old, 0, array, 0, Array.getLength(old));
         }
 
-//        Object propertyValue = map.get(expression.getRawKey());
-//        Array.set(array, index, ConversionUtil.convert(componentType, propertyValue));
-        if (expression.isNode()) {
+        if (isNode) {
             // これ以上ネストしない場合
             Object propertyValue = map.get(expression.getRawKey());
             Array.set(array, index, ConversionUtil.convert(componentType, propertyValue));
+            propertyMap.put(listPropertyName, array);
         } else {
             // ネストしたオブジェクトである場合
             if (componentType.isRecord()) {
-                //Array.set(array, index, createRecord(componentType, getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot())));
-                Array.set(array, index, createRecord(componentType, getReducedMap2(map), copyOptions.reduce(expression.getRoot())));
+                Array.set(array, index, createRecord(componentType, getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot())));
+                //Array.set(array, index, createRecord(componentType, getReducedMap2(map), copyOptions.reduce(expression.getRoot())));
 
+                propertyMap.put(listPropertyName, array);
             } else {
                 Object nested = Array.get(array, index);
                 if (nested == null) {
                     nested = createInstance(componentType);
                 }
 
-                // TODO loop
-                setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot()));
-                Array.set(array, index, nested);
+                Map<String, Map<String, Object>> groupMap = new HashMap<>();
+                for (Map.Entry<String, ?> mapEntry : map.entrySet()) {
+                    PropertyExpression keyAbsoluteExpression = expression.sibling(mapEntry.getKey());
+                    PropertyExpression restExpression = keyAbsoluteExpression.rest();
+                    groupMap.computeIfAbsent(restExpression.getParentKey() + "." + restExpression.getRoot(),
+                            (key) -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
+                }
+                for (Map.Entry<String, Map<String, Object>> groupMapEntry : groupMap.entrySet()) {
+                    PropertyExpression nestedExpression = new PropertyExpression(groupMapEntry.getKey());
+                    try {
+                        setProperty(nested, nestedExpression.leaf(), groupMapEntry.getValue(), copyOptions.reduce(expression.getRoot()));
+                        Array.set(array, index, nested);
+                        propertyMap.put(listPropertyName, array);
+                    } catch (BeansException bex) {
+                        LOGGER.logDebug("An error occurred while copying the property :" + nestedExpression.getRawKey() + " original exception: " + bex);
+                    }
+                }
             }
         }
-
-        propertyMap.put(listPropertyName, array);
 
     }
 
@@ -1371,23 +1120,61 @@ public final class BeanUtil {
      * @param expression 設定するリストを表すPropertyExpression
      * @param propertyMap プロパティ値を格納したマップ
      * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
+     * @param copyOptions コピーの設定
+     * @param isNode プロパティがノードかどうか
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static void setListPropertyToMap(Class<?> beanClass, PropertyExpression expression, Map<String, Object> propertyMap, Map<String, ?> map) {
+    private static void setListPropertyToMap(Class<?> beanClass, PropertyExpression expression, Map<String, Object> propertyMap,
+                                             Map<String, ?> map, CopyOptions copyOptions, boolean isNode) {
         String listPropertyName = expression.getListPropertyName();
 
         List list = (List) propertyMap.getOrDefault(listPropertyName, new ArrayList());
-        int index = expression.getListIndex();
 
-        list = initializeList(list, index);
+        int index = expression.getListIndex();
+        if (index >= list.size()) {
+            for (int i = list.size(); i <= index; i++) {
+                // 間を埋める。
+                list.add(null);
+            }
+        }
 
         Class<?> genericType = getGenericTypeForRecord(beanClass, listPropertyName);
         Object propertyValue = map.get(expression.getRawKey());
+        if (isNode) {
+            // これ以上ネストしない場合
+            list.set(index, ConversionUtil.convert(genericType, propertyValue));
+            propertyMap.put(listPropertyName, list);
+        } else {
+            // ネストしたオブジェクトである場合
+            if (genericType.isRecord()) {
+                list.set(index, createRecord(genericType, getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot())));
 
-        list.set(index, ConversionUtil.convert(genericType, propertyValue));
+                propertyMap.put(listPropertyName, list);
+            } else {
+                Object nested = list.get(index);
+                if (nested == null) {
+                    nested = createInstance(genericType);
+                }
 
-        propertyMap.put(listPropertyName, list);
-
+                Map<String, Map<String, Object>> groupMap = new HashMap<>();
+                for (Map.Entry<String, ?> mapEntry : map.entrySet()) {
+                    PropertyExpression keyAbsoluteExpression = expression.sibling(mapEntry.getKey());
+                    PropertyExpression restExpression = keyAbsoluteExpression.rest();
+                    groupMap.computeIfAbsent(restExpression.getParentKey() + "." + restExpression.getRoot(),
+                            (key) -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
+                }
+                for (Map.Entry<String, Map<String, Object>> groupMapEntry : groupMap.entrySet()) {
+                    PropertyExpression nestedExpression = new PropertyExpression(groupMapEntry.getKey());
+                    try {
+                        setProperty(nested, nestedExpression.leaf(), groupMapEntry.getValue(), copyOptions.reduce(expression.getRoot()));
+                        list.set(index, nested);
+                        propertyMap.put(listPropertyName, list);
+                    } catch (BeansException bex) {
+                        LOGGER.logDebug("An error occurred while copying the property :" + nestedExpression.getRawKey() + " original exception: " + bex);
+                    }
+                }
+            }
+        }
     }
 
 
@@ -1436,11 +1223,11 @@ public final class BeanUtil {
 
     /**
      * {@link Map}からBeanもしくはレコードを生成する。
-     * 
+     *
      * <p>
      * 内部的には空の{@link CopyOptions}を渡して{@link #createAndCopy(Class, Map, CopyOptions)}を呼び出している。
      * </p>
-     * 
+     *
      * @param <T> 型引数
      * @param beanClass 生成したいBeanクラス
      * @param map
@@ -1697,7 +1484,7 @@ public final class BeanUtil {
 
     /**
      * 指定されたプロパティの情報をもとに有効な{@link Converter}または{@link ExtensionConverter}が存在するか判定する。
-     * 
+     *
      * @param beanClass コピー先のbeanクラス
      * @param propertyName コピー先のプロパティ名
      * @param copyOptions コピーの設定
@@ -1840,11 +1627,11 @@ public final class BeanUtil {
 
     /**
      * BeanもしくはレコードからMapにプロパティの値をコピーする。
-     * 
+     *
      * <p>
      * 内部的には空の{@link CopyOptions}を渡して{@link #createMapAndCopy(Object, CopyOptions)}を呼び出している。
      * </p>
-     * 
+     *
      * @param srcBean Beanもしくはレコード
      * @param <SRC> Beanの型
      * @return BeanのプロパティをコピーしたMap
@@ -1868,7 +1655,7 @@ public final class BeanUtil {
      * @return BeanのプロパティをコピーしたMap
      */
     public static <SRC> Map<String, Object> createMapAndCopyExcludes(final SRC srcBean,
-            final String... excludeProperties) {
+                                                                     final String... excludeProperties) {
         return createMapAndCopy(srcBean, CopyOptions.options().excludes(excludeProperties).build());
     }
 
@@ -1950,7 +1737,7 @@ public final class BeanUtil {
 
     /** ロガー */
     private static final Logger
-        LOGGER = LoggerManager.get(BeanUtil.class);
+            LOGGER = LoggerManager.get(BeanUtil.class);
 
     static void clearCache() {
         PropertyDescriptors.clearCache();
@@ -1961,7 +1748,7 @@ public final class BeanUtil {
      * クラスの{@link PropertyDescriptor}をまとめたもの。
      * <p>
      * ただしプロパティ名が{@literal class}のものは除かれている。
-     * 
+     *
      * @author Taichi Uragami
      *
      */
@@ -1978,12 +1765,12 @@ public final class BeanUtil {
 
         /**
          * コンストラクタ。
-         * 
+         *
          * <p>
          * クラスの{@link PropertyDescriptor}を取得して配列表現と{@link Map}表現、プロパティ名の{@link Set}を構築する。
          * なお、プロパティ名が{@literal class}となる{@link PropertyDescriptor}は無視する。
          * </p>
-         * 
+         *
          * @param beanClass クラス
          * @throws IntrospectionException {@link Introspector#getBeanInfo(Class)}からスローされうる例外
          */
@@ -1999,7 +1786,7 @@ public final class BeanUtil {
 
         /**
          * キャッシュをクリアする。
-         * 
+         *
          * <p>
          * 主にテストコードからの利用を想定している。
          * </p>
@@ -2010,7 +1797,7 @@ public final class BeanUtil {
 
         /**
          * 指定したプロパティ名の{@link PropertyDescriptor}を取得する。
-         * 
+         *
          * @param propertyName プロパティ名
          * @return 指定したプロパティ名の{@link PropertyDescriptor}
          * @throws BeansException {@code propertyName} に対応する{@link PropertyDescriptor}が見つからない場合。
@@ -2024,11 +1811,11 @@ public final class BeanUtil {
 
         /**
          * クラスに対応する{@link PropertyDescriptors}を取得する。
-         * 
+         *
          * <p>
          * {@link PropertyDescriptors}はキャッシュされる。
          * </p>
-         * 
+         *
          * @param beanClass クラス
          * @return キャッシュ
          * @throws BeansException {@link Introspector} によるBeanの解析に失敗した場合

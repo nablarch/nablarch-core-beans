@@ -180,6 +180,10 @@ class PropertyExpression {
         return parentKey;
     }
 
+    String getAbsoluteRawKey() {
+        return parentKey.isEmpty() ?  rawKey : parentKey + "." + rawKey;
+    }
+
     /**
      * リストまたは配列型プロパティに関する情報をまとめたJava Beansクラス。
      *
