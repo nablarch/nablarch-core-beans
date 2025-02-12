@@ -219,7 +219,6 @@ public final class BeanUtil {
      * @throws IllegalArgumentException 引数の{@code bean}がレコードの場合
      */
     private static void setProperty(Object bean, PropertyExpression expression, Map<String, ?> map, CopyOptions copyOptions) {
-
         if (bean.getClass().isRecord()) {
             throw new IllegalArgumentException("The target bean must not be a record.");
         }
@@ -268,7 +267,6 @@ public final class BeanUtil {
             if(nested != null) {
                 return;
             }
-            // setPropertyValue(bean, propertyName, createRecord(propertyType, getReducedMap(propertyName, map), copyOptions.reduce(propertyName)));
             setPropertyValue(bean, propertyName, createRecord(propertyType, getReducedMap(propertyName, map), copyOptions.reduce(propertyName)));
         } else {
             if (nested == null) {
@@ -276,13 +274,13 @@ public final class BeanUtil {
                 setPropertyValue(bean, propertyName, nested, CopyOptions.empty());
             }
 
-            // Tループ
+            // ループ
             Map<String, Map<String, Object>> groupMap = new HashMap<>();
             for (Map.Entry<String, ?> mapEntry : map.entrySet()) {
                 PropertyExpression keyAbsoluteExpression = expression.sibling(mapEntry.getKey());
                 PropertyExpression restExpression = keyAbsoluteExpression.rest();
                 groupMap.computeIfAbsent(restExpression.getParentKey() + "." + restExpression.getRoot(),
-                        (key) -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
+                        key -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
             }
             for (Map.Entry<String, Map<String, Object>> groupMapEntry : groupMap.entrySet()) {
                 PropertyExpression nestedExpression = new PropertyExpression(groupMapEntry.getKey());
@@ -293,7 +291,6 @@ public final class BeanUtil {
                             "An error occurred while writing to the property :" + nestedExpression.getAbsoluteRawKey());
                 }
             }
-//            setProperty(nested, expression.rest(), getReducedMap(expression.getRoot(), map), copyOptions.reduce(propertyName));
         }
     }
 
@@ -318,7 +315,6 @@ public final class BeanUtil {
         }
 
         int index = expression.getListIndex();
-//        list = initializeList(list, index);
         if (index >= list.size()) {
             for (int i = list.size(); i <= index; i++) {
                 // 間を埋める。
@@ -349,7 +345,7 @@ public final class BeanUtil {
                     PropertyExpression keyAbsoluteExpression = expression.sibling(mapEntry.getKey());
                     PropertyExpression restExpression = keyAbsoluteExpression.rest();
                     groupMap.computeIfAbsent(restExpression.getParentKey() + "." + restExpression.getRoot(),
-                            (key) -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
+                            key -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
                 }
                 for (Map.Entry<String, Map<String, Object>> groupMapEntry : groupMap.entrySet()) {
                     PropertyExpression nestedExpression = new PropertyExpression(groupMapEntry.getKey());
@@ -378,12 +374,11 @@ public final class BeanUtil {
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
     private static void setArrayProperty(Object bean, PropertyExpression expression, Map<String, ?> map,
-                                         CopyOptions copyOptions, boolean isNode) {
+            CopyOptions copyOptions, boolean isNode) {
 
         Class<?> componentType = getPropertyType(bean.getClass(), expression.getListPropertyName()).getComponentType();
         String propertyName = expression.getListPropertyName();
         Object array = getProperty(bean, propertyName);
-//        array = initializeArray(array, componentType, expression.getListIndex());
         if (array == null) {
             // 初期作成
             array = Array.newInstance(componentType, expression.getListIndex() + 1);
@@ -410,13 +405,13 @@ public final class BeanUtil {
                 if (nested == null) {
                     nested = createInstance(componentType);
                 }
-                // ループ
+
                 Map<String, Map<String, Object>> groupMap = new HashMap<>();
                 for (Map.Entry<String, ?> mapEntry : map.entrySet()) {
                     PropertyExpression keyAbsoluteExpression = expression.sibling(mapEntry.getKey());
                     PropertyExpression restExpression = keyAbsoluteExpression.rest();
                     groupMap.computeIfAbsent(restExpression.getParentKey() + "." + restExpression.getRoot(),
-                            (key) -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
+                            key -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
                 }
                 for (Map.Entry<String, Map<String, Object>> groupMapEntry : groupMap.entrySet()) {
                     PropertyExpression nestedExpression = new PropertyExpression(groupMapEntry.getKey());
@@ -693,7 +688,7 @@ public final class BeanUtil {
      *   {@code beanClass}のコンストラクタ実行時に問題が発生した場合。
      */
     public static <T> T createAndCopy(final Class<T> beanClass, final Map<String, ?> map,
-                                      final CopyOptions copyOptions) {
+            final CopyOptions copyOptions) {
 
         if(beanClass.isRecord()) {
             return createRecord(beanClass, map, copyOptions);
@@ -720,7 +715,7 @@ public final class BeanUtil {
      * @throws IllegalArgumentException 引数の{@code beanClass}がレコードクラスの場合
      */
     public static <T> void copy(Class<? extends T> beanClass, final T bean, final Map<String, ?> map,
-                                final CopyOptions copyOptions) {
+            final CopyOptions copyOptions) {
 
         if (beanClass.isRecord()) {
             throw new IllegalArgumentException("The target bean class must not be a record class.");
@@ -744,7 +739,7 @@ public final class BeanUtil {
                 } else {
                     // mapに保持する
                     PropertyExpression property = new PropertyExpression(entry.getKey());
-                    groupedMap.computeIfAbsent(property.getRoot(), (key) -> new HashMap<>())
+                    groupedMap.computeIfAbsent(property.getRoot(), key -> new HashMap<>())
                             .put(entry.getKey(), entry.getValue());
                 }
             } catch (BeansException bex) {
@@ -794,7 +789,7 @@ public final class BeanUtil {
             // srcBeanに対応するプロパティが存在しないか、アクセサが存在しない場合はスキップ
             final Method accessor;
             try {
-                accessor = getReadMethod(srcBean.getClass(), propertyName);
+            accessor = getReadMethod(srcBean.getClass(), propertyName);
                 if (accessor == null) {
                     if (parameterTypes[i].isPrimitive()) {
                         args[i] = PRIM_DEFAULT_VALUES.get(parameterTypes[i]);
@@ -1033,7 +1028,7 @@ public final class BeanUtil {
                 PropertyExpression keyAbsoluteExpression = expression.sibling(mapEntry.getKey());
                 PropertyExpression restExpression = keyAbsoluteExpression.rest();
                 groupMap.computeIfAbsent(restExpression.getParentKey() + "." + restExpression.getRoot(),
-                        (key) -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
+                        key -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
             }
             for (Map.Entry<String, Map<String, Object>> groupMapEntry : groupMap.entrySet()) {
                 PropertyExpression nestedExpression = new PropertyExpression(groupMapEntry.getKey());
@@ -1054,6 +1049,7 @@ public final class BeanUtil {
      * @param expression 設定する配列を表すPropertyExpression
      * @param propertyMap プロパティ値を格納したマップ
      * @param map JavaBeansのプロパティ名をエントリーのキー、プロパティの値をエントリーの値とする、移送元のMap
+     * @param copyOptions コピーの設定
      * @param isNode プロパティがノードかどうか
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
@@ -1082,7 +1078,6 @@ public final class BeanUtil {
             // ネストしたオブジェクトである場合
             if (componentType.isRecord()) {
                 Array.set(array, index, createRecord(componentType, getReducedMap(expression.getRoot(), map), copyOptions.reduce(expression.getRoot())));
-                //Array.set(array, index, createRecord(componentType, getReducedMap2(map), copyOptions.reduce(expression.getRoot())));
 
                 propertyMap.put(listPropertyName, array);
             } else {
@@ -1096,7 +1091,7 @@ public final class BeanUtil {
                     PropertyExpression keyAbsoluteExpression = expression.sibling(mapEntry.getKey());
                     PropertyExpression restExpression = keyAbsoluteExpression.rest();
                     groupMap.computeIfAbsent(restExpression.getParentKey() + "." + restExpression.getRoot(),
-                            (key) -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
+                            key -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
                 }
                 for (Map.Entry<String, Map<String, Object>> groupMapEntry : groupMap.entrySet()) {
                     PropertyExpression nestedExpression = new PropertyExpression(groupMapEntry.getKey());
@@ -1161,7 +1156,7 @@ public final class BeanUtil {
                     PropertyExpression keyAbsoluteExpression = expression.sibling(mapEntry.getKey());
                     PropertyExpression restExpression = keyAbsoluteExpression.rest();
                     groupMap.computeIfAbsent(restExpression.getParentKey() + "." + restExpression.getRoot(),
-                            (key) -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
+                            key -> new HashMap<>()).put(restExpression.getRawKey(), mapEntry.getValue());
                 }
                 for (Map.Entry<String, Map<String, Object>> groupMapEntry : groupMap.entrySet()) {
                     PropertyExpression nestedExpression = new PropertyExpression(groupMapEntry.getKey());
@@ -1176,7 +1171,6 @@ public final class BeanUtil {
             }
         }
     }
-
 
     /**
      * プロパティ値を変換して生成する。
@@ -1655,7 +1649,7 @@ public final class BeanUtil {
      * @return BeanのプロパティをコピーしたMap
      */
     public static <SRC> Map<String, Object> createMapAndCopyExcludes(final SRC srcBean,
-                                                                     final String... excludeProperties) {
+            final String... excludeProperties) {
         return createMapAndCopy(srcBean, CopyOptions.options().excludes(excludeProperties).build());
     }
 
@@ -1737,7 +1731,7 @@ public final class BeanUtil {
 
     /** ロガー */
     private static final Logger
-            LOGGER = LoggerManager.get(BeanUtil.class);
+        LOGGER = LoggerManager.get(BeanUtil.class);
 
     static void clearCache() {
         PropertyDescriptors.clearCache();

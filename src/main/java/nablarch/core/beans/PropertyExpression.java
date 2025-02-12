@@ -119,12 +119,28 @@ class PropertyExpression {
         return new PropertyExpression(parent, rest);
     }
 
+    /**
+     * 同一親をもつ{@link PropertyExpression}を作成する。
+     * 本インスタンスが"bbb.ccc"、親"aaa"のとき、"xxx"が指定されると、"aaa.xxx"のインスタンスが返却される。
+     *
+     * @param propertyName　プロパティ名
+     * @return 同一親をもつPropertyExpression
+     */
     PropertyExpression sibling(String propertyName) {
         return new PropertyExpression(this.parentKey, List.of(propertyName.split("\\.")));
     }
 
+    /**
+     * リーフ要素の{@link PropertyExpression}を取得する。
+     * 本インスタンスが"aaa.bbb.ccc"のとき、"ccc"のインスタンスが返却される。
+     *
+     * @return リーフ要素のPropertyExpression
+     */
     PropertyExpression leaf() {
-        return new PropertyExpression(this.parentKey, List.of(nestedProperties.get(nestedProperties.size() - 1)));
+        String newParent = String.join(".", nestedProperties.subList(0, nestedProperties.size() - 1));
+        String parent = newParent.isEmpty() ? this.parentKey
+                : this.parentKey.isEmpty() ? newParent : this.parentKey + "." + newParent;
+        return new PropertyExpression(parent, List.of(nestedProperties.get(nestedProperties.size() - 1)));
     }
 
     /**
