@@ -218,6 +218,8 @@ public final class BeanUtil {
 
     /**
      * JavaBeansのプロパティに値を設定する。
+     * <p>
+     * 引数の{@code bean}がレコードの場合、実行時例外が送出される。
      *
      * @param bean Beanオブジェクト
      * @param expression プロパティを表すオブジェクト
@@ -263,8 +265,6 @@ public final class BeanUtil {
 
     /**
      * JavaBeansのプロパティに値を設定する。（ネストする場合用）
-     * <p>
-     * 引数の{@code bean}がレコードの場合、実行時例外が送出される。
      *
      * @param bean Beanオブジェクト
      * @param expression プロパティを表すオブジェクト
