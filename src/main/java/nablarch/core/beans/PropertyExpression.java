@@ -5,6 +5,7 @@ import nablarch.core.util.StringUtil;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,6 +60,22 @@ class PropertyExpression {
         this.listPropertyInfo = createListPropertyInfo();
         this.rawKey = expression;
         this.parentKey = "";
+    }
+
+    /**
+     * コンストラクタ。
+     *
+     * @param parentExpression 親プロパティの文字列表現（ドット区切り）
+     * @param expression ネストしたプロパティの文字列表現（ドット区切り）
+     */
+    PropertyExpression(String parentExpression, String expression) {
+        if (Objects.isNull(parentExpression) || StringUtil.isNullOrEmpty(expression)) {
+            throw new IllegalArgumentException("parentExpression is null or expression is null or blank.");
+        }
+        this.nestedProperties = new LinkedList<>(Arrays.asList(expression.split("\\.")));
+        this.listPropertyInfo = createListPropertyInfo();
+        this.rawKey = expression;
+        this.parentKey = parentExpression;
     }
 
     /**
@@ -120,30 +137,6 @@ class PropertyExpression {
     }
 
     /**
-     * 同一親をもつ{@link PropertyExpression}を作成する。
-     * 本インスタンスが"bbb.ccc"、親"aaa"のとき、"xxx"が指定されると、"aaa.xxx"のインスタンスが返却される。
-     *
-     * @param propertyName　プロパティ名
-     * @return 同一親をもつPropertyExpression
-     */
-    PropertyExpression sibling(String propertyName) {
-        return new PropertyExpression(this.parentKey, List.of(propertyName.split("\\.")));
-    }
-
-    /**
-     * リーフ要素の{@link PropertyExpression}を取得する。
-     * 本インスタンスが"aaa.bbb.ccc"のとき、"ccc"のインスタンスが返却される。
-     *
-     * @return リーフ要素のPropertyExpression
-     */
-    PropertyExpression leaf() {
-        String newParent = String.join(".", nestedProperties.subList(0, nestedProperties.size() - 1));
-        String parent = newParent.isEmpty() ? this.parentKey
-                : this.parentKey.isEmpty() ? newParent : this.parentKey + "." + newParent;
-        return new PropertyExpression(parent, List.of(nestedProperties.get(nestedProperties.size() - 1)));
-    }
-
-    /**
      * 単純なプロパティか判定する.<br/>
      * @return リストまたは配列のプロパティではない場合、真
      */
@@ -196,8 +189,13 @@ class PropertyExpression {
         return parentKey;
     }
 
+    /**
+     * 親プロパティとネストしたプロパティを結合したプロパティの文字列表現を返却する。
+     *
+     * @return parentKey
+     */
     String getAbsoluteRawKey() {
-        return parentKey.isEmpty() ?  rawKey : parentKey + "." + rawKey;
+        return parentKey.isEmpty() ? rawKey : parentKey + "." + rawKey;
     }
 
     /**
