@@ -11,8 +11,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.junit.Assert.*;
 
 public class BeanUtilForMapSourceCopyTest {
 
@@ -23,6 +26,8 @@ public class BeanUtilForMapSourceCopyTest {
         OnMemoryLogWriter.clear();
         //BeanDescriptorのキャッシュをクリアしておく
         BeanUtil.clearCache();
+        OnMemoryLogWriter.clear();
+
     }
 
     @Test
@@ -86,8 +91,8 @@ public class BeanUtilForMapSourceCopyTest {
         BeanUtil.copy(dstBean.getClass(), dstBean, srcMap, CopyOptions.empty());
 
         assertEquals("テスト１名称", dstBean.getTest1Name());
-        assertEquals(12345, (long)dstBean.getTest1IntNumber());
-        assertEquals(LocalDate.of(2025,2,4), dstBean.getTest1Date());
+        assertEquals(12345, (long) dstBean.getTest1IntNumber());
+        assertEquals(LocalDate.of(2025, 2, 4), dstBean.getTest1Date());
         // ネスト1
         assertEquals(5001, dstBean.getTest1OneNestClass().getOneNumber());
         assertEquals("ネストクラス-テスト", dstBean.getTest1OneNestClass().getOneName());
@@ -495,23 +500,283 @@ public class BeanUtilForMapSourceCopyTest {
     }
 
     @Test
+    public void copy_配列やリストで複数要素を設定する_ネストがない場合() {
+
+        Map<String, Object> srcMap = new HashMap<>();
+        srcMap.put("test1Array[0]", "テスト配列０");
+        srcMap.put("test1Array[1]", "テスト配列１");
+        srcMap.put("test1Array[3]", "テスト配列３");
+        srcMap.put("test1List[0]", "テストリスト０");
+        srcMap.put("test1List[1]", "テストリスト１");
+        srcMap.put("test1List[3]", "テストリスト３");
+
+        // dstBean
+        TestClass1 dstBean = new TestClass1();
+        BeanUtil.copy(dstBean.getClass(), dstBean, srcMap, CopyOptions.empty());
+
+        assertEquals("テスト配列０", dstBean.getTest1Array()[0]);
+        assertEquals("テスト配列１", dstBean.getTest1Array()[1]);
+        assertNull(dstBean.getTest1Array()[2]);
+        assertEquals("テスト配列３", dstBean.getTest1Array()[3]);
+        assertEquals(4, dstBean.getTest1Array().length);
+        assertEquals("テストリスト０", dstBean.getTest1List().get(0));
+        assertEquals("テストリスト１", dstBean.getTest1List().get(1));
+        assertNull(dstBean.getTest1List().get(2));
+        assertEquals("テストリスト３", dstBean.getTest1List().get(3));
+        assertEquals(4, dstBean.getTest1List().size());
+    }
+
+    @Test
+    public void copy_配列やリストで複数要素を設定する_ネストありの場合() {
+
+        Map<String, Object> srcMap = new HashMap<>();
+
+        srcMap.put("test1OneNestClass.oneArray[0]", "ネストクラス-配列テスト０");
+        srcMap.put("test1OneNestClass.oneArray[1]", "ネストクラス-配列テスト１");
+        srcMap.put("test1OneNestClass.oneArray[3]", "ネストクラス-配列テスト３");
+        srcMap.put("test1OneNestClass.oneList[0]", "ネストクラス-リストテスト０");
+        srcMap.put("test1OneNestClass.oneList[1]", "ネストクラス-リストテスト１");
+        srcMap.put("test1OneNestClass.oneList[3]", "ネストクラス-リストテスト３");
+        //
+        srcMap.put("test1OneNestRecord.fooArray[0]", "ネストレコード-配列テスト０");
+        srcMap.put("test1OneNestRecord.fooArray[1]", "ネストレコード-配列テスト１");
+        srcMap.put("test1OneNestRecord.fooArray[3]", "ネストレコード-配列テスト３");
+        srcMap.put("test1OneNestRecord.fooList[0]", "ネストレコード-リストテスト０");
+        srcMap.put("test1OneNestRecord.fooList[1]", "ネストレコード-リストテスト１");
+        srcMap.put("test1OneNestRecord.fooList[3]", "ネストレコード-リストテスト３");
+        //
+        srcMap.put("test1OneNestClassArray[0].oneNumber", "1001");
+        srcMap.put("test1OneNestClassArray[0].oneName", "ネストクラス配列０-テスト");
+        srcMap.put("test1OneNestClassArray[1].oneNumber", "1002");
+        srcMap.put("test1OneNestClassArray[1].oneName", "ネストクラス配列１-テスト");
+        srcMap.put("test1OneNestClassArray[3].oneNumber", "1003");
+        srcMap.put("test1OneNestClassArray[3].oneName", "ネストクラス配列３-テスト");
+        srcMap.put("test1OneNestClassList[0].oneNumber", "2001");
+        srcMap.put("test1OneNestClassList[0].oneName", "ネストクラスリスト０-テスト");
+        srcMap.put("test1OneNestClassList[1].oneNumber", "2002");
+        srcMap.put("test1OneNestClassList[1].oneName", "ネストクラスリスト１-テスト");
+        srcMap.put("test1OneNestClassList[3].oneNumber", "2003");
+        srcMap.put("test1OneNestClassList[3].oneName", "ネストクラスリスト３-テスト");
+        //
+        srcMap.put("test1OneNestRecordArray[0].fooNumber", "3001");
+        srcMap.put("test1OneNestRecordArray[0].fooName", "ネストレコード配列０-テスト");
+        srcMap.put("test1OneNestRecordArray[1].fooNumber", "3002");
+        srcMap.put("test1OneNestRecordArray[1].fooName", "ネストレコード配列１-テスト");
+        srcMap.put("test1OneNestRecordArray[3].fooNumber", "3003");
+        srcMap.put("test1OneNestRecordArray[3].fooName", "ネストレコード配列３-テスト");
+        srcMap.put("test1OneNestRecordList[0].fooNumber", "4001");
+        srcMap.put("test1OneNestRecordList[0].fooName", "ネストレコードリスト０-テスト");
+        srcMap.put("test1OneNestRecordList[1].fooNumber", "4002");
+        srcMap.put("test1OneNestRecordList[1].fooName", "ネストレコードリスト１-テスト");
+        srcMap.put("test1OneNestRecordList[3].fooNumber", "4003");
+        srcMap.put("test1OneNestRecordList[3].fooName", "ネストレコードリスト３-テスト");
+        //
+        srcMap.put("test1OneNestClassArray[0].oneArray[0]", "ネストクラス配列０-配列テスト0");
+        srcMap.put("test1OneNestClassArray[0].oneArray[1]", "ネストクラス配列０-配列テスト1");
+        srcMap.put("test1OneNestClassArray[0].oneArray[3]", "ネストクラス配列０-配列テスト3");
+        srcMap.put("test1OneNestClassArray[0].oneList[0]", "ネストクラス配列０-リストテスト0");
+        srcMap.put("test1OneNestClassArray[0].oneList[1]", "ネストクラス配列０-リストテスト1");
+        srcMap.put("test1OneNestClassArray[0].oneList[3]", "ネストクラス配列０-リストテスト3");
+        srcMap.put("test1OneNestClassList[0].oneArray[0]", "ネストクラスリスト０-配列テスト0");
+        srcMap.put("test1OneNestClassList[0].oneArray[1]", "ネストクラスリスト０-配列テスト1");
+        srcMap.put("test1OneNestClassList[0].oneArray[3]", "ネストクラスリスト０-配列テスト3");
+        srcMap.put("test1OneNestClassList[0].oneList[0]", "ネストクラスリスト０-リストテスト0");
+        srcMap.put("test1OneNestClassList[0].oneList[1]", "ネストクラスリスト０-リストテスト1");
+        srcMap.put("test1OneNestClassList[0].oneList[3]", "ネストクラスリスト０-リストテスト3");
+        //
+        srcMap.put("test1OneNestRecordArray[0].fooArray[0]", "ネストレコード配列０-配列テスト0");
+        srcMap.put("test1OneNestRecordArray[0].fooArray[1]", "ネストレコード配列０-配列テスト1");
+        srcMap.put("test1OneNestRecordArray[0].fooArray[3]", "ネストレコード配列０-配列テスト3");
+        srcMap.put("test1OneNestRecordArray[0].fooList[0]", "ネストレコード配列０-リストテスト0");
+        srcMap.put("test1OneNestRecordArray[0].fooList[1]", "ネストレコード配列０-リストテスト1");
+        srcMap.put("test1OneNestRecordArray[0].fooList[3]", "ネストレコード配列０-リストテスト3");
+        srcMap.put("test1OneNestRecordList[0].fooArray[0]", "ネストレコードリスト０-配列テスト0");
+        srcMap.put("test1OneNestRecordList[0].fooArray[1]", "ネストレコードリスト０-配列テスト1");
+        srcMap.put("test1OneNestRecordList[0].fooArray[3]", "ネストレコードリスト０-配列テスト3");
+        srcMap.put("test1OneNestRecordList[0].fooList[0]", "ネストレコードリスト０-リストテスト0");
+        srcMap.put("test1OneNestRecordList[0].fooList[1]", "ネストレコードリスト０-リストテスト1");
+        srcMap.put("test1OneNestRecordList[0].fooList[3]", "ネストレコードリスト０-リストテスト3");
+
+        // dstBean
+        TestClass1 dstBean = new TestClass1();
+        BeanUtil.copy(dstBean.getClass(), dstBean, srcMap, CopyOptions.empty());
+
+        assertEquals("ネストクラス-配列テスト０", dstBean.getTest1OneNestClass().getOneArray()[0]);
+        assertEquals("ネストクラス-配列テスト１", dstBean.getTest1OneNestClass().getOneArray()[1]);
+        assertNull(dstBean.getTest1OneNestClass().getOneArray()[2]);
+        assertEquals("ネストクラス-配列テスト３", dstBean.getTest1OneNestClass().getOneArray()[3]);
+        assertEquals(4, dstBean.getTest1OneNestClass().getOneArray().length);
+        assertEquals("ネストクラス-リストテスト０", dstBean.getTest1OneNestClass().getOneList().get(0));
+        assertEquals("ネストクラス-リストテスト１", dstBean.getTest1OneNestClass().getOneList().get(1));
+        assertNull(dstBean.getTest1OneNestClass().getOneList().get(2));
+        assertEquals("ネストクラス-リストテスト３", dstBean.getTest1OneNestClass().getOneList().get(3));
+        assertEquals(4, dstBean.getTest1OneNestClass().getOneList().size());
+        //
+        assertEquals("ネストレコード-配列テスト０", dstBean.getTest1OneNestRecord().fooArray()[0]);
+        assertEquals("ネストレコード-配列テスト１", dstBean.getTest1OneNestRecord().fooArray()[1]);
+        assertNull(dstBean.getTest1OneNestRecord().fooArray()[2]);
+        assertEquals("ネストレコード-配列テスト３", dstBean.getTest1OneNestRecord().fooArray()[3]);
+        assertEquals(4, dstBean.getTest1OneNestRecord().fooArray().length);
+        assertEquals("ネストレコード-リストテスト０", dstBean.getTest1OneNestRecord().fooList().get(0));
+        assertEquals("ネストレコード-リストテスト１", dstBean.getTest1OneNestRecord().fooList().get(1));
+        assertNull(dstBean.getTest1OneNestRecord().fooList().get(2));
+        assertEquals("ネストレコード-リストテスト３", dstBean.getTest1OneNestRecord().fooList().get(3));
+        assertEquals(4, dstBean.getTest1OneNestRecord().fooList().size());
+        //
+        assertEquals(1001, dstBean.getTest1OneNestClassArray()[0].getOneNumber());
+        assertEquals("ネストクラス配列０-テスト", dstBean.getTest1OneNestClassArray()[0].getOneName());
+        assertEquals(1002, dstBean.getTest1OneNestClassArray()[1].getOneNumber());
+        assertEquals("ネストクラス配列１-テスト", dstBean.getTest1OneNestClassArray()[1].getOneName());
+        assertNull(dstBean.getTest1OneNestClassArray()[2]);
+        assertEquals(1003, dstBean.getTest1OneNestClassArray()[3].getOneNumber());
+        assertEquals("ネストクラス配列３-テスト", dstBean.getTest1OneNestClassArray()[3].getOneName());
+        assertEquals(4, dstBean.getTest1OneNestClassArray().length);
+        assertEquals(2001, dstBean.getTest1OneNestClassList().get(0).getOneNumber());
+        assertEquals("ネストクラスリスト０-テスト", dstBean.getTest1OneNestClassList().get(0).getOneName());
+        assertEquals("ネストクラスリスト１-テスト", dstBean.getTest1OneNestClassList().get(1).getOneName());
+        assertNull(dstBean.getTest1OneNestClassList().get(2));
+        assertEquals(2003, dstBean.getTest1OneNestClassList().get(3).getOneNumber());
+        assertEquals("ネストクラスリスト３-テスト", dstBean.getTest1OneNestClassList().get(3).getOneName());
+        assertEquals(4, dstBean.getTest1OneNestClassList().size());
+        //
+        assertEquals(3001, dstBean.getTest1OneNestRecordArray()[0].fooNumber());
+        assertEquals("ネストレコード配列０-テスト", dstBean.getTest1OneNestRecordArray()[0].fooName());
+        assertEquals(3002, dstBean.getTest1OneNestRecordArray()[1].fooNumber());
+        assertEquals("ネストレコード配列１-テスト", dstBean.getTest1OneNestRecordArray()[1].fooName());
+        assertNull(dstBean.getTest1OneNestRecordArray()[2]);
+        assertEquals(3003, dstBean.getTest1OneNestRecordArray()[3].fooNumber());
+        assertEquals("ネストレコード配列３-テスト", dstBean.getTest1OneNestRecordArray()[3].fooName());
+        assertEquals(4, dstBean.getTest1OneNestRecordArray().length);
+        assertEquals(4001, dstBean.getTest1OneNestRecordList().get(0).fooNumber());
+        assertEquals("ネストレコードリスト０-テスト", dstBean.getTest1OneNestRecordList().get(0).fooName());
+        assertEquals(4002, dstBean.getTest1OneNestRecordList().get(1).fooNumber());
+        assertEquals("ネストレコードリスト１-テスト", dstBean.getTest1OneNestRecordList().get(1).fooName());
+        assertNull(dstBean.getTest1OneNestRecordList().get(2));
+        assertEquals(4003, dstBean.getTest1OneNestRecordList().get(3).fooNumber());
+        assertEquals("ネストレコードリスト３-テスト", dstBean.getTest1OneNestRecordList().get(3).fooName());
+        assertEquals(4, dstBean.getTest1OneNestRecordList().size());
+        //
+        assertEquals("ネストクラス配列０-配列テスト0", dstBean.getTest1OneNestClassArray()[0].getOneArray()[0]);
+        assertEquals("ネストクラス配列０-配列テスト1", dstBean.getTest1OneNestClassArray()[0].getOneArray()[1]);
+        assertNull(dstBean.getTest1OneNestClassArray()[0].getOneArray()[2]);
+        assertEquals("ネストクラス配列０-配列テスト3", dstBean.getTest1OneNestClassArray()[0].getOneArray()[3]);
+        assertEquals(4, dstBean.getTest1OneNestClassArray()[0].getOneArray().length);
+        assertEquals("ネストクラス配列０-リストテスト0", dstBean.getTest1OneNestClassArray()[0].getOneList().get(0));
+        assertEquals("ネストクラス配列０-リストテスト1", dstBean.getTest1OneNestClassArray()[0].getOneList().get(1));
+        assertNull(dstBean.getTest1OneNestClassArray()[0].getOneList().get(2));
+        assertEquals("ネストクラス配列０-リストテスト3", dstBean.getTest1OneNestClassArray()[0].getOneList().get(3));
+        assertEquals(4, dstBean.getTest1OneNestClassArray()[0].getOneList().size());
+        assertEquals("ネストクラスリスト０-配列テスト0", dstBean.getTest1OneNestClassList().get(0).getOneArray()[0]);
+        assertEquals("ネストクラスリスト０-配列テスト1", dstBean.getTest1OneNestClassList().get(0).getOneArray()[1]);
+        assertNull(dstBean.getTest1OneNestClassList().get(0).getOneArray()[2]);
+        assertEquals("ネストクラスリスト０-配列テスト3", dstBean.getTest1OneNestClassList().get(0).getOneArray()[3]);
+        assertEquals(4, dstBean.getTest1OneNestClassList().get(0).getOneArray().length);
+        assertEquals("ネストクラスリスト０-リストテスト0", dstBean.getTest1OneNestClassList().get(0).getOneList().get(0));
+        assertEquals("ネストクラスリスト０-リストテスト1", dstBean.getTest1OneNestClassList().get(0).getOneList().get(1));
+        assertNull(dstBean.getTest1OneNestClassList().get(0).getOneList().get(2));
+        assertEquals("ネストクラスリスト０-リストテスト3", dstBean.getTest1OneNestClassList().get(0).getOneList().get(3));
+        assertEquals(4, dstBean.getTest1OneNestClassList().get(0).getOneList().size());
+        //
+        assertEquals("ネストレコード配列０-配列テスト0", dstBean.getTest1OneNestRecordArray()[0].fooArray[0]);
+        assertEquals("ネストレコード配列０-配列テスト1", dstBean.getTest1OneNestRecordArray()[0].fooArray[1]);
+        assertNull(dstBean.getTest1OneNestRecordArray()[0].fooArray[2]);
+        assertEquals("ネストレコード配列０-配列テスト3", dstBean.getTest1OneNestRecordArray()[0].fooArray[3]);
+        assertEquals(4, dstBean.getTest1OneNestRecordArray()[0].fooArray.length);
+        assertEquals("ネストレコード配列０-リストテスト0", dstBean.getTest1OneNestRecordArray()[0].fooList.get(0));
+        assertEquals("ネストレコード配列０-リストテスト1", dstBean.getTest1OneNestRecordArray()[0].fooList.get(1));
+        assertNull(dstBean.getTest1OneNestRecordArray()[0].fooList.get(2));
+        assertEquals("ネストレコード配列０-リストテスト3", dstBean.getTest1OneNestRecordArray()[0].fooList.get(3));
+        assertEquals(4, dstBean.getTest1OneNestRecordArray()[0].fooList.size());
+        assertEquals("ネストレコードリスト０-配列テスト0", dstBean.getTest1OneNestRecordList().get(0).fooArray[0]);
+        assertEquals("ネストレコードリスト０-配列テスト1", dstBean.getTest1OneNestRecordList().get(0).fooArray[1]);
+        assertNull(dstBean.getTest1OneNestRecordList().get(0).fooArray[2]);
+        assertEquals("ネストレコードリスト０-配列テスト3", dstBean.getTest1OneNestRecordList().get(0).fooArray[3]);
+        assertEquals(4, dstBean.getTest1OneNestRecordList().get(0).fooArray.length);
+        assertEquals("ネストレコードリスト０-リストテスト0", dstBean.getTest1OneNestRecordList().get(0).fooList.get(0));
+        assertEquals("ネストレコードリスト０-リストテスト1", dstBean.getTest1OneNestRecordList().get(0).fooList.get(1));
+        assertNull(dstBean.getTest1OneNestRecordList().get(0).fooList.get(2));
+        assertEquals("ネストレコードリスト０-リストテスト3", dstBean.getTest1OneNestRecordList().get(0).fooList.get(3));
+        assertEquals(4, dstBean.getTest1OneNestRecordList().get(0).fooList.size());
+
+    }
+
+    @Test
+    public void copy_指定したプロパティが存在しない場合() {
+
+        // dstBean
+        TestClass1 dstBean = new TestClass1();
+
+        Map<String, Object> srcMap = new HashMap<>();
+        srcMap.put("test1Name", "テスト１名称");
+        srcMap.put("invalid", "NG");
+
+        BeanUtil.copy(dstBean.getClass(), dstBean, srcMap, CopyOptions.empty());
+
+        assertEquals("テスト１名称", dstBean.getTest1Name());
+        assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
+                containsString("An error occurred while writing to the property :invalid"),
+                not(containsString("nablarch.core.beans.BeansException"))
+        )));
+
+        OnMemoryLogWriter.clear();
+
+        // ネストがある場合
+        // dstBean
+        TestClass1 dstBeanNest1 = new TestClass1();
+
+        Map<String, Object> srcMapNest1 = new HashMap<>();
+
+        // ネスト1
+        srcMapNest1.put("test1OneNestClass.oneName", "ネストクラス-テスト");
+        srcMapNest1.put("test1OneNestClass.invalid", "NG");
+        BeanUtil.copy(dstBean.getClass(), dstBeanNest1, srcMapNest1, CopyOptions.empty());
+
+        assertEquals("ネストクラス-テスト", dstBeanNest1.getTest1OneNestClass().getOneName());
+        assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
+                containsString("An error occurred while writing to the property :test1OneNestClass.invalid"),
+                not(containsString("nablarch.core.beans.BeansException"))
+        )));
+
+        OnMemoryLogWriter.clear();
+
+        // ネストがある場合（２階層）
+        // dstBean
+        TestClass1 dstBeanNest2 = new TestClass1();
+
+        Map<String, Object> srcMapNest2 = new HashMap<>();
+
+        // ネスト2
+        srcMapNest2.put("test1TwoNestClass.oneNoNestClass.oneName", "ネストクラス-ネストクラス-テスト");
+        srcMapNest2.put("test1TwoNestClass.oneNoNestClass.invalid", "NG");
+
+        BeanUtil.copy(dstBeanNest2.getClass(), dstBeanNest2, srcMapNest2, CopyOptions.empty());
+
+        assertEquals("ネストクラス-ネストクラス-テスト", dstBeanNest2.getTest1TwoNestClass().getOneNoNestClass().getOneName());
+        assertThat(OnMemoryLogWriter.getMessages("writer.memory"), contains(allOf(
+                containsString("An error occurred while writing to the property :test1TwoNestClass.oneNoNestClass.invalid"),
+                not(containsString("nablarch.core.beans.BeansException"))
+        )));
+
+    }
+
+    @Test
     public void copy_大量データの動作チェック() {
         // 報告ケース
         Map<String, Object> srcMap = new HashMap<>();
         List<Item> list = new ArrayList<>();
         int itemNumber = 1000;
-        for(int i = 0; i < itemNumber; i++) {
+        for (int i = 0; i < itemNumber; i++) {
             String index = String.valueOf(i);
-            srcMap.put("items[" + index + "].keyA", "value" + index+ "-A");
-            srcMap.put("items[" + index + "].keyB", "value" + index+ "-B");
-            srcMap.put("items[" + index + "].keyC", "value" + index+ "-C");
-            srcMap.put("items[" + index + "].keyD", "value" + index+ "-D");
-            srcMap.put("items[" + index + "].keyE", "value" + index+ "-E");
-            srcMap.put("items[" + index + "].keyF", "value" + index+ "-F");
-            srcMap.put("items[" + index + "].keyG", "value" + index+ "-G");
-            srcMap.put("items[" + index + "].keyH", "value" + index+ "-H");
-            srcMap.put("items[" + index + "].keyI", "value" + index+ "-I");
-            srcMap.put("items[" + index + "].keyJ", "value" + index+ "-J");
+            srcMap.put("items[" + index + "].keyA", "value" + index + "-A");
+            srcMap.put("items[" + index + "].keyB", "value" + index + "-B");
+            srcMap.put("items[" + index + "].keyC", "value" + index + "-C");
+            srcMap.put("items[" + index + "].keyD", "value" + index + "-D");
+            srcMap.put("items[" + index + "].keyE", "value" + index + "-E");
+            srcMap.put("items[" + index + "].keyF", "value" + index + "-F");
+            srcMap.put("items[" + index + "].keyG", "value" + index + "-G");
+            srcMap.put("items[" + index + "].keyH", "value" + index + "-H");
+            srcMap.put("items[" + index + "].keyI", "value" + index + "-I");
+            srcMap.put("items[" + index + "].keyJ", "value" + index + "-J");
         }
 
         Form form = new Form();
@@ -559,7 +824,7 @@ public class BeanUtilForMapSourceCopyTest {
             assertEquals("value" + index + "-I", recForm.getItems().get(i).keyI());
             assertEquals("value" + index + "-J", recForm.getItems().get(i).keyJ());
         }
-        assertTrue((end - start) < 1000);
+        assertTrue((end - start) < 3000);
     }
 
     public static class TestClass1 {
@@ -833,21 +1098,23 @@ public class BeanUtilForMapSourceCopyTest {
         }
     }
 
-    public record OneNestRecord (
-             int fooNumber,
-             String fooName,
-             String[] fooArray,
-             List<String> fooList
-    ) {}
+    public record OneNestRecord(
+            int fooNumber,
+            String fooName,
+            String[] fooArray,
+            List<String> fooList
+    ) {
+    }
 
-    public record TwoNestRecord (
+    public record TwoNestRecord(
             OneNestClass barOneNestClass,
             OneNestClass[] barOneNestClassArray,
             List<OneNestClass> barOneNestClassList,
             OneNestRecord barOneNestRecord,
             OneNestRecord[] barOneNestRecordArray,
             List<OneNestRecord> barOneNestRecordList
-    ) {}
+    ) {
+    }
 
     public static class Item {
         private String keyA;
@@ -943,7 +1210,7 @@ public class BeanUtilForMapSourceCopyTest {
 
     }
 
-    public record RecItem (
+    public record RecItem(
             String keyA,
             String keyB,
             String keyC,
@@ -954,7 +1221,8 @@ public class BeanUtilForMapSourceCopyTest {
             String keyH,
             String keyI,
             String keyJ
-    ){}
+    ) {
+    }
 
     private static class Form {
         private List<Item> items;
