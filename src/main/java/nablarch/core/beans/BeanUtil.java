@@ -783,7 +783,7 @@ public final class BeanUtil {
         try {
             copyMapInner(bean, srcMap, copyOptions, null);
         } catch (BeansException bex) {
-            if (!"allError".equals(bex.getMessage())) {
+            if (bex.hasNotBeenHandled()) {
                 LOGGER.logDebug("An error occurred while writing");
             }
         }
@@ -820,6 +820,7 @@ public final class BeanUtil {
                     nodeMap.put(entry.getKey(), entry.getValue());
                     setNodeProperty(bean, expression, nodeMap);
                 } else {
+                    // 同一のルートを持つプロパティをグルーピング
                     nestMap.computeIfAbsent(expression.getRoot(), key -> new HashMap<>())
                             .put(entry.getKey(), entry.getValue());
                 }
@@ -831,21 +832,23 @@ public final class BeanUtil {
             }
         }
 
-        for (Map.Entry<String, Map<String, Object>> groupEntry : nestMap.entrySet()) {
+        for (Map.Entry<String, Map<String, Object>> nestEntry : nestMap.entrySet()) {
             try {
                 setNestedProperty(bean,
-                        new PropertyExpression(parentProperty, groupEntry.getKey()), groupEntry.getValue(), copyOptions);
+                        new PropertyExpression(parentProperty, nestEntry.getKey()), nestEntry.getValue(), copyOptions);
                 allError = false;
             } catch (BeansException bex) {
-                if (!"allError".equals(bex.getMessage())) {
-                    String propertyName = StringUtil.isNullOrEmpty(parentProperty) ? groupEntry.getKey()
-                            : parentProperty + "." + groupEntry.getKey();
+                if (bex.hasNotBeenHandled()) {
+                    String propertyName = StringUtil.isNullOrEmpty(parentProperty) ? nestEntry.getKey()
+                            : parentProperty + "." + nestEntry.getKey();
                     LOGGER.logDebug("An error occurred while writing to the property :" + propertyName);
                 }
             }
         }
+        // ループ内のすべての処理でエラーが発生した場合は例外を送出する。
+        // 理由は、この場合に呼び出し元で次の処理に進ませないようにするため。
         if (allError) {
-            throw new BeansException("allError");
+            throw new BeansException(false);
         }
     }
 
@@ -1043,23 +1046,23 @@ public final class BeanUtil {
             }
         }
 
-        for (Map.Entry<String, Map<String, Object>> groupEntry : nestMap.entrySet()) {
-            PropertyExpression expression = new PropertyExpression(groupEntry.getKey());
+        for (Map.Entry<String, Map<String, Object>> nestEntry : nestMap.entrySet()) {
+            PropertyExpression expression = new PropertyExpression(nestEntry.getKey());
             try {
                 if (expression.isListOrArray()) {
                     Class<?> propertyType = getPropertyType(beanClass, expression.getListPropertyName());
                     if (propertyType.isArray()) {
-                        setNestedArrayPropertyToMap(beanClass, expression, propertyMap, groupEntry.getValue(), copyOptions);
+                        setNestedArrayPropertyToMap(beanClass, expression, propertyMap, nestEntry.getValue(), copyOptions);
                     } else if (List.class.isAssignableFrom(propertyType)) {
-                        setNestedListPropertyToMap(beanClass, expression, propertyMap, groupEntry.getValue(), copyOptions);
+                        setNestedListPropertyToMap(beanClass, expression, propertyMap, nestEntry.getValue(), copyOptions);
                     } else {
                         throw new BeansException("property type must be List or Array.");
                     }
                 } else {
-                    setNestedObjectPropertyToMap(beanClass, expression, propertyMap, groupEntry.getValue(), copyOptions);
+                    setNestedObjectPropertyToMap(beanClass, expression, propertyMap, nestEntry.getValue(), copyOptions);
                 }
             } catch (BeansException bex) {
-                LOGGER.logDebug("An error occurred while copying the property :" + groupEntry.getKey() + " original exception: " + bex);
+                LOGGER.logDebug("An error occurred while copying the property :" + nestEntry.getKey() + " original exception: " + bex);
             }
         }
 

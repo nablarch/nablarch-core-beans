@@ -15,12 +15,26 @@ public class BeansException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 未処理かどうか
+     */
+    private boolean notHandled;
+
+    /**
      * コンストラクタ。
      *
      * @param message メッセージ
      */
     public BeansException(String message) {
         super(message);
+    }
+
+    /**
+     * コンストラクタ。
+     *
+     * @param notHandled 未処理かどうか
+     */
+    public BeansException(boolean notHandled) {
+        this.notHandled = notHandled;
     }
 
     /**
@@ -40,5 +54,13 @@ public class BeansException extends RuntimeException {
      */
     public BeansException(String msg, Throwable t) {
         super(msg, t);
+    }
+
+    /**
+     * 例外がすでに処理済みかどうか
+     * @return 未処理の場合はtrue/処理済みの場合はfalse
+     */
+    public boolean hasNotBeenHandled() {
+        return notHandled;
     }
 }
