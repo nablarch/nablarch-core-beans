@@ -15,9 +15,9 @@ public class BeansException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 未処理かどうか
+     * Beanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表す
      */
-    private boolean notHandled;
+    private boolean copyPropertyFromMapInternalError = false;
 
     /**
      * コンストラクタ。
@@ -26,15 +26,6 @@ public class BeansException extends RuntimeException {
      */
     public BeansException(String message) {
         super(message);
-    }
-
-    /**
-     * コンストラクタ。
-     *
-     * @param notHandled 未処理かどうか
-     */
-    public BeansException(boolean notHandled) {
-        this.notHandled = notHandled;
     }
 
     /**
@@ -56,11 +47,24 @@ public class BeansException extends RuntimeException {
         super(msg, t);
     }
 
+
     /**
-     * 例外がすでに処理済みかどうか
-     * @return 未処理の場合はtrue/処理済みの場合はfalse
+     * Beanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すインスタンスを生成する
+     *
+     * @return Beanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すインスタンス
      */
-    public boolean hasNotBeenHandled() {
-        return notHandled;
+    static BeansException createCopyPropertyFromMapInternalError() {
+        BeansException e = new BeansException("An error occurred while copying a property from the map");
+        e.copyPropertyFromMapInternalError = true;
+        return e;
+    }
+
+    /**
+     * この例外の原因がBeanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すものの場合{@code true}を返す
+     *
+     * @return の例外の原因がBeanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すものの場合{@code true}
+     */
+    boolean isNotCopyPropertyFromMapInternalError() {
+        return !copyPropertyFromMapInternalError;
     }
 }

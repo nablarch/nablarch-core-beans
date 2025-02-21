@@ -783,7 +783,9 @@ public final class BeanUtil {
         try {
             copyMapInner(bean, srcMap, copyOptions, null);
         } catch (BeansException bex) {
-            if (bex.hasNotBeenHandled()) {
+            if (bex.isNotCopyPropertyFromMapInternalError()) {
+                // Mapからのプロパティの集約操作によるコピーを表す例外ではない場合はログ出力する
+                // （この例外の情報自体は他でログ出力済み）
                 LOGGER.logDebug("An error occurred while writing");
             }
         }
@@ -806,49 +808,61 @@ public final class BeanUtil {
             throw new IllegalArgumentException("The target bean must not be a record.");
         }
 
-        // ノードとネストでは処理内容が違うので分けて処理する。
-        // ネストの場合は同一のルートでまとめて処理をする。
-        Map<String, Map<String, Object>> nestMap = new HashMap<>();
-        boolean allError = true;
-        String parentProperty = parentExpression == null ? "" : parentExpression.getRawKey();
+        // ネストしたプロパティはmapのキー単位ではなくグルーピングして一括して操作して処理効率を向上させるため、
+        // 1度中間Mapに格納する
+        Map<String, Map<String, Object>> nestedMap = new HashMap<>();
+        // 操作に成功したプロパティがひとつもなかった場合はプロパティ全体の操作が失敗したと判定させる
+        // （ネストしている場合は複数プロパティを扱うため）
+        boolean anyPropertyOperationSucceeded = false;
+
         for (Map.Entry<String, ?> entry : map.entrySet()) {
 
             try {
                 PropertyExpression expression = new PropertyExpression(entry.getKey());
                 if (expression.isNode()) {
+                    // 単一のプロパティの場合はそのままコピー操作へディスパッチする
                     Map<String, Object> nodeMap = new HashMap<>();
                     nodeMap.put(entry.getKey(), entry.getValue());
                     setNodeProperty(bean, expression, nodeMap);
                 } else {
-                    // 同一のルートを持つプロパティをグルーピング
-                    nestMap.computeIfAbsent(expression.getRoot(), key -> new HashMap<>())
+                    // 同一のルートを持つプロパティの場合はグルーピングして後続で一括処理する
+                    // 例）"a.b.c"と"a.b.d"は"a"をキーとしてグルーピングされる
+                    //    "a"に紐づく値は、"a.b.c"と"a.b.d"それぞれをキーとして持つMapとなる
+                    nestedMap.computeIfAbsent(expression.getRoot(), key -> new HashMap<>())
                             .put(entry.getKey(), entry.getValue());
                 }
-                allError = false;
+
+                anyPropertyOperationSucceeded = true;
             } catch (BeansException bex) {
-                String propertyName = StringUtil.isNullOrEmpty(parentProperty) ? entry.getKey()
-                        : parentProperty + "." + entry.getKey();
+                String propertyName = parentExpression != null ?
+                        parentExpression.getRawKey() + "." + entry.getKey() : entry.getKey();
                 LOGGER.logDebug("An error occurred while writing to the property :" + propertyName);
             }
         }
 
-        for (Map.Entry<String, Map<String, Object>> nestEntry : nestMap.entrySet()) {
+        // ネストしたプロパティはグルーピングしたキーごとに一括して処理を行う
+        for (Map.Entry<String, Map<String, Object>> nestedEntry : nestedMap.entrySet()) {
+            PropertyExpression expression = parentExpression != null ?
+                    new PropertyExpression(parentExpression.getRawKey(), nestedEntry.getKey()) : new PropertyExpression(nestedEntry.getKey());
+
             try {
-                setNestedProperty(bean,
-                        new PropertyExpression(parentProperty, nestEntry.getKey()), nestEntry.getValue(), copyOptions);
-                allError = false;
+                setNestedProperty(bean, expression, nestedEntry.getValue(), copyOptions);
+                anyPropertyOperationSucceeded = true;
             } catch (BeansException bex) {
-                if (bex.hasNotBeenHandled()) {
-                    String propertyName = StringUtil.isNullOrEmpty(parentProperty) ? nestEntry.getKey()
-                            : parentProperty + "." + nestEntry.getKey();
+                if (bex.isNotCopyPropertyFromMapInternalError()) {
+                    // 再帰処理により本メソッド自身が明示的にスローした例外ではない場合はここでログ出力する
+                    // （この例外の情報自体は他でログ出力済み）
+                    String propertyName = parentExpression != null ?
+                            parentExpression.getRawKey() + "." + nestedEntry.getKey() : nestedEntry.getKey();
                     LOGGER.logDebug("An error occurred while writing to the property :" + propertyName);
                 }
             }
         }
-        // ループ内のすべての処理でエラーが発生した場合は例外を送出する。
-        // 理由は、この場合に呼び出し元で次の処理に進ませないようにするため。
-        if (allError) {
-            throw new BeansException(false);
+
+        if (!anyPropertyOperationSucceeded) {
+            // ひとつもプロパティの操作が成功しなかった場合は、プロパティ全体の操作が失敗したと判定する
+            // 呼び出し元が操作に成功したプロパティを扱う処理になっている場合は、この例外で処理をスキップさせる
+            throw BeansException.createCopyPropertyFromMapInternalError();
         }
     }
 
@@ -1009,10 +1023,10 @@ public final class BeanUtil {
         final CopyOptions mergedCopyOptions = copyOptions
                 .merge(CopyOptions.fromAnnotation(beanClass));
 
-        Map<String, Map<String, Object>> nestMap = new HashMap<>();
+        // ネストしたプロパティはmapのキー単位ではなくグルーピングして一括して操作して処理効率を向上させるため、
+        // 1度中間Mapに格納する
+        Map<String, Map<String, Object>> nestedMap = new HashMap<>();
 
-        // ノードとネストでは処理内容が違うので分けて処理する。
-        // ネストの場合は同一のルートでまとめて処理をする。
         for (Map.Entry<String, ?> entry : map.entrySet()) {
             String propertyName = entry.getKey();
             Object propertyValue = entry.getValue();
@@ -1037,8 +1051,10 @@ public final class BeanUtil {
                         }
                     }
                 } else {
-                    // 同一のルートを持つプロパティをグルーピング
-                    nestMap.computeIfAbsent(expression.getRoot(), key -> new HashMap<>())
+                    // 同一のルートを持つプロパティの場合はグルーピングして後続で一括処理する
+                    // 例）"a.b.c"と"a.b.d"は"a"をキーとしてグルーピングされる
+                    //    "a"に紐づく値は、"a.b.c"と"a.b.d"それぞれをキーとして持つMapとなる
+                    nestedMap.computeIfAbsent(expression.getRoot(), key -> new HashMap<>())
                             .put(entry.getKey(), entry.getValue());
                 }
             } catch (BeansException bex) {
@@ -1046,23 +1062,24 @@ public final class BeanUtil {
             }
         }
 
-        for (Map.Entry<String, Map<String, Object>> nestEntry : nestMap.entrySet()) {
-            PropertyExpression expression = new PropertyExpression(nestEntry.getKey());
+        // ネストしたプロパティはグルーピングしたキーごとに一括して処理を行う
+        for (Map.Entry<String, Map<String, Object>> nestedEntry : nestedMap.entrySet()) {
+            PropertyExpression expression = new PropertyExpression(nestedEntry.getKey());
             try {
                 if (expression.isListOrArray()) {
                     Class<?> propertyType = getPropertyType(beanClass, expression.getListPropertyName());
                     if (propertyType.isArray()) {
-                        setNestedArrayPropertyToMap(beanClass, expression, propertyMap, nestEntry.getValue(), copyOptions);
+                        setNestedArrayPropertyToMap(beanClass, expression, propertyMap, nestedEntry.getValue(), copyOptions);
                     } else if (List.class.isAssignableFrom(propertyType)) {
-                        setNestedListPropertyToMap(beanClass, expression, propertyMap, nestEntry.getValue(), copyOptions);
+                        setNestedListPropertyToMap(beanClass, expression, propertyMap, nestedEntry.getValue(), copyOptions);
                     } else {
                         throw new BeansException("property type must be List or Array.");
                     }
                 } else {
-                    setNestedObjectPropertyToMap(beanClass, expression, propertyMap, nestEntry.getValue(), copyOptions);
+                    setNestedObjectPropertyToMap(beanClass, expression, propertyMap, nestedEntry.getValue(), copyOptions);
                 }
             } catch (BeansException bex) {
-                LOGGER.logDebug("An error occurred while copying the property :" + nestEntry.getKey() + " original exception: " + bex);
+                LOGGER.logDebug("An error occurred while copying the property :" + nestedEntry.getKey() + " original exception: " + bex);
             }
         }
 
