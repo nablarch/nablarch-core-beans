@@ -69,8 +69,8 @@ class PropertyExpression {
      * @param expression ネストしたプロパティの文字列表現（ドット区切り）
      */
     PropertyExpression(String parentExpression, String expression) {
-        if (Objects.isNull(parentExpression) || StringUtil.isNullOrEmpty(expression)) {
-            throw new IllegalArgumentException("parentExpression is null or expression is null or blank.");
+        if (StringUtil.isNullOrEmpty(parentExpression) || StringUtil.isNullOrEmpty(expression)) {
+            throw new IllegalArgumentException("parentExpression or expression is null or blank.");
         }
         this.nestedProperties = new LinkedList<>(Arrays.asList(expression.split("\\.")));
         this.listPropertyInfo = createListPropertyInfo();

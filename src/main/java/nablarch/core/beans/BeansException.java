@@ -15,9 +15,9 @@ public class BeansException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 未処理かどうか
+     * 例外の原因が、ネストした（グルーピングされた）プロパティの一括操作に失敗したことを表す
      */
-    private boolean notHandled;
+    private boolean nestedPropertyOperationFailure = false;
 
     /**
      * コンストラクタ。
@@ -26,15 +26,6 @@ public class BeansException extends RuntimeException {
      */
     public BeansException(String message) {
         super(message);
-    }
-
-    /**
-     * コンストラクタ。
-     *
-     * @param notHandled 未処理かどうか
-     */
-    public BeansException(boolean notHandled) {
-        this.notHandled = notHandled;
     }
 
     /**
@@ -57,10 +48,38 @@ public class BeansException extends RuntimeException {
     }
 
     /**
-     * 例外がすでに処理済みかどうか
-     * @return 未処理の場合はtrue/処理済みの場合はfalse
+     * ネストした（グルーピングされた）プロパティ操作に失敗したことを表すインスタンスを生成する
+     *
+     * @param nestedPropertyOperationFailure ネストした（グルーピングされた）プロパティ操作に失敗したかどうか
      */
-    public boolean hasNotBeenHandled() {
-        return notHandled;
+    private BeansException(boolean nestedPropertyOperationFailure) {
+        this.nestedPropertyOperationFailure = nestedPropertyOperationFailure;
+    }
+
+    /**
+     * ネストした（グルーピングされた）プロパティ操作に失敗したことを表すインスタンスを生成する
+     *
+     * @return ネストした（グルーピングされた）プロパティ操作に失敗したことを表すインスタンス
+     */
+    static BeansException createNestedPropertiesOperationFailure() {
+        return new BeansException(true);
+    }
+
+    /**
+     * この例外の原因がネストした（グルーピングされた）プロパティ操作に失敗したものである場合{@code true}を返す
+     *
+     * @return この例外の原因がネストした（グルーピングされた）プロパティ操作に失敗したものである場合{@code true}
+     */
+    boolean isNestedPropertyOperationFailure() {
+        return nestedPropertyOperationFailure;
+    }
+
+    /**
+     * この例外の原因がシンプルなプロパティ操作に失敗したものである場合{@code true}を返す
+     *
+     * @return この例外の原因がシンプルなプロパティ操作に失敗したものである場合{@code true}
+     */
+    boolean isNodePropertyOperationFailure() {
+        return !isNestedPropertyOperationFailure();
     }
 }
