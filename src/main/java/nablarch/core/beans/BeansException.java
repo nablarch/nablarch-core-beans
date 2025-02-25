@@ -15,6 +15,11 @@ public class BeansException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     /**
+     * Beanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表す
+     */
+    private boolean copyPropertyFromMapInternalError = false;
+
+    /**
      * コンストラクタ。
      *
      * @param message メッセージ
@@ -40,5 +45,26 @@ public class BeansException extends RuntimeException {
      */
     public BeansException(String msg, Throwable t) {
         super(msg, t);
+    }
+
+
+    /**
+     * Beanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すインスタンスを生成する
+     *
+     * @return Beanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すインスタンス
+     */
+    static BeansException createCopyPropertyFromMapInternalError() {
+        BeansException e = new BeansException("An error occurred while copying a property from the map");
+        e.copyPropertyFromMapInternalError = true;
+        return e;
+    }
+
+    /**
+     * この例外の原因がBeanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すものではない場合{@code true}を返す
+     *
+     * @return の例外の原因がBeanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すものではない場合{@code true}
+     */
+    boolean isNotCopyPropertyFromMapInternalError() {
+        return !copyPropertyFromMapInternalError;
     }
 }

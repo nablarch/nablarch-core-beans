@@ -3,8 +3,7 @@ package nablarch.core.beans;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * {@link PropertyExpression}のテストクラス。
@@ -32,11 +31,17 @@ public class PropertyExpressionTest {
         sut = sut.rest();
         assertThat(sut.getRoot(), is("bbb"));
         assertThat(sut.isNested(), is(true));
+        assertThat(sut.getParentKey(), is("aaa"));
+        assertThat(sut.getAbsoluteRawKey(), is("aaa.bbb.ccc"));
+        assertThat(sut.getRawKey(), is("bbb.ccc"));
 
         sut = sut.rest();
         assertThat(sut.getRoot(), is("ccc"));
         assertThat(sut.isNested(), is(false));
         assertThat(sut.isNode(), is(true));
+        assertThat(sut.getParentKey(), is("aaa.bbb"));
+        assertThat(sut.getAbsoluteRawKey(), is("aaa.bbb.ccc"));
+        assertThat(sut.getRawKey(), is("ccc"));
 
         try {
             sut.rest();
@@ -44,6 +49,15 @@ public class PropertyExpressionTest {
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage(), is("invalid."));
         }
+
+        sut = new PropertyExpression("ccc");
+        assertThat(sut.getRoot(), is("ccc"));
+        assertThat(sut.isNested(), is(false));
+        assertThat(sut.isNode(), is(true));
+        assertThat(sut.getParentKey(), is(""));
+        assertThat(sut.getAbsoluteRawKey(), is("ccc"));
+        assertThat(sut.getRawKey(), is("ccc"));
+
     }
 
 }

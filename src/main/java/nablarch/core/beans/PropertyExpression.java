@@ -5,6 +5,7 @@ import nablarch.core.util.StringUtil;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,18 +28,23 @@ class PropertyExpression {
     /** ネストしたプロパティの文字列表現（ドット区切り） */
     private final String rawKey;
 
+    /** ネストしたときの親部分の文字列表現（ドット区切り） */
+    private final String parentKey;
+
     /**
      * コンストラクタ。
      *
+     * @param parentKey ネストしたときの親部分
      * @param nestedProperties ネストしたプロパティ
      */
-    private PropertyExpression(List<String> nestedProperties) {
+    private PropertyExpression(String parentKey, List<String> nestedProperties) {
         if (nestedProperties.isEmpty()) {
             throw new IllegalArgumentException("invalid.");
         }
         this.nestedProperties = nestedProperties;
         this.listPropertyInfo = createListPropertyInfo();
         this.rawKey = String.join(".", nestedProperties);
+        this.parentKey = parentKey;
     }
 
     /**
@@ -53,6 +59,23 @@ class PropertyExpression {
         this.nestedProperties = new LinkedList<>(Arrays.asList(expression.split("\\.")));
         this.listPropertyInfo = createListPropertyInfo();
         this.rawKey = expression;
+        this.parentKey = "";
+    }
+
+    /**
+     * コンストラクタ。
+     *
+     * @param parentExpression 親プロパティの文字列表現（ドット区切り）
+     * @param expression ネストしたプロパティの文字列表現（ドット区切り）
+     */
+    PropertyExpression(String parentExpression, String expression) {
+        if (StringUtil.isNullOrEmpty(parentExpression) || StringUtil.isNullOrEmpty(expression)) {
+            throw new IllegalArgumentException("parentExpression or expression is null or blank.");
+        }
+        this.nestedProperties = new LinkedList<>(Arrays.asList(expression.split("\\.")));
+        this.listPropertyInfo = createListPropertyInfo();
+        this.rawKey = expression;
+        this.parentKey = parentExpression;
     }
 
     /**
@@ -109,7 +132,8 @@ class PropertyExpression {
      */
     PropertyExpression rest() {
         List<String> rest = nestedProperties.subList(1, nestedProperties.size());
-        return new PropertyExpression(rest);
+        String parent = this.parentKey.isEmpty() ? nestedProperties.get(0) : this.parentKey + "." + nestedProperties.get(0);
+        return new PropertyExpression(parent, rest);
     }
 
     /**
@@ -154,6 +178,24 @@ class PropertyExpression {
      */
     String getRawKey() {
         return rawKey;
+    }
+
+    /**
+     * {@link PropertyExpression#parentKey}を返却する。
+     *
+     * @return parentKey
+     */
+    String getParentKey() {
+        return parentKey;
+    }
+
+    /**
+     * 親プロパティとネストしたプロパティを結合したプロパティの文字列表現を返却する。
+     *
+     * @return parentKey
+     */
+    String getAbsoluteRawKey() {
+        return parentKey.isEmpty() ? rawKey : parentKey + "." + rawKey;
     }
 
     /**
