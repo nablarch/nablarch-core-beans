@@ -15,9 +15,9 @@ public class BeansException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 例外の原因が、ネストした（グルーピングされた）プロパティの一括操作に失敗したことを表す
+     * Beanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表す
      */
-    private boolean nestedPropertyOperationFailure = false;
+    private boolean copyPropertyFromMapInternalError = false;
 
     /**
      * コンストラクタ。
@@ -47,39 +47,24 @@ public class BeansException extends RuntimeException {
         super(msg, t);
     }
 
+
     /**
-     * ネストした（グルーピングされた）プロパティ操作に失敗したことを表すインスタンスを生成する
+     * Beanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すインスタンスを生成する
      *
-     * @param nestedPropertyOperationFailure ネストした（グルーピングされた）プロパティ操作に失敗したかどうか
+     * @return Beanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すインスタンス
      */
-    private BeansException(boolean nestedPropertyOperationFailure) {
-        this.nestedPropertyOperationFailure = nestedPropertyOperationFailure;
+    static BeansException createCopyPropertyFromMapInternalError() {
+        BeansException e = new BeansException("An error occurred while copying a property from the map");
+        e.copyPropertyFromMapInternalError = true;
+        return e;
     }
 
     /**
-     * ネストした（グルーピングされた）プロパティ操作に失敗したことを表すインスタンスを生成する
+     * この例外の原因がBeanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すものの場合{@code true}を返す
      *
-     * @return ネストした（グルーピングされた）プロパティ操作に失敗したことを表すインスタンス
+     * @return の例外の原因がBeanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すものの場合{@code true}
      */
-    static BeansException createNestedPropertiesOperationFailure() {
-        return new BeansException(true);
-    }
-
-    /**
-     * この例外の原因がネストした（グルーピングされた）プロパティ操作に失敗したものである場合{@code true}を返す
-     *
-     * @return この例外の原因がネストした（グルーピングされた）プロパティ操作に失敗したものである場合{@code true}
-     */
-    boolean isNestedPropertyOperationFailure() {
-        return nestedPropertyOperationFailure;
-    }
-
-    /**
-     * この例外の原因がシンプルなプロパティ操作に失敗したものである場合{@code true}を返す
-     *
-     * @return この例外の原因がシンプルなプロパティ操作に失敗したものである場合{@code true}
-     */
-    boolean isNodePropertyOperationFailure() {
-        return !isNestedPropertyOperationFailure();
+    boolean isNotCopyPropertyFromMapInternalError() {
+        return !copyPropertyFromMapInternalError;
     }
 }

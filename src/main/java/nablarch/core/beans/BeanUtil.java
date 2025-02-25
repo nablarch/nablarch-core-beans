@@ -783,8 +783,9 @@ public final class BeanUtil {
         try {
             copyMapInner(bean, srcMap, copyOptions, null);
         } catch (BeansException bex) {
-            if (bex.isNodePropertyOperationFailure()) {
-                // ネストしたプロパティ操作のログは他の箇所で出力済みなので、ここでは単一のプロパティ操作の失敗のみを扱う
+            if (bex.isNotCopyPropertyFromMapInternalError()) {
+                // Mapからのプロパティの集約操作によるコピーを表す例外ではない場合はログ出力する
+                // （この例外の情報自体は他でログ出力済み）
                 LOGGER.logDebug("An error occurred while writing");
             }
         }
@@ -848,8 +849,9 @@ public final class BeanUtil {
                 setNestedProperty(bean, expression, nestedEntry.getValue(), copyOptions);
                 anyPropertyOperationSucceeded = true;
             } catch (BeansException bex) {
-                if (bex.isNodePropertyOperationFailure()) {
-                    // ネストしたプロパティ操作のログは他の箇所で出力済みなので、ここでは単一のプロパティ操作の失敗のみを扱う
+                if (bex.isNotCopyPropertyFromMapInternalError()) {
+                    // 再帰処理により本メソッド自身が明示的にスローした例外ではない場合はここでログ出力する
+                    // （この例外の情報自体は他でログ出力済み）
                     String propertyName = parentExpression != null ?
                             parentExpression.getRawKey() + "." + nestedEntry.getKey() : nestedEntry.getKey();
                     LOGGER.logDebug("An error occurred while writing to the property :" + propertyName);
@@ -860,7 +862,7 @@ public final class BeanUtil {
         if (!anyPropertyOperationSucceeded) {
             // ひとつもプロパティの操作が成功しなかった場合は、プロパティ全体の操作が失敗したと判定する
             // 呼び出し元が操作に成功したプロパティを扱う処理になっている場合は、この例外で処理をスキップさせる
-            throw BeansException.createNestedPropertiesOperationFailure();
+            throw BeansException.createCopyPropertyFromMapInternalError();
         }
     }
 
