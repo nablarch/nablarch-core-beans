@@ -60,9 +60,9 @@ public class BeansException extends RuntimeException {
     }
 
     /**
-     * この例外の原因がBeanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すものの場合{@code true}を返す
+     * この例外の原因がBeanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すものではない場合{@code true}を返す
      *
-     * @return の例外の原因がBeanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すものの場合{@code true}
+     * @return の例外の原因がBeanに対する{@code Map}からのあるプロパティのコピー操作に失敗したことを表すものではない場合{@code true}
      */
     boolean isNotCopyPropertyFromMapInternalError() {
         return !copyPropertyFromMapInternalError;
