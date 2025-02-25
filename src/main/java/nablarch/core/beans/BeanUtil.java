@@ -810,8 +810,8 @@ public final class BeanUtil {
         // ネストしたプロパティはmapのキー単位ではなくグルーピングして一括して操作して処理効率を向上させるため、
         // 1度中間Mapに格納する
         Map<String, Map<String, Object>> nestedMap = new HashMap<>();
-        // このメソッドで扱うプロパティはネストしたものを集約したものになるため、操作に成功したプロパティが
-        // ひとつもなかった場合はプロパティ全体の操作が失敗したと判定させる
+        // 操作に成功したプロパティがひとつもなかった場合はプロパティ全体の操作が失敗したと判定させる
+        // （ネストしている場合は複数プロパティを扱うため）
         boolean anyPropertyOperationSucceeded = false;
 
         for (Map.Entry<String, ?> entry : map.entrySet()) {
