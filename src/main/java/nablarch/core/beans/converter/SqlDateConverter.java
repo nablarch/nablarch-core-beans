@@ -2,6 +2,7 @@ package nablarch.core.beans.converter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -83,6 +84,8 @@ public class SqlDateConverter implements Converter<java.sql.Date> {
             return java.sql.Date.valueOf(localDate);
         } else if (value instanceof LocalDateTime localDateTime) {
             return java.sql.Date.valueOf(localDateTime.toLocalDate());
+        } else if (value instanceof OffsetDateTime offsetDateTime) {
+            return DateTimeConverterUtil.getSqlDate(offsetDateTime);
         } else {
             throw new ConversionException(java.sql.Date.class, value);
         }

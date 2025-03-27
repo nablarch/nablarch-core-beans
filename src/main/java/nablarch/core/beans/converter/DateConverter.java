@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -76,6 +77,8 @@ public class DateConverter implements Converter<Date> {
             return DateTimeConverterUtil.getDate(localDateTime);
         } else if (value instanceof LocalDate localDate) {
             return DateTimeConverterUtil.getDate(localDate);
+        } else if (value instanceof OffsetDateTime offsetDateTime) {
+            return DateTimeConverterUtil.getDate(offsetDateTime);
         } else {
             throw new ConversionException(Date.class, value);
         }

@@ -15,6 +15,8 @@ import org.junit.runner.RunWith;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 
@@ -37,6 +39,10 @@ public class LocalDateTimeConverterTest {
                 {"2017-06-01T10:22:30.100Z", LocalDateTime.of(2017, 6, 1, 10, 22, 30, 100000000)},
                 {LocalDate.of(2017, 6, 12), LocalDateTime.of(2017, 6, 12, 0, 0, 0)},
                 {LocalDateTime.of(2017, 6, 13, 12, 30, 15), LocalDateTime.of(2017, 6, 13, 12, 30, 15)},
+                // デフォルトタイムゾーンのオフセットに読み替えられる（デフォルトはAsia/Tokyo）
+                {OffsetDateTime.of(2017, 6, 13, 5, 30, 15, 0, ZoneOffset.ofHours(9)), LocalDateTime.of(2017, 6, 13, 5, 30, 15)},
+                {OffsetDateTime.of(2017, 6, 13, 5, 30, 15, 0, ZoneOffset.UTC), LocalDateTime.of(2017, 6, 13, 14, 30, 15)},
+                {OffsetDateTime.of(2017, 6, 13, 5, 30, 15, 0, ZoneOffset.ofHours(3)), LocalDateTime.of(2017, 6, 13, 11, 30, 15)},
                 {DateUtil.getParsedDate("20170621030530500", "yyyyMMddHHmmssSSS"), LocalDateTime.of(2017, 6, 21, 3, 5, 30, 500000000)},
                 {DateUtil.getParsedDate("20170622235011300", "yyyyMMddHHmmssSSS"), LocalDateTime.of(2017, 6, 22, 23, 50, 11, 300000000)},
                 {newSqlDate("20170623123015", "yyyyMMddHHmmss"), LocalDateTime.of(2017, 6, 23, 0, 0, 0)}

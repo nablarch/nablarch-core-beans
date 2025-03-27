@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
@@ -99,6 +100,16 @@ public final class DateTimeConverterUtil {
     }
 
     /**
+     * {@code java.time.OffsetDateTime}のインスタンスを、{@code java.time.LocalDate}に変換する。
+     *
+     * @param dateTime 変換対象の{@code java.time.OffsetDateTime}のインスタンス
+     * @return 変換後の{@code java.time.LocalDate}のインスタンス
+     */
+    public static LocalDate getLocalDate(final OffsetDateTime dateTime) {
+        return dateTime.atZoneSameInstant(getDateTimeConverterConfiguration().getSystemZoneId()).toLocalDate();
+    }
+
+    /**
      * 日時文字列を{@link LocalDateTime}に変換する。
      *
      * @param date 変換対象の日時文字列
@@ -148,6 +159,76 @@ public final class DateTimeConverterUtil {
     }
 
     /**
+     * {@code java.time.OffsetDateTime}のインスタンスを、{@code java.time.LocalDateTime}に変換する。
+     *
+     * @param dateTime 変換対象の{@code java.time.OffsetDateTime}のインスタンス
+     * @return 変換後の{@code java.time.LocalDateTime}のインスタンス
+     */
+    public static LocalDateTime getLocalDateTime(final OffsetDateTime dateTime) {
+        return dateTime.atZoneSameInstant(getDateTimeConverterConfiguration().getSystemZoneId()).toLocalDateTime();
+    }
+
+    /**
+     * 日時文字列を{@link OffsetDateTime}に変換する。
+     *
+     * @param date 変換対象の日時文字列
+     * @return 変換後の値
+     */
+    public static OffsetDateTime getOffsetDateTime(String date) {
+        return OffsetDateTime.parse(date, getDateTimeConverterConfiguration().getOffsetDateTimeFormatter());
+    }
+
+    /**
+     * {@code java.util.Date}のインスタンスを、{@code java.time.OffsetDateTime}に変換する
+     *
+     * @param date 変換対象の{@code java.util.Date}のインスタンス
+     * @return 変換後の{@code java.time.OffsetDateTime}のインスタンス
+     */
+    public static OffsetDateTime getOffsetDateTime(Date date) {
+        return OffsetDateTime.ofInstant(date.toInstant(), getDateTimeConverterConfiguration().getSystemZoneId());
+    }
+
+    /**
+     * {@code java.sql.Date}のインスタンスを、{@code java.time.OffsetDateTime}に変換する
+     *
+     * @param date 変換対象の{@code java.sql.Date}のインスタンス
+     * @return 変換後の{@code java.time.OffsetDateTime}のインスタンス
+     */
+    public static OffsetDateTime getOffsetDateTimeAsSqlDate(java.sql.Date date) {
+        return date.toLocalDate().atStartOfDay(getDateTimeConverterConfiguration().getSystemZoneId()).toOffsetDateTime();
+    }
+
+    /**
+     * {@code java.util.Calendar}のインスタンスを、{@code java.time.OffsetDateTime}に変換する
+     *
+     * @param calendar 変換対象の{@code java.util.Calendar}のインスタンス
+     * @return 変換後の{@code java.time.OffsetDateTime}のインスタンス
+     */
+    public static OffsetDateTime getOffsetDateTime(Calendar calendar) {
+        return getOffsetDateTime(calendar.getTime());
+    }
+
+    /**
+     * {@code java.time.LocalDate}のインスタンスを、{@code java.time.OffsetDateTime}に変換する
+     *
+     * @param date 変換対象の{@code java.time.LocalDate}のインスタンス
+     * @return 変換後の{@code java.time.OffsetDateTime}のインスタンス
+     */
+    public static OffsetDateTime getOffsetDateTime(LocalDate date) {
+        return date.atStartOfDay(getDateTimeConverterConfiguration().getSystemZoneId()).toOffsetDateTime();
+    }
+
+    /**
+     * {@code java.time.LocalDateTime}のインスタンスを、{@code java.time.OffsetDateTime}に変換する
+     *
+     * @param dateTime 変換対象の{@code java.time.LocalDateTime}のインスタンス
+     * @return 変換後の{@code java.time.OffsetDateTime}のインスタンス
+     */
+    public static OffsetDateTime getOffsetDateTime(LocalDateTime dateTime) {
+        return dateTime.atZone(getDateTimeConverterConfiguration().getSystemZoneId()).toOffsetDateTime();
+    }
+
+    /**
      * {@code java.time.LocalDateTime}のインスタンスを{@code java.util.Date}に変換する
      *
      * @param dateTime 変換対象の{@code java.time.LocalDateTime}のインスタンス
@@ -170,6 +251,17 @@ public final class DateTimeConverterUtil {
     }
 
     /**
+     * {@code java.time.OffsetDateTime}のインスタンスを{@code java.sql.Timestamp}に変換する
+     *
+     * @param dateTime 変換対象の{@code java.time.OffsetDateTime}のインスタンス
+     * @return 変換後の{@code Timestamp}のインスタンス
+     */
+    public static Timestamp getTimestamp(final OffsetDateTime dateTime) {
+        return Timestamp.from(dateTime.atZoneSameInstant(getDateTimeConverterConfiguration().getSystemZoneId())
+                                      .toInstant());
+    }
+
+    /**
      * {@code java.time.LocalDate}のインスタンスを{@code java.util.Date}に変換する
      *
      * @param date 変換対象の{@code java.time.LocalDate}のインスタンス
@@ -178,5 +270,27 @@ public final class DateTimeConverterUtil {
     public static Date getDate(final LocalDate date) {
         return Date.from(date.atStartOfDay(getDateTimeConverterConfiguration().getSystemZoneId())
                                       .toInstant());
+    }
+
+    /**
+     * {@code java.time.OffsetDateTime}のインスタンスを{@code java.util.Date}に変換する
+     *
+     * @param dateTime 変換対象の{@code java.time.LocalDate}のインスタンス
+     * @return 変換後の{@code java.util.Date}のインスタンス
+     */
+    public static Date getDate(final OffsetDateTime dateTime) {
+        return Date.from(dateTime.atZoneSameInstant(getDateTimeConverterConfiguration().getSystemZoneId())
+                                 .toInstant());
+    }
+
+    /**
+     * {@code java.time.OffsetDateTime}のインスタンスを{@code java.sql.Date}に変換する
+     *
+     * @param dateTime 変換対象の{@code java.time.OffsetDateTime}のインスタンス
+     * @return 変換後の{@code java.sql.Date}のインスタンス
+     */
+    public static java.sql.Date getSqlDate(final OffsetDateTime dateTime) {
+        return java.sql.Date.valueOf(dateTime.atZoneSameInstant(getDateTimeConverterConfiguration().getSystemZoneId())
+                .toLocalDate());
     }
 }

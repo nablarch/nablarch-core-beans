@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Date;
 
 import nablarch.core.beans.ConversionException;
@@ -98,6 +100,16 @@ public class StringConverterTest {
     @Test
     public void LocalDateTimeWithPattern() {
         assertThat(new StringConverter("yyyy/MM/dd", null).convert(LocalDateTime.of(2018, 2, 19, 15, 10)), is("2018/02/19"));
+    }
+
+    @Test
+    public void OffsetDateTimeWithoutPattern() {
+        assertThat(sut.convert(OffsetDateTime.of(2018, 2, 19, 15, 10, 18, 0, ZoneOffset.ofHours(9))), is("2018-02-19T15:10:18+09:00"));
+    }
+
+    @Test
+    public void OffsetDateTimeWithPattern() {
+        assertThat(new StringConverter("yyyy/MM/dd HH:mm:ssZ", null).convert(OffsetDateTime.of(2018, 2, 19, 15, 10, 0, 0, ZoneOffset.UTC)), is("2018/02/19 15:10:00+0000"));
     }
 
     @Test

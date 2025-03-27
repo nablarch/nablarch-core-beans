@@ -6,6 +6,7 @@ import nablarch.core.beans.Converter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Calendar;
@@ -68,6 +69,8 @@ public class LocalDateTimeConverter implements Converter<LocalDateTime> {
             return LocalDateTime.of(localDate, LocalTime.of(0, 0, 0));
         } else if (value instanceof LocalDateTime localDateTime) {
             return localDateTime;
+        } else if (value instanceof OffsetDateTime offsetDateTime) {
+            return DateTimeConverterUtil.getLocalDateTime(offsetDateTime);
         } else if (value instanceof java.sql.Date sqlDate) {
             return DateTimeConverterUtil.getLocalDateTimeAsSqlDate(sqlDate);
         } else if (value instanceof Date date) {

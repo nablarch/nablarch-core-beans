@@ -19,6 +19,8 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.allOf;
@@ -1969,29 +1971,35 @@ public class BeanUtilTest {
     }
 
     /**
-     *  LocalDate型、LocalDateTime型がコピーできることを検証するケース。
+     *  LocalDate型、LocalDateTime型、OffsetDateTime型がコピーできることを検証するケース。
      */
     @Test
-    public void copyLocalDateTimeAndLocalDate() {
-        WithLocalDateTimeSrcClass src = new WithLocalDateTimeSrcClass();
+    public void copyDateAndTimeTimeAndLocalDate() {
+        WithDateAndTimeSrcClass src = new WithDateAndTimeSrcClass();
         src.setName("Taro");
         src.setDate1(LocalDate.of(2017, 6, 13));
         src.setDateTime1(LocalDateTime.of(2017, 6, 13, 11, 30, 15));
+        src.setOffsetDateTime1(OffsetDateTime.of(2017, 6, 13, 11, 30, 15, 0, ZoneOffset.ofHours(9)));
         src.setDate2(new Date(DateUtil.getDate("20170614").getTime()));
         src.setDateTime2(new Timestamp(DateUtil.getParsedDate("20170614154520", "yyyyMMddHHmmss").getTime()));
+        src.setOffsetDateTime2(new Timestamp(DateUtil.getParsedDate("20170614154520", "yyyyMMddHHmmss").getTime()));
         src.setDate3("20170615");
         src.setDateTime3("2017-06-22T10:22:30.100Z");
+        src.setOffsetDateTime3("2017-06-22T10:22:30.100Z");
         src.setDateTimes(Arrays.asList(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 2)));
 
-        WithLocalDateTimeDestClass dest = BeanUtil.createAndCopy(WithLocalDateTimeDestClass.class, src);
+        WithDateAndTimeDestClass dest = BeanUtil.createAndCopy(WithDateAndTimeDestClass.class, src);
 
         assertThat(dest.getName(), is("Taro"));
         assertThat(dest.getDate1(), is(LocalDate.of(2017, 6, 13)));
         assertThat(dest.getDateTime1(), is(LocalDateTime.of(2017, 6, 13, 11, 30, 15)));
+        assertThat(dest.getOffsetDateTime1(), is(OffsetDateTime.of(2017, 6, 13, 11, 30, 15, 0 , ZoneOffset.ofHours(9))));
         assertThat(dest.getDate2(), is(LocalDate.of(2017, 6, 14)));
         assertThat(dest.getDateTime2(), is(LocalDateTime.of(2017, 6, 14, 15, 45, 20)));
+        assertThat(dest.getOffsetDateTime2(), is(OffsetDateTime.of(2017, 6, 14, 15, 45, 20, 0 , ZoneOffset.ofHours(9))));
         assertThat(dest.getDate3(), is(LocalDate.of(2017, 6, 15)));
         assertThat(dest.getDateTime3(), is(LocalDateTime.of(2017, 6, 22, 10, 22, 30, 100000000)));
+        assertThat(dest.getOffsetDateTime3(), is(OffsetDateTime.of(2017, 6, 22, 10, 22, 30, 100000000 , ZoneOffset.UTC)));
         assertThat(dest.getDateTimes(), is(Arrays.asList(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 2))));
     }
 
@@ -2143,14 +2151,17 @@ public class BeanUtilTest {
         }
     }
 
-    private static class WithLocalDateTimeSrcClass {
+    private static class WithDateAndTimeSrcClass {
         private String name;
         private LocalDate date1;
         private LocalDateTime dateTime1;
+        private OffsetDateTime offsetDateTime1;
         private Date date2;
         private Timestamp dateTime2;
+        private Timestamp offsetDateTime2;
         private String date3;
         private String dateTime3;
+        private String offsetDateTime3;
         private List<LocalDate> dateTimes;
 
         public String getName() {
@@ -2175,6 +2186,14 @@ public class BeanUtilTest {
 
         public void setDateTime1(LocalDateTime dateTime1) {
             this.dateTime1 = dateTime1;
+        }
+
+        public OffsetDateTime getOffsetDateTime1() {
+            return offsetDateTime1;
+        }
+
+        public void setOffsetDateTime1(OffsetDateTime offsetDateTime1) {
+            this.offsetDateTime1 = offsetDateTime1;
         }
 
         public Date getDate2() {
@@ -2193,6 +2212,14 @@ public class BeanUtilTest {
             this.dateTime2 = dateTime2;
         }
 
+        public Timestamp getOffsetDateTime2() {
+            return offsetDateTime2;
+        }
+
+        public void setOffsetDateTime2(Timestamp offsetDateTime2) {
+            this.offsetDateTime2 = offsetDateTime2;
+        }
+
         public String getDate3() {
             return date3;
         }
@@ -2209,6 +2236,14 @@ public class BeanUtilTest {
             this.dateTime3 = dateTime3;
         }
 
+        public String getOffsetDateTime3() {
+            return offsetDateTime3;
+        }
+
+        public void setOffsetDateTime3(String offsetDateTime3) {
+            this.offsetDateTime3 = offsetDateTime3;
+        }
+
         public List<LocalDate> getDateTimes() {
             return dateTimes;
         }
@@ -2219,14 +2254,17 @@ public class BeanUtilTest {
     }
 
 
-    public static class WithLocalDateTimeDestClass {
+    public static class WithDateAndTimeDestClass {
         private String name;
         private LocalDate date1;
         private LocalDateTime dateTime1;
+        private OffsetDateTime offsetDateTime1;
         private LocalDate date2;
         private LocalDateTime dateTime2;
+        private OffsetDateTime offsetDateTime2;
         private LocalDate date3;
         private LocalDateTime dateTime3;
+        private OffsetDateTime offsetDateTime3;
         private List<LocalDate> dateTimes;
 
         public String getName() {
@@ -2253,6 +2291,14 @@ public class BeanUtilTest {
             this.dateTime1 = dateTime1;
         }
 
+        public OffsetDateTime getOffsetDateTime1() {
+            return offsetDateTime1;
+        }
+
+        public void setOffsetDateTime1(OffsetDateTime offsetDateTime1) {
+            this.offsetDateTime1 = offsetDateTime1;
+        }
+
         public LocalDate getDate2() {
             return date2;
         }
@@ -2267,6 +2313,14 @@ public class BeanUtilTest {
 
         public void setDateTime2(LocalDateTime dateTime2) {
             this.dateTime2 = dateTime2;
+        }
+
+        public OffsetDateTime getOffsetDateTime2() {
+            return offsetDateTime2;
+        }
+
+        public void setOffsetDateTime2(OffsetDateTime offsetDateTime2) {
+            this.offsetDateTime2 = offsetDateTime2;
         }
 
         public LocalDate getDate3() {
@@ -2285,6 +2339,14 @@ public class BeanUtilTest {
             this.dateTime3 = dateTime3;
         }
 
+        public OffsetDateTime getOffsetDateTime3() {
+            return offsetDateTime3;
+        }
+
+        public void setOffsetDateTime3(OffsetDateTime offsetDateTime3) {
+            this.offsetDateTime3 = offsetDateTime3;
+        }
+
         public List<LocalDate> getDateTimes() {
             return dateTimes;
         }
@@ -2298,4 +2360,3 @@ public class BeanUtilTest {
         return IsMapContaining.hasEntry(key, value);
     }
 }
-
