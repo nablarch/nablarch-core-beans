@@ -63,6 +63,9 @@ import nablarch.core.util.annotation.Published;
  * <li>{@link java.sql.Date}</li>
  * <li>{@link java.sql.Timestamp}</li>
  * <li>{@link java.lang.String}</li>
+ * <li>{@link java.time.LocalDate}</li>
+ * <li>{@link java.time.LocalDateTime}</li>
+ * <li>{@link java.time.OffsetDateTime}</li>
  * </ul>
  * 
  * <p>
